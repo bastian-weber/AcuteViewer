@@ -31,6 +31,7 @@ namespace hb{
 		ImageView(QWidget *parent = 0);
 		QSize sizeHint() const;
 
+		void setShowInterfaceOutline(bool value);
 		void rotateLeft();
 		void rotateRight();
 		void setRotation(double degrees);
@@ -138,6 +139,8 @@ namespace hb{
 		static void matToImage(const cv::Mat& mat, QImage& destImage, bool deepCopy);
 		static void imageToMat(const QImage& image, cv::Mat& destMat, bool deepCopy);
 
+		//related to general interface settings
+		bool _interfaceOutline;
 		//the users transformations (panning, zooming)
 		double _zoomExponent;
 		const double _zoomBasis;

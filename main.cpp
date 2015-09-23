@@ -17,10 +17,6 @@ int init(int argc, char* argv[]) {
 	sv::MainInterface* mainInterface = new sv::MainInterface();
 	mainInterface->show();
 
-	//QMainWindow window;
-	//window.setCentralWidget(mainInterface);
-	//window.show();
-
 	return app.exec();
 }
 
