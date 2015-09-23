@@ -6,6 +6,7 @@ namespace hb{
 
 	ImageView::ImageView(QWidget *parent)
 		: QWidget(parent),
+		  _interfaceOutline(true),
 		  _useHighQualityDownscaling(true),
 		  _imageAssigned(false),
 		  _isMat(false),
@@ -48,6 +49,11 @@ namespace hb{
 
 	QSize ImageView::sizeHint() const{
 		return QSize(360, 360);
+	}
+
+	///defines wether an outline should be drawn around the widget (indicating also if it has the focus or not)
+	void ImageView::setShowInterfaceOutline(bool value) {
+		_interfaceOutline = value;
 	}
 
 	///Rotates the viewport 90° in anticlockwise direction.
@@ -871,20 +877,22 @@ namespace hb{
 		}
 
 		//add a contour
-		canvas.resetTransform();
-		canvas.setRenderHint(QPainter::Antialiasing, 0);
-		QColor strokeColour;
-		if (hasFocus()) {
-			strokeColour = palette.highlight().color();
-		} else {
-			strokeColour = palette.base().color();
-			strokeColour.setRed(strokeColour.red() / 2);
-			strokeColour.setGreen(strokeColour.green() / 2);
-			strokeColour.setBlue(strokeColour.blue() / 2);
+		if (_interfaceOutline) {
+			canvas.resetTransform();
+			canvas.setRenderHint(QPainter::Antialiasing, 0);
+			QColor strokeColour;
+			if (hasFocus()) {
+				strokeColour = palette.highlight().color();
+			} else {
+				strokeColour = palette.base().color();
+				strokeColour.setRed(strokeColour.red() / 2);
+				strokeColour.setGreen(strokeColour.green() / 2);
+				strokeColour.setBlue(strokeColour.blue() / 2);
+			}
+			canvas.setPen(QPen(strokeColour, 1));
+			canvas.setBrush(Qt::NoBrush);
+			canvas.drawRect(0, 0, width() - 1, height() - 1);
 		}
-		canvas.setPen(QPen(strokeColour, 1));
-		canvas.setBrush(Qt::NoBrush);
-		canvas.drawRect(0, 0, width() - 1, height() - 1);
 
 		//call external post paint function
 		if (_externalPostPaintFunctionAssigned) {
