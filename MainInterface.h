@@ -3,6 +3,8 @@
 
 #include "ImageView.h"
 
+#include <iostream>
+
 //OpenCV
 #include <opencv2/core.hpp>
 #include <opencv2/imgcodecs.hpp>
@@ -19,13 +21,21 @@ namespace sv {
 	protected:
 		void dragEnterEvent(QDragEnterEvent* e);
 		void dropEvent(QDropEvent* e);
+		void keyPressEvent(QKeyEvent* e);
 	private:
 		//functions
-		void loadImage(QString const& path);
+		void loadImage(QString path = QString());
+		void nextImage();
+		void previousImage();
 
 		//variables
-		hb::ImageView* imageView;
 		cv::Mat image;
+		QDir currentDirectory;
+		QVector<QString> filesInDirectory;
+		size_t fileIndex;
+		//widgets
+		hb::ImageView* imageView;
+
 	};
 }
 #endif
