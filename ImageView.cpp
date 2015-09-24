@@ -45,6 +45,8 @@ namespace hb{
 		setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 		setFocusPolicy(Qt::FocusPolicy::StrongFocus);
 		setMouseTracking(true);
+		QPalette palette = qApp->palette();
+		_backgroundColor = palette.base().color();
 	}
 
 	QSize ImageView::sizeHint() const{
@@ -54,6 +56,10 @@ namespace hb{
 	///defines wether an outline should be drawn around the widget (indicating also if it has the focus or not)
 	void ImageView::setShowInterfaceOutline(bool value) {
 		_interfaceOutline = value;
+	}
+
+	void ImageView::setInterfaceBackgroundColor(QColor const& color) {
+		_backgroundColor = color;
 	}
 
 	///Rotates the viewport 90° in anticlockwise direction.
@@ -674,6 +680,10 @@ namespace hb{
 		update();
 	}
 
+	void ImageView::mouseDoubleClickEvent(QMouseEvent* e) {
+		e->ignore();
+	}
+
 	void ImageView::wheelEvent(QWheelEvent* e){
 		if (_imageAssigned){
 			if (e->modifiers() & Qt::AltModifier){
@@ -716,7 +726,7 @@ namespace hb{
 		QSize canvasSize = size();
 		QTransform transform = getTransform();
 		QPalette palette = qApp->palette();
-		canvas.fillRect(0, 0, width(), height(), palette.base());
+		canvas.fillRect(0, 0, width(), height(), _backgroundColor);
 
 		//drawing of the image
 		if (_imageAssigned){

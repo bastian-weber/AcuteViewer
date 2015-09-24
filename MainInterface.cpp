@@ -44,9 +44,22 @@ namespace sv {
 		} else if (e->key() == Qt::Key_Left || e->key() == Qt::Key_Up) {
 			previousImage();
 			e->accept();
+		} else if (e->key() == Qt::Key_Escape) {
+			if (this->isFullScreen()) {
+				this->exitFullscreen();
+			}
 		} else {
 			e->ignore();
 		}
+	}
+
+	void MainInterface::mouseDoubleClickEvent(QMouseEvent* e) {
+		if (this->isFullScreen()) {
+			this->exitFullscreen();
+		} else {
+			this->enterFullscreen();
+		}
+		e->accept();
 	}
 
 	//=============================================================================== PRIVATE ===============================================================================\\
@@ -108,6 +121,17 @@ namespace sv {
 			}
 			loadImage();
 		}
+	}
+
+	void MainInterface::enterFullscreen() {
+		this->imageView->setInterfaceBackgroundColor(Qt::black);
+		this->showFullScreen();
+	}
+
+	void MainInterface::exitFullscreen() {
+		QPalette palette = qApp->palette();
+		this->imageView->setInterfaceBackgroundColor(palette.base().color());
+		this->showNormal();
 	}
 
 }
