@@ -686,6 +686,8 @@ namespace hb{
 
 	void ImageView::wheelEvent(QWheelEvent* e){
 		if (_imageAssigned){
+			QPointF floatMousePosition = e->pos();
+			QPointF mousePositionCoordinateBefore = getTransform().inverted().map(floatMousePosition);
 			if (e->modifiers() & Qt::AltModifier){
 				_zoomExponent += (double)e->delta() / 600;
 			} else if(!e->modifiers()) {
@@ -696,6 +698,10 @@ namespace hb{
 			}
 			e->accept();
 			if (_zoomExponent < 0)_zoomExponent = 0;
+			QTransform transform = getTransform();
+			QPointF mousePositionCoordinateAfter = transform.inverted().map(floatMousePosition);
+			QPointF mouseDelta = mousePositionCoordinateAfter - mousePositionCoordinateBefore;
+			_panOffset += mouseDelta;
 			enforcePanConstraints();
 			updateResizedImage();
 			update();
