@@ -120,6 +120,7 @@ namespace hb{
 		QTransform getTransformDownsampledImage() const;
 		QTransform getTransformScaleRotateOnly() const;
 		QTransform getTransformScaleOnly() const;
+		QTransform getTransformRotateOnly() const;
 		void enforcePanConstraints();
 		void updateResizedImage();
 

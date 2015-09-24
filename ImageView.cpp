@@ -698,9 +698,9 @@ namespace hb{
 			}
 			e->accept();
 			if (_zoomExponent < 0)_zoomExponent = 0;
-			QTransform transform = getTransform();
-			QPointF mousePositionCoordinateAfter = transform.inverted().map(floatMousePosition);
-			QPointF mouseDelta = mousePositionCoordinateAfter - mousePositionCoordinateBefore;
+			QPointF mousePositionCoordinateAfter = getTransform().inverted().map(floatMousePosition);
+			//remove the rotation from the delta
+			QPointF mouseDelta = getTransformRotateOnly().map(mousePositionCoordinateAfter - mousePositionCoordinateBefore);
 			_panOffset += mouseDelta;
 			enforcePanConstraints();
 			updateResizedImage();
@@ -1056,6 +1056,16 @@ namespace hb{
 		transform.scale(factor, factor);
 		//apply users zoom
 		transform.scale(zoomFactor, zoomFactor);
+		return transform;
+	}
+
+	QTransform ImageView::getTransformRotateOnly() const {
+		double factor = getWindowScalingFactor();
+		double zoomFactor = pow(_zoomBasis, _zoomExponent);
+		//those transforms are performed in inverse order, so read bottom - up
+		QTransform transform;
+		//rotate the view
+		transform.rotate(_viewRotation);
 		return transform;
 	}
 
