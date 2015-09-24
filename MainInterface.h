@@ -32,6 +32,7 @@ namespace sv {
 		void exitFullscreen();
 
 		//variables
+		QString programTitle = "Simple Viewer";
 		cv::Mat image;
 		QDir currentDirectory;
 		QVector<QString> filesInDirectory;

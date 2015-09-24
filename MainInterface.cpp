@@ -10,6 +10,7 @@ namespace sv {
 		this->imageView->setShowInterfaceOutline(false);
 		this->imageView->setUseSmoothTransform(false);
 		setCentralWidget(this->imageView);
+		this->setWindowTitle(this->programTitle);
 	}
 
 	MainInterface::~MainInterface() {
@@ -74,7 +75,9 @@ namespace sv {
 			QString filename = fileInfo.fileName();
 			if (directory != this->currentDirectory) {
 				this->currentDirectory = directory;
-				this->filesInDirectory = directory.entryList(QDir::Files).toVector();
+				QStringList filters;
+				filters << "*.bmp" << "*.dib" << "*.jpeg" << "*.jpg" << "*.jpe" << "*.jpeg" << "*.jp2" << "*.png" << "*.webp" << "*.pbm" << "*.pgm" << "*.ppm" << "*.sr" << "*.ras" << "*.tiff" << "*.tif";
+				this->filesInDirectory = directory.entryList(filters, QDir::Files).toVector();
 			}
 			if (this->filesInDirectory.size() == 0 || this->fileIndex <= 0 || this->fileIndex >= this->filesInDirectory.size() || this->filesInDirectory.at(this->fileIndex) != filename) {
 				this->fileIndex = this->filesInDirectory.indexOf(filename);
@@ -90,7 +93,7 @@ namespace sv {
 			msgBox.setText(tr("Could not read file."));
 			msgBox.exec();
 		}
-
+		this->setWindowTitle(QString("%1 - %2").arg(this->programTitle, QFileInfo(path).fileName()));
 	}
 
 	void MainInterface::nextImage() {
