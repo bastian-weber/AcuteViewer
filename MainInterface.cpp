@@ -9,7 +9,7 @@ namespace sv {
 		this->imageView = new hb::ImageView(this);
 		this->imageView->setShowInterfaceOutline(false);
 		this->imageView->setUseSmoothTransform(false);
-		//this->imageView->setRotation(30);
+		this->imageView->setRotation(270);
 		setCentralWidget(this->imageView);
 	}
 
