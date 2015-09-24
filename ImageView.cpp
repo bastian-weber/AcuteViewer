@@ -388,20 +388,16 @@ namespace hb{
 
 	///Zooms the viewport in one step.
 	void ImageView::zoomInKey(){
-		_zoomExponent += 1.0;
-		if (_zoomExponent < 0)_zoomExponent = 0;
-		enforcePanConstraints();
-		updateResizedImage();
-		update();
+		QPointF center = QPointF(double(width()) / 2.0, double(height()) / 2.0);
+		if (underMouse()) center = this->mapFromGlobal(QCursor::pos());
+		zoomBy(120, center);
 	}
 
 	///Zooms the viewport out one step.
 	void ImageView::zoomOutKey(){
-		_zoomExponent -= 1.0;
-		if (_zoomExponent < 0)_zoomExponent = 0;
-		enforcePanConstraints();
-		updateResizedImage();
-		update();
+		QPointF center = QPointF(double(width()) / 2.0, double(height()) / 2.0);
+		if (underMouse()) center = this->mapFromGlobal(QCursor::pos());
+		zoomBy(-120, center);
 	}
 
 	///Resets the mask the user is painting, does not affect the overlay mask.
@@ -685,27 +681,8 @@ namespace hb{
 	}
 
 	void ImageView::wheelEvent(QWheelEvent* e){
-		if (_imageAssigned){
-			QPointF floatMousePosition = e->pos();
-			QPointF mousePositionCoordinateBefore = getTransform().inverted().map(floatMousePosition);
-			if (e->modifiers() & Qt::AltModifier){
-				_zoomExponent += (double)e->delta() / 600;
-			} else if(!e->modifiers()) {
-				_zoomExponent += (double)e->delta() / 120;
-			} else {
-				e->ignore();
-				return;
-			}
-			e->accept();
-			if (_zoomExponent < 0)_zoomExponent = 0;
-			QPointF mousePositionCoordinateAfter = getTransform().inverted().map(floatMousePosition);
-			//remove the rotation from the delta
-			QPointF mouseDelta = getTransformRotateOnly().map(mousePositionCoordinateAfter - mousePositionCoordinateBefore);
-			_panOffset += mouseDelta;
-			enforcePanConstraints();
-			updateResizedImage();
-			update();
-		}
+		zoomBy(e->delta(), e->pos(), e->modifiers());
+		e->accept();
 	}
 
 	void ImageView::resizeEvent(QResizeEvent* e){
@@ -1067,6 +1044,27 @@ namespace hb{
 		//rotate the view
 		transform.rotate(_viewRotation);
 		return transform;
+	}
+
+	void ImageView::zoomBy(double delta, QPointF const& center, Qt::KeyboardModifiers modifier) {
+		if (_imageAssigned) {
+			QPointF mousePositionCoordinateBefore = getTransform().inverted().map(center);
+			if (modifier & Qt::AltModifier) {
+				_zoomExponent += delta / 600;
+			} else if (!modifier) {
+				_zoomExponent += delta / 120;
+			} else {
+				return;
+			}
+			if (_zoomExponent < 0)_zoomExponent = 0;
+			QPointF mousePositionCoordinateAfter = getTransform().inverted().map(center);
+			//remove the rotation from the delta
+			QPointF mouseDelta = getTransformRotateOnly().map(mousePositionCoordinateAfter - mousePositionCoordinateBefore);
+			_panOffset += mouseDelta;
+			enforcePanConstraints();
+			updateResizedImage();
+			update();
+		}
 	}
 
 	void ImageView::enforcePanConstraints(){
