@@ -32,6 +32,8 @@ namespace hb{
 		QSize sizeHint() const;
 
 		void setShowInterfaceOutline(bool value);
+		void setInterfaceBackgroundColor(QColor const& color);
+
 		void rotateLeft();
 		void rotateRight();
 		void setRotation(double degrees);
@@ -102,6 +104,7 @@ namespace hb{
 		void mousePressEvent(QMouseEvent* e);
 		void mouseMoveEvent(QMouseEvent* e);
 		void mouseReleaseEvent(QMouseEvent* e);
+		void mouseDoubleClickEvent(QMouseEvent* e);
 		void wheelEvent(QWheelEvent* e);
 		void resizeEvent(QResizeEvent* e);
 		void enterEvent(QEvent* e);
@@ -141,6 +144,7 @@ namespace hb{
 
 		//related to general interface settings
 		bool _interfaceOutline;
+		QColor _backgroundColor;
 		//the users transformations (panning, zooming)
 		double _zoomExponent;
 		const double _zoomBasis;
