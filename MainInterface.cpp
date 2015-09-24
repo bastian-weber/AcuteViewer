@@ -37,12 +37,77 @@ namespace sv {
 		}
 	}
 
+	void MainInterface::keyPressEvent(QKeyEvent* e) {
+		if (e->key() == Qt::Key_Right || e->key() == Qt::Key_Down) {
+			nextImage();
+			e->accept();
+		} else if (e->key() == Qt::Key_Left || e->key() == Qt::Key_Up) {
+			previousImage();
+			e->accept();
+		} else {
+			e->ignore();
+		}
+	}
+
 	//=============================================================================== PRIVATE ===============================================================================\\
 
-	void MainInterface::loadImage(QString const& path) {
+	void MainInterface::loadImage(QString path) {
+		if (path == QString()) {
+			path = this->currentDirectory.absoluteFilePath(this->filesInDirectory[this->fileIndex]);
+		} else {
+			//find the path in the current directory listing
+			QFileInfo fileInfo = QFileInfo(QDir::cleanPath(path));
+			QDir directory = fileInfo.absoluteDir();
+			QString filename = fileInfo.fileName();
+			if (directory != this->currentDirectory) {
+				this->currentDirectory = directory;
+				this->filesInDirectory = directory.entryList(QDir::Files).toVector();
+			}
+			if (this->filesInDirectory.size() == 0 || this->fileIndex <= 0 || this->fileIndex >= this->filesInDirectory.size() || this->filesInDirectory.at(this->fileIndex) != filename) {
+				this->fileIndex = this->filesInDirectory.indexOf(filename);
+			}
+		}
 		this->image = cv::imread(path.toStdString(), CV_LOAD_IMAGE_COLOR);
-		cv::cvtColor(this->image, this->image, CV_BGR2RGB);
-		this->imageView->setImage(this->image);
+		if (this->image.data) {
+			cv::cvtColor(this->image, this->image, CV_BGR2RGB);
+			this->imageView->setImage(this->image);
+		} else {
+			QMessageBox msgBox;
+			msgBox.setWindowTitle(tr("Error"));
+			msgBox.setText(tr("Could not read file."));
+			msgBox.exec();
+		}
+
+	}
+
+	void MainInterface::nextImage() {
+		if (this->filesInDirectory.size() != 0) {
+			if (this->fileIndex >= 0) {
+				if (this->fileIndex != this->filesInDirectory.size() - 1) {
+					++this->fileIndex;
+				} else {
+					this->fileIndex = 0;
+				}
+			} else {
+				this->fileIndex = 0;
+			}
+			loadImage();
+		}
+	}
+
+	void MainInterface::previousImage() {
+		if (this->filesInDirectory.size() != 0) {
+			if (this->fileIndex >= 0) {
+				if (this->fileIndex != 0) {
+					--this->fileIndex;
+				} else {
+					this->fileIndex = this->filesInDirectory.size() - 1;
+				}
+			} else {
+				this->fileIndex = 0;
+			}
+			loadImage();
+		}
 	}
 
 }
