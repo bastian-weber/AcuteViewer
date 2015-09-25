@@ -6,12 +6,14 @@ namespace sv {
 		: QMainWindow(parent) {
 
 		setAcceptDrops(true);
+		this->setWindowTitle(this->programTitle);
+
 		this->imageView = new hb::ImageView(this);
 		this->imageView->setShowInterfaceOutline(false);
 		this->imageView->setUseSmoothTransform(false);
 		this->imageView->installEventFilter(this);
+		this->imageView->setInterfaceBackgroundColor(Qt::black);
 		setCentralWidget(this->imageView);
-		this->setWindowTitle(this->programTitle);
 
 		this->fileMenu = this->menuBar()->addMenu(tr("&File"));
 		this->menuBar()->setVisible(false);
@@ -23,12 +25,17 @@ namespace sv {
 		//so shortcuts also work when menu bar is not visible
 		this->addAction(this->quitAction);
 		QObject::connect(this->quitAction, SIGNAL(triggered()), this, SLOT(quit()));
+
+		//mouse hide timer in fullscreen
+		this->mouseHideTimer = new QTimer(this);
+		QObject::connect(this->mouseHideTimer, SIGNAL(timeout()), this, SLOT(hideMouse()));
 	}
 
 	MainInterface::~MainInterface() {
 		delete this->imageView;
 		delete this->fileMenu;
 		delete this->quitAction;
+		delete this->mouseHideTimer;
 	}
 
 	QSize MainInterface::sizeHint() const {
@@ -45,6 +52,9 @@ namespace sv {
 			if (this->menuBar()->isVisible()) {
 				this->menuBar()->setVisible(false);
 			}
+		} else if (e->type() == QEvent::MouseMove) {
+			QMouseEvent* keyEvent = (QMouseEvent*)e;
+			this->mouseMoveEvent(keyEvent);
 		}
 		return false;
 	}
@@ -104,6 +114,14 @@ namespace sv {
 		if (this->menuBar()->isVisible()) {
 			this->menuBar()->setVisible(false);
 		}
+	}
+
+	void MainInterface::mouseMoveEvent(QMouseEvent* e) {
+		if (this->isFullScreen()) {
+			this->showMouse();
+			this->mouseHideTimer->start(1000);
+		}
+		e->ignore();
 	}
 
 	//=============================================================================== PRIVATE ===============================================================================\\
@@ -170,14 +188,17 @@ namespace sv {
 	}
 
 	void MainInterface::enterFullscreen() {
-		this->imageView->setInterfaceBackgroundColor(Qt::black);
+		//this->imageView->setInterfaceBackgroundColor(Qt::black);
 		this->showFullScreen();
+		this->mouseHideTimer->start(1000);
 	}
 
 	void MainInterface::exitFullscreen() {
-		QPalette palette = qApp->palette();
-		this->imageView->setInterfaceBackgroundColor(palette.base().color());
+		//QPalette palette = qApp->palette();
+		//this->imageView->setInterfaceBackgroundColor(palette.base().color());
 		this->showNormal();
+		this->mouseHideTimer->stop();
+		this->showMouse();
 	}
 
 	//============================================================================ PRIVATE SLOTS =============================================================================\\
@@ -185,4 +206,14 @@ namespace sv {
 	void MainInterface::quit() {
 		this->close();
 	}
+
+	void MainInterface::hideMouse() const{
+		qApp->setOverrideCursor(Qt::BlankCursor);
+		mouseHideTimer->stop();
+	}
+
+	void MainInterface::showMouse() const {
+		qApp->setOverrideCursor(Qt::ArrowCursor);
+	}
+
 }
