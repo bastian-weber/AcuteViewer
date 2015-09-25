@@ -156,7 +156,7 @@ namespace sv {
 			msgBox.setText(tr("Could not read file."));
 			msgBox.exec();
 		}
-		this->setWindowTitle(QString("%1 - %2").arg(this->programTitle, QFileInfo(path).fileName()));
+		this->setWindowTitle(QString("%1 - %2 - %3 of %4").arg(this->programTitle, QFileInfo(path).fileName()).arg(this->fileIndex + 1).arg(this->filesInDirectory.size()));
 	}
 
 	void MainInterface::nextImage() {
