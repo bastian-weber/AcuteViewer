@@ -102,12 +102,14 @@ namespace sv {
 	}
 
 	void MainInterface::mouseDoubleClickEvent(QMouseEvent* e) {
-		if (this->isFullScreen()) {
-			this->exitFullscreen();
-		} else {
-			this->enterFullscreen();
+		if (e->button() == Qt::LeftButton) {
+			if (this->isFullScreen()) {
+				this->exitFullscreen();
+			} else {
+				this->enterFullscreen();
+			}
+			e->accept();
 		}
-		e->accept();
 	}
 
 	void MainInterface::mouseReleaseEvent(QMouseEvent* e) {
