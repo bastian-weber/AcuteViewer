@@ -9,12 +9,26 @@ namespace sv {
 		this->imageView = new hb::ImageView(this);
 		this->imageView->setShowInterfaceOutline(false);
 		this->imageView->setUseSmoothTransform(false);
+		this->imageView->installEventFilter(this);
 		setCentralWidget(this->imageView);
 		this->setWindowTitle(this->programTitle);
+
+		this->fileMenu = this->menuBar()->addMenu(tr("&File"));
+		this->menuBar()->setVisible(false);
+
+		this->quitAction = new QAction(tr("&Quit"), this);
+		this->quitAction->setShortcut(Qt::CTRL + Qt::Key_Q);
+		this->quitAction->setShortcutContext(Qt::ApplicationShortcut);
+		this->fileMenu->addAction(this->quitAction);
+		//so shortcuts also work when menu bar is not visible
+		this->addAction(this->quitAction);
+		QObject::connect(this->quitAction, SIGNAL(triggered()), this, SLOT(quit()));
 	}
 
 	MainInterface::~MainInterface() {
 		delete this->imageView;
+		delete this->fileMenu;
+		delete this->quitAction;
 	}
 
 	QSize MainInterface::sizeHint() const {
@@ -22,6 +36,18 @@ namespace sv {
 	}
 
 	//============================================================================== PROTECTED ==============================================================================\\
+
+	bool MainInterface::eventFilter(QObject* object, QEvent* e) {
+		if (e->type() == QEvent::MouseButtonRelease) {
+			QMouseEvent* keyEvent = (QMouseEvent*)e;
+			this->mouseReleaseEvent(keyEvent);
+		} else if (e->type() == QEvent::Wheel) {
+			if (this->menuBar()->isVisible()) {
+				this->menuBar()->setVisible(false);
+			}
+		}
+		return false;
+	}
 
 	void MainInterface::dragEnterEvent(QDragEnterEvent* e) {
 		if (e->mimeData()->hasUrls()) {
@@ -46,12 +72,23 @@ namespace sv {
 			previousImage();
 			e->accept();
 		} else if (e->key() == Qt::Key_Escape) {
-			if (this->isFullScreen()) {
+			if (this->menuBar()->isVisible()) {
+				this->menuBar()->setVisible(false);
+			}else if (this->isFullScreen()) {
 				this->exitFullscreen();
 			}
 		} else {
 			e->ignore();
 		}
+	}
+
+	void MainInterface::keyReleaseEvent(QKeyEvent* e) {
+		if (!this->menuBar()->isVisible() && e->key() == Qt::Key_Alt) {
+			this->menuBar()->setVisible(true);
+		} else {
+			this->menuBar()->setVisible(false);
+		}
+		e->ignore();
 	}
 
 	void MainInterface::mouseDoubleClickEvent(QMouseEvent* e) {
@@ -61,6 +98,12 @@ namespace sv {
 			this->enterFullscreen();
 		}
 		e->accept();
+	}
+
+	void MainInterface::mouseReleaseEvent(QMouseEvent* e) {
+		if (this->menuBar()->isVisible()) {
+			this->menuBar()->setVisible(false);
+		}
 	}
 
 	//=============================================================================== PRIVATE ===============================================================================\\
@@ -137,4 +180,9 @@ namespace sv {
 		this->showNormal();
 	}
 
+	//============================================================================ PRIVATE SLOTS =============================================================================\\
+
+	void MainInterface::quit() {
+		this->close();
+	}
 }

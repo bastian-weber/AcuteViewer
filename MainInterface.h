@@ -19,10 +19,13 @@ namespace sv {
 		~MainInterface();
 		QSize sizeHint() const;
 	protected:
+		bool eventFilter(QObject* object, QEvent* e);
 		void dragEnterEvent(QDragEnterEvent* e);
 		void dropEvent(QDropEvent* e);
 		void keyPressEvent(QKeyEvent* e);
+		void keyReleaseEvent(QKeyEvent* e);
 		void mouseDoubleClickEvent(QMouseEvent* e);
+		void mouseReleaseEvent(QMouseEvent* e);
 	private:
 		//functions
 		void loadImage(QString path = QString());
@@ -39,7 +42,12 @@ namespace sv {
 		size_t fileIndex;
 		//widgets
 		hb::ImageView* imageView;
-
+		//menus
+		QMenu* fileMenu;
+		//actions
+		QAction* quitAction;
+	private slots:
+		void quit();
 	};
 }
 #endif
