@@ -94,6 +94,8 @@ namespace hb{
 	public slots:
 		void zoomInKey();
 		void zoomOutKey();
+		void zoomToHundredPercent(QPointF center);
+		void resetZoom();
 		void resetMask();
 		void setBrushRadius(int value);
 		void deletePoint(int index);
@@ -150,6 +152,7 @@ namespace hb{
 		//the users transformations (panning, zooming)
 		double _zoomExponent;
 		const double _zoomBasis;
+		bool _magnificationIsHundredPercent;
 		QPointF _panOffset;
 		double _viewRotation;
 		//related to general click and drag events

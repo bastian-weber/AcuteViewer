@@ -12,6 +12,7 @@ namespace hb{
 		  _isMat(false),
 		  _zoomBasis(1.5),
 		  _zoomExponent(0),
+		  _magnificationIsHundredPercent(false),
 		  _panOffset(0, 0),
 		  _viewRotation(0),
 		  _dragging(false),
@@ -417,6 +418,31 @@ namespace hb{
 		}
 	}
 
+	///Displays the image at 100% magnification. The point \p center (in widget screen coordinates) will be centered.
+	void ImageView::zoomToHundredPercent(QPointF center) {
+		if (_imageAssigned) {
+			QPointF mousePositionCoordinateBefore = getTransform().inverted().map(center);
+			double desiredZoomFactor = 1 / getWindowScalingFactor();
+			_zoomExponent = log(desiredZoomFactor) / log(_zoomBasis);
+			QPointF mousePositionCoordinateAfter = getTransform().inverted().map(center);
+			//remove the rotation from the delta
+			QPointF mouseDelta = getTransformRotateOnly().map(mousePositionCoordinateAfter - mousePositionCoordinateBefore);
+			_panOffset += mouseDelta;
+			_magnificationIsHundredPercent = true;
+			enforcePanConstraints();
+			updateResizedImage();
+			update();
+		}
+	}
+
+	void ImageView::resetZoom() {
+		_zoomExponent = 0;
+		_magnificationIsHundredPercent = false;
+		enforcePanConstraints();
+		updateResizedImage();
+		update();
+	}
+
 	///Deletes the point at index \p index.
 	void ImageView::deletePoint(int index){
 		if (index >= 0 && index < _points.size()){
@@ -620,7 +646,7 @@ namespace hb{
 				emit pointModified();
 			}
 		} else if (!_pointEditingActive && !_moved && _imageAssigned) {
-			if (_polylineManipulationActive) {
+			if (_polylineManipulationActive && e->button() != Qt::RightButton) {
 				//this was a click, select or unselect polyline
 				if (smallestDistanceToPolyline(e->pos()) <= _polylinePointGrabTolerance) {
 					//clicked close enough to a point, select line
@@ -629,6 +655,15 @@ namespace hb{
 					//clicked somewehere else, deselect it
 					_polylineSelected = false;
 					_polylineSelectedPoints.clear();
+				}
+			}
+
+			if (e->button() == Qt::RightButton) {
+				//zoom to 100%
+				if (_magnificationIsHundredPercent) {
+					resetZoom();
+				} else {
+					zoomToHundredPercent(e->pos());
 				}
 			}
 
@@ -1061,6 +1096,7 @@ namespace hb{
 			//remove the rotation from the delta
 			QPointF mouseDelta = getTransformRotateOnly().map(mousePositionCoordinateAfter - mousePositionCoordinateBefore);
 			_panOffset += mouseDelta;
+			_magnificationIsHundredPercent = false;
 			enforcePanConstraints();
 			updateResizedImage();
 			update();
