@@ -26,6 +26,7 @@ namespace sv {
 		void keyReleaseEvent(QKeyEvent* e);
 		void mouseDoubleClickEvent(QMouseEvent* e);
 		void mouseReleaseEvent(QMouseEvent* e);
+		void mouseMoveEvent(QMouseEvent* e);
 	private:
 		//functions
 		void loadImage(QString path = QString());
@@ -46,8 +47,12 @@ namespace sv {
 		QMenu* fileMenu;
 		//actions
 		QAction* quitAction;
+		//timer
+		QTimer* mouseHideTimer;
 	private slots:
 		void quit();
+		void hideMouse() const;
+		void showMouse() const;
 	};
 }
 #endif
