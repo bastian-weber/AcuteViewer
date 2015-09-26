@@ -4,6 +4,7 @@
 #include "ImageView.h"
 
 #include <iostream>
+#include <future>
 
 //OpenCV
 #include <opencv2/core.hpp>
@@ -29,9 +30,12 @@ namespace sv {
 		void mouseMoveEvent(QMouseEvent* e);
 	private:
 		//functions
+		cv::Mat readImage(QString path) const;
+		QString getFullImagePath(size_t index) const;
 		void loadImage(QString path = QString());
-		void nextImage();
-		void previousImage();
+		void displayImageIfOk(QString const& displayName = QString());
+		void loadNextImage();
+		void loadPreviousImage();
 		void enterFullscreen();
 		void exitFullscreen();
 
@@ -41,6 +45,13 @@ namespace sv {
 		QDir currentDirectory;
 		QVector<QString> filesInDirectory;
 		size_t fileIndex;
+		cv::Mat previousImage;
+		cv::Mat nextImage;
+		std::future<cv::Mat> previousImageThread;
+		std::future<cv::Mat> nextImageThread;
+		std::atomic<bool> previousImageCached{ false };
+		std::atomic<bool> nextImageCached{ false };
+
 		//widgets
 		hb::ImageView* imageView;
 		//menus

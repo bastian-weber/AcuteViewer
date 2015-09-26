@@ -76,10 +76,10 @@ namespace sv {
 
 	void MainInterface::keyPressEvent(QKeyEvent* e) {
 		if (e->key() == Qt::Key_Right || e->key() == Qt::Key_Down) {
-			nextImage();
+			loadNextImage();
 			e->accept();
 		} else if (e->key() == Qt::Key_Left || e->key() == Qt::Key_Up) {
-			previousImage();
+			loadPreviousImage();
 			e->accept();
 		} else if (e->key() == Qt::Key_Escape) {
 			if (this->menuBar()->isVisible()) {
@@ -128,9 +128,19 @@ namespace sv {
 
 	//=============================================================================== PRIVATE ===============================================================================\\
 
+	cv::Mat MainInterface::readImage(QString path) const {
+		cv::Mat image = cv::imread(path.toStdString(), CV_LOAD_IMAGE_COLOR);
+		if(image.data) cv::cvtColor(image, image, CV_BGR2RGB);
+		return image;
+	}
+
+	QString MainInterface::getFullImagePath(size_t index) const {
+		return this->currentDirectory.absoluteFilePath(this->filesInDirectory[index]);
+	}
+
 	void MainInterface::loadImage(QString path) {
 		if (path == QString()) {
-			path = this->currentDirectory.absoluteFilePath(this->filesInDirectory[this->fileIndex]);
+			path = this->getFullImagePath(this->fileIndex);
 		} else {
 			//find the path in the current directory listing
 			QFileInfo fileInfo = QFileInfo(QDir::cleanPath(path));
@@ -146,9 +156,25 @@ namespace sv {
 				this->fileIndex = this->filesInDirectory.indexOf(filename);
 			}
 		}
-		this->image = cv::imread(path.toStdString(), CV_LOAD_IMAGE_COLOR);
+		this->image = readImage(path);
+		this->displayImageIfOk(QFileInfo(path).fileName());
+		this->previousImageCached = false;
+		this->nextImageCached = false;
+		if (this->filesInDirectory.size() != 0) {
+			//preload next and previous image in background
+			this->previousImageThread = std::async(std::launch::async, &MainInterface::readImage, this, this->getFullImagePath((this->fileIndex - 1) % this->filesInDirectory.size()));
+			this->nextImageThread = std::async(std::launch::async, &MainInterface::readImage, this, this->getFullImagePath((this->fileIndex + 1) % this->filesInDirectory.size()));
+		}
+	}
+
+	void MainInterface::displayImageIfOk(QString const& displayName) {
+		QString imageTitle;
+		if (displayName == QString()) {
+			imageTitle = this->filesInDirectory[this->fileIndex];
+		} else {
+			imageTitle = displayName;
+		}
 		if (this->image.data) {
-			cv::cvtColor(this->image, this->image, CV_BGR2RGB);
 			this->imageView->setImage(this->image);
 		} else {
 			QMessageBox msgBox;
@@ -156,36 +182,38 @@ namespace sv {
 			msgBox.setText(tr("Could not read file."));
 			msgBox.exec();
 		}
-		this->setWindowTitle(QString("%1 - %2 - %3 of %4").arg(this->programTitle, QFileInfo(path).fileName()).arg(this->fileIndex + 1).arg(this->filesInDirectory.size()));
+		this->setWindowTitle(QString("%1 - %2 - %3 of %4").arg(this->programTitle, imageTitle).arg(this->fileIndex + 1).arg(this->filesInDirectory.size()));
 	}
 
-	void MainInterface::nextImage() {
+	void MainInterface::loadNextImage() {
 		if (this->filesInDirectory.size() != 0) {
-			if (this->fileIndex >= 0) {
-				if (this->fileIndex != this->filesInDirectory.size() - 1) {
-					++this->fileIndex;
-				} else {
-					this->fileIndex = 0;
-				}
+			this->fileIndex = (this->fileIndex + 1) % this->filesInDirectory.size();
+			this->previousImage = this->image;
+			this->previousImageCached = true;
+			if (this->nextImageCached) {
+				this->image = this->nextImage;
 			} else {
-				this->fileIndex = 0;
+				this->image = this->nextImageThread.get();
 			}
-			loadImage();
+			this->nextImageThread = std::async(std::launch::async, &MainInterface::readImage, this, this->getFullImagePath((this->fileIndex + 1) % this->filesInDirectory.size()));
+			this->nextImageCached = false;
+			this->displayImageIfOk();
 		}
 	}
 
-	void MainInterface::previousImage() {
+	void MainInterface::loadPreviousImage() {
 		if (this->filesInDirectory.size() != 0) {
-			if (this->fileIndex >= 0) {
-				if (this->fileIndex != 0) {
-					--this->fileIndex;
-				} else {
-					this->fileIndex = this->filesInDirectory.size() - 1;
-				}
+			this->fileIndex = (this->fileIndex - 1) % this->filesInDirectory.size();
+			this->nextImage = this->image;
+			this->nextImageCached = true;
+			if (this->previousImageCached) {
+				this->image = this->previousImage;
 			} else {
-				this->fileIndex = 0;
+				this->image = this->previousImageThread.get();
 			}
-			loadImage();
+			this->previousImageThread = std::async(std::launch::async, &MainInterface::readImage, this, this->getFullImagePath((this->fileIndex - 1) % this->filesInDirectory.size()));
+			this->previousImageCached = false;
+			this->displayImageIfOk();
 		}
 	}
 
