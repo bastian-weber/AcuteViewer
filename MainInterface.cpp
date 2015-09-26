@@ -16,16 +16,27 @@ namespace sv {
 		this->imageView->setInterfaceBackgroundColor(Qt::black);
 		setCentralWidget(this->imageView);
 
-		this->fileMenu = this->menuBar()->addMenu(tr("&File"));
 		this->menuBar()->setVisible(false);
+		QObject::connect(this->menuBar(), SIGNAL(triggered(QAction*)), this, SLOT(hideMenuBar(QAction*)));
+		this->fileMenu = this->menuBar()->addMenu(tr("&File"));
+		this->viewMenu = this->menuBar()->addMenu(tr("&View"));
 
 		this->quitAction = new QAction(tr("&Quit"), this);
 		this->quitAction->setShortcut(Qt::CTRL + Qt::Key_Q);
 		this->quitAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->quitAction, SIGNAL(triggered()), this, SLOT(quit()));
 		this->fileMenu->addAction(this->quitAction);
 		//so shortcuts also work when menu bar is not visible
 		this->addAction(this->quitAction);
-		QObject::connect(this->quitAction, SIGNAL(triggered()), this, SLOT(quit()));
+
+		this->showInfoAction = new QAction(tr("Show &Info"), this);
+		this->showInfoAction->setCheckable(true);
+		this->showInfoAction->setChecked(false);
+		this->showInfoAction->setShortcut(Qt::Key_I);
+		this->showInfoAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->showInfoAction, SIGNAL(triggered(bool)), this, SLOT(reactToshowInfoToggle(bool)));
+		this->viewMenu->addAction(this->showInfoAction);
+		this->addAction(this->showInfoAction);
 
 		//mouse hide timer in fullscreen
 		this->mouseHideTimer = new QTimer(this);
@@ -35,7 +46,9 @@ namespace sv {
 	MainInterface::~MainInterface() {
 		delete this->imageView;
 		delete this->fileMenu;
+		delete this->viewMenu;
 		delete this->quitAction;
+		delete this->showInfoAction;
 		delete this->mouseHideTimer;
 	}
 
@@ -51,7 +64,7 @@ namespace sv {
 			this->mouseReleaseEvent(keyEvent);
 		} else if (e->type() == QEvent::Wheel) {
 			if (this->menuBar()->isVisible()) {
-				this->menuBar()->setVisible(false);
+				this->hideMenuBar();
 			}
 		} else if (e->type() == QEvent::MouseMove) {
 			QMouseEvent* keyEvent = (QMouseEvent*)e;
@@ -84,7 +97,7 @@ namespace sv {
 			e->accept();
 		} else if (e->key() == Qt::Key_Escape) {
 			if (this->menuBar()->isVisible()) {
-				this->menuBar()->setVisible(false);
+				this->hideMenuBar();
 			}else if (this->isFullScreen()) {
 				this->exitFullscreen();
 			}
@@ -95,9 +108,9 @@ namespace sv {
 
 	void MainInterface::keyReleaseEvent(QKeyEvent* e) {
 		if (!this->menuBar()->isVisible() && e->key() == Qt::Key_Alt) {
-			this->menuBar()->setVisible(true);
+			this->showMenuBar();
 		} else {
-			this->menuBar()->setVisible(false);
+			this->hideMenuBar();
 		}
 		e->ignore();
 	}
@@ -115,14 +128,14 @@ namespace sv {
 
 	void MainInterface::mouseReleaseEvent(QMouseEvent* e) {
 		if (this->menuBar()->isVisible()) {
-			this->menuBar()->setVisible(false);
+			this->hideMenuBar();
 		}
 	}
 
 	void MainInterface::mouseMoveEvent(QMouseEvent* e) {
 		if (this->isFullScreen()) {
 			this->showMouse();
-			this->mouseHideTimer->start(1000);
+			if(!this->menuBar()->isVisible()) this->mouseHideTimer->start(this->mouseHideDelay);
 		}
 		e->ignore();
 	}
@@ -130,7 +143,19 @@ namespace sv {
 	//=============================================================================== PRIVATE ===============================================================================\\
 
 	cv::Mat MainInterface::readImage(QString path) const {
+//I'm puzzled here
+	//#ifdef Q_OS_WIN
+	//	//workaround for non-ascii filenames
+	//	wchar_t* str;
+	//	path.toWCharArray(str);
+	//	FILE* file = _wfopen(str, L"r");
+	//	delete[] str;
+	//	cv::Mat()
+	//	cv::imdecode(cv::Mat(file), CV_LOAD_IMAGE_COLOR);
+	//	delete file;
+	//#else
 		cv::Mat image = cv::imread(path.toStdString(), CV_LOAD_IMAGE_COLOR);
+	//#endif
 		if(image.data) cv::cvtColor(image, image, CV_BGR2RGB);
 		return image;
 	}
@@ -229,7 +254,7 @@ namespace sv {
 	void MainInterface::enterFullscreen() {
 		//this->imageView->setInterfaceBackgroundColor(Qt::black);
 		this->showFullScreen();
-		this->mouseHideTimer->start(1000);
+		this->mouseHideTimer->start(this->mouseHideDelay);
 	}
 
 	void MainInterface::exitFullscreen() {
@@ -259,6 +284,10 @@ namespace sv {
 			canvas.drawText(QPoint((canvas.device()->width() - metrics.width(message)) / 2.0, canvas.device()->height() / 2.0 - 0.5*lineSpacing), message);
 			canvas.drawText(QPoint((canvas.device()->width() - metrics.width(this->nameOfCurrentFile)) / 2.0, canvas.device()->height() / 2.0 + 0.5*lineSpacing + metrics.height()), this->nameOfCurrentFile);
 		}
+		if (this->showInfoAction->isChecked()) {
+		//draw current filename
+			canvas.drawText(QPoint(30, 30 + metrics.height()), this->nameOfCurrentFile);
+		}
 	}
 
 	//============================================================================ PRIVATE SLOTS =============================================================================\\
@@ -274,6 +303,20 @@ namespace sv {
 
 	void MainInterface::showMouse() const {
 		qApp->setOverrideCursor(Qt::ArrowCursor);
+	}
+
+	void MainInterface::reactToshowInfoToggle(bool value) {
+		this->imageView->update();
+	}
+
+	void MainInterface::showMenuBar() {
+		if (this->isFullScreen()) this->mouseHideTimer->stop();
+		this->menuBar()->setVisible(true);
+	}
+
+	void MainInterface::hideMenuBar(QAction* triggeringAction) {
+		this->menuBar()->setVisible(false);
+		if (this->isFullScreen()) this->mouseHideTimer->start(this->mouseHideDelay);
 	}
 
 }
