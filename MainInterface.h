@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include <future>
+#include <chrono>
 
 //OpenCV
 #include <opencv2/core.hpp>
@@ -33,11 +34,12 @@ namespace sv {
 		cv::Mat readImage(QString path) const;
 		QString getFullImagePath(size_t index) const;
 		void loadImage(QString path);
-		void displayImageIfOk(QString const& displayName = QString());
+		void displayImageIfOk();
 		void loadNextImage();
 		void loadPreviousImage();
 		void enterFullscreen();
 		void exitFullscreen();
+		void infoPaintFunction(QPainter& canvas);
 
 		//variables
 		QString programTitle = "Simple Viewer";
@@ -45,6 +47,8 @@ namespace sv {
 		QDir currentDirectory;
 		QVector<QString> filesInDirectory;
 		size_t fileIndex;
+		QString nameOfCurrentFile;
+		bool currentImageUnreadable = false;
 		cv::Mat previousImage;
 		cv::Mat nextImage;
 		std::future<cv::Mat> previousImageThread;
