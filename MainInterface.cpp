@@ -139,22 +139,18 @@ namespace sv {
 	}
 
 	void MainInterface::loadImage(QString path) {
-		if (path == QString()) {
-			path = this->getFullImagePath(this->fileIndex);
-		} else {
-			//find the path in the current directory listing
-			QFileInfo fileInfo = QFileInfo(QDir::cleanPath(path));
-			QDir directory = fileInfo.absoluteDir();
-			QString filename = fileInfo.fileName();
-			if (directory != this->currentDirectory) {
-				this->currentDirectory = directory;
-				QStringList filters;
-				filters << "*.bmp" << "*.dib" << "*.jpeg" << "*.jpg" << "*.jpe" << "*.jpeg" << "*.jp2" << "*.png" << "*.webp" << "*.pbm" << "*.pgm" << "*.ppm" << "*.sr" << "*.ras" << "*.tiff" << "*.tif";
-				this->filesInDirectory = directory.entryList(filters, QDir::Files).toVector();
-			}
-			if (this->filesInDirectory.size() == 0 || this->fileIndex <= 0 || this->fileIndex >= this->filesInDirectory.size() || this->filesInDirectory.at(this->fileIndex) != filename) {
-				this->fileIndex = this->filesInDirectory.indexOf(filename);
-			}
+		//find the path in the current directory listing
+		QFileInfo fileInfo = QFileInfo(QDir::cleanPath(path));
+		QDir directory = fileInfo.absoluteDir();
+		QString filename = fileInfo.fileName();
+		if (directory != this->currentDirectory) {
+			this->currentDirectory = directory;
+			QStringList filters;
+			filters << "*.bmp" << "*.dib" << "*.jpeg" << "*.jpg" << "*.jpe" << "*.jpeg" << "*.jp2" << "*.png" << "*.webp" << "*.pbm" << "*.pgm" << "*.ppm" << "*.sr" << "*.ras" << "*.tiff" << "*.tif";
+			this->filesInDirectory = directory.entryList(filters, QDir::Files).toVector();
+		}
+		if (this->filesInDirectory.size() == 0 || this->fileIndex <= 0 || this->fileIndex >= this->filesInDirectory.size() || this->filesInDirectory.at(this->fileIndex) != filename) {
+			this->fileIndex = this->filesInDirectory.indexOf(filename);
 		}
 		this->image = readImage(path);
 		this->displayImageIfOk(QFileInfo(path).fileName());
