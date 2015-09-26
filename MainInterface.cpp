@@ -14,6 +14,7 @@ namespace sv {
 		this->imageView->installEventFilter(this);
 		this->imageView->setExternalPostPaintFunction(this, &MainInterface::infoPaintFunction);
 		this->imageView->setInterfaceBackgroundColor(Qt::black);
+		this->imageView->setPreventMagnificationInDefaultZoom(true);
 		setCentralWidget(this->imageView);
 
 		this->menuBar()->setVisible(false);
@@ -75,7 +76,7 @@ namespace sv {
 
 	void MainInterface::dragEnterEvent(QDragEnterEvent* e) {
 		if (e->mimeData()->hasUrls()) {
-			if (!e->mimeData()->urls().isEmpty()) {
+			if (!e->mimeData()->urls().isEmpty() && QFileInfo(e->mimeData()->urls().first().toLocalFile()).isFile()) {
 				e->acceptProposedAction();
 			}
 		}
