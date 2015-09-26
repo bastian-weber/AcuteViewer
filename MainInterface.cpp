@@ -12,6 +12,7 @@ namespace sv {
 		this->imageView->setShowInterfaceOutline(false);
 		this->imageView->setUseSmoothTransform(false);
 		this->imageView->installEventFilter(this);
+		this->imageView->setExternalPostPaintFunction(this, &MainInterface::infoPaintFunction);
 		this->imageView->setInterfaceBackgroundColor(Qt::black);
 		setCentralWidget(this->imageView);
 
@@ -153,7 +154,8 @@ namespace sv {
 			this->fileIndex = this->filesInDirectory.indexOf(filename);
 		}
 		this->image = readImage(path);
-		this->displayImageIfOk(QFileInfo(path).fileName());
+		this->nameOfCurrentFile = filename;
+		this->displayImageIfOk();
 		this->previousImageCached = false;
 		this->nextImageCached = false;
 		if (this->filesInDirectory.size() != 0) {
@@ -163,36 +165,38 @@ namespace sv {
 		}
 	}
 
-	void MainInterface::displayImageIfOk(QString const& displayName) {
-		QString imageTitle;
-		if (displayName == QString()) {
-			imageTitle = this->filesInDirectory[this->fileIndex];
-		} else {
-			imageTitle = displayName;
-		}
+	void MainInterface::displayImageIfOk() {
 		if (this->image.data) {
+			this->currentImageUnreadable = false;
 			this->imageView->setImage(this->image);
 		} else {
-			QMessageBox msgBox;
-			msgBox.setWindowTitle(tr("Error"));
-			msgBox.setText(tr("Could not read file."));
-			msgBox.exec();
+			this->currentImageUnreadable = true;
+			this->imageView->resetImage();
 		}
-		this->setWindowTitle(QString("%1 - %2 - %3 of %4").arg(this->programTitle, imageTitle).arg(this->fileIndex + 1).arg(this->filesInDirectory.size()));
+		this->setWindowTitle(QString("%1 - %2 - %3 of %4").arg(this->programTitle, this->nameOfCurrentFile).arg(this->fileIndex + 1).arg(this->filesInDirectory.size()));
 	}
 
 	void MainInterface::loadNextImage() {
 		if (this->filesInDirectory.size() != 0) {
 			this->fileIndex = (this->fileIndex + 1) % this->filesInDirectory.size();
-			this->previousImage = this->image;
-			this->previousImageCached = true;
+			if (this->image.data) {
+				this->previousImage = this->image;
+				this->previousImageCached = true;
+			} else {
+				this->previousImageThread = std::async(std::launch::async, &MainInterface::readImage, this, this->getFullImagePath((this->fileIndex - 1) % this->filesInDirectory.size()));
+				this->previousImageCached = false;
+			}
 			if (this->nextImageCached) {
 				this->image = this->nextImage;
 			} else {
+				if (this->nextImageThread.wait_for(std::chrono::milliseconds(1)) != std::future_status::ready) {
+					this->setWindowTitle(this->windowTitle() + QString(tr(" - Loading...")));
+				}
 				this->image = this->nextImageThread.get();
 			}
 			this->nextImageThread = std::async(std::launch::async, &MainInterface::readImage, this, this->getFullImagePath((this->fileIndex + 1) % this->filesInDirectory.size()));
 			this->nextImageCached = false;
+			this->nameOfCurrentFile = this->filesInDirectory[this->fileIndex];
 			this->displayImageIfOk();
 		}
 	}
@@ -200,15 +204,24 @@ namespace sv {
 	void MainInterface::loadPreviousImage() {
 		if (this->filesInDirectory.size() != 0) {
 			this->fileIndex = (this->fileIndex - 1) % this->filesInDirectory.size();
-			this->nextImage = this->image;
-			this->nextImageCached = true;
+			if (this->image.data) {
+				this->nextImage = this->image;
+				this->nextImageCached = true;
+			} else {
+				this->nextImageThread = std::async(std::launch::async, &MainInterface::readImage, this, this->getFullImagePath((this->fileIndex + 1) % this->filesInDirectory.size()));
+				this->nextImageCached = false;
+			}
 			if (this->previousImageCached) {
 				this->image = this->previousImage;
 			} else {
+				if (this->previousImageThread.wait_for(std::chrono::milliseconds(1)) != std::future_status::ready) {
+					this->setWindowTitle(this->windowTitle() + QString(tr(" - Loading...")));
+				}
 				this->image = this->previousImageThread.get();
 			}
 			this->previousImageThread = std::async(std::launch::async, &MainInterface::readImage, this, this->getFullImagePath((this->fileIndex - 1) % this->filesInDirectory.size()));
 			this->previousImageCached = false;
+			this->nameOfCurrentFile = this->filesInDirectory[this->fileIndex];
 			this->displayImageIfOk();
 		}
 	}
@@ -225,6 +238,27 @@ namespace sv {
 		this->showNormal();
 		this->mouseHideTimer->stop();
 		this->showMouse();
+	}
+
+	void MainInterface::infoPaintFunction(QPainter& canvas) {
+		canvas.setRenderHint(QPainter::Antialiasing, true);
+		QPen textPen(Qt::black);
+		canvas.setPen(textPen);
+		canvas.setBrush(Qt::NoBrush);
+		QFont font;
+		font.setPointSize(15);
+		canvas.setFont(font);
+		QColor base = Qt::white;
+		base.setAlpha(200);
+		canvas.setBackground(base);
+		canvas.setBackgroundMode(Qt::OpaqueMode);
+		QFontMetrics metrics(font);
+		if (this->currentImageUnreadable) {
+			QString message = tr("This file could not be read:");
+			double lineSpacing = 30;
+			canvas.drawText(QPoint((canvas.device()->width() - metrics.width(message)) / 2.0, canvas.device()->height() / 2.0 - 0.5*lineSpacing), message);
+			canvas.drawText(QPoint((canvas.device()->width() - metrics.width(this->nameOfCurrentFile)) / 2.0, canvas.device()->height() / 2.0 + 0.5*lineSpacing + metrics.height()), this->nameOfCurrentFile);
+		}
 	}
 
 	//============================================================================ PRIVATE SLOTS =============================================================================\\
