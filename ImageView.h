@@ -16,16 +16,16 @@
 #include <set>
 #include <functional>
 
-namespace hb{
+namespace hb {
 
 	///A class for displaying images.
 	/**
 	 * The \c ImageView can display an image and allows the user can zoom and pan.
-	 * Apart from that it supports adding and manipulation of points (e.g. reference points), 
-	 * overlay painting (e.g. a mask), overlay of a mask as well as overlay and manipulation 
+	 * Apart from that it supports adding and manipulation of points (e.g. reference points),
+	 * overlay painting (e.g. a mask), overlay of a mask as well as overlay and manipulation
 	 * of a polyline (e.g. a border).
 	 */
-	class ImageView : public QWidget{
+	class ImageView : public QWidget {
 		Q_OBJECT
 	public:
 		ImageView(QWidget *parent = 0);
@@ -39,6 +39,7 @@ namespace hb{
 		void rotateRight();
 		void setRotation(double degrees);
 		void centerViewportOn(QPointF point);
+		void setPreventMagnificationInDefaultZoom(bool value);
 
 		void setImage(const QImage& image);
 		void setImage(QImage&& image);
@@ -77,19 +78,8 @@ namespace hb{
 		const std::vector<QPointF>& getPolyline() const;
 		void setPolylineColor(QColor color);
 
-		///Registers a member function \p function of an \p object that will be called at the end of the \c paintEvent method.
-		/**
-		* This method can be used to register the member function of an object as post-paint function.
-		* The corresponding function will be called at the end of the \c paintEvent method.
-		* To that function the current widget is passed as a \c QPainter object which enables custom
-		* drawing on top of the widget, e.g. to display additional information.
-		*/
-		//template function, thus implemented in header
 		template <typename T>
-		void setExternalPostPaintFunction(T* object, void(T::*function)(QPainter&)) {
-			_externalPostPaint = std::bind(function, object, std::placeholders::_1);
-			_externalPostPaintFunctionAssigned = true;
-		}
+		void setExternalPostPaintFunction(T* object, void(T::*function)(QPainter&));
 		void setExternalPostPaintFunction(std::function<void(QPainter&)> const& function);
 		void removeExternalPostPaintFunction();
 	public slots:
@@ -129,7 +119,7 @@ namespace hb{
 		void updateResizedImage();
 
 		static double distance(const QPointF& point1, const QPointF& point2);
-		struct IndexWithDistance{
+		struct IndexWithDistance {
 			IndexWithDistance(int index, double distance) : index(index), distance(distance) { };
 			int index;
 			double distance;
@@ -154,6 +144,7 @@ namespace hb{
 		//the users transformations (panning, zooming)
 		double _zoomExponent;
 		const double _zoomBasis;
+		bool _preventMagnificationInDefaultZoom;
 		bool _magnificationIsHundredPercent;
 		QPointF _panOffset;
 		double _viewRotation;
@@ -171,7 +162,7 @@ namespace hb{
 		bool _pointGrabbed;
 		int _grabbedPointIndex;
 		bool _showPointDeletionWarning;
-		//related to displaying and overlaying an image
+		//related to displaying the image
 		QImage _image;
 		cv::Mat _mat;
 		bool _isMat;
@@ -230,6 +221,23 @@ namespace hb{
 		///Emitted when the polyline was modified, not emitted live during interaction but on mouse release.
 		void polylineModified();
 	};
+
+
+//=============================================================== IMPLEMENTATION OF TEMPLATE FUNCTIONS ===============================================================\\
+
+	///Registers a member function \p function of an \p object that will be called at the end of the \c paintEvent method.
+	/**
+	* This method can be used to register the member function of an object as post-paint function.
+	* The corresponding function will be called at the end of the \c paintEvent method.
+	* To that function the current widget is passed as a \c QPainter object which enables custom
+	* drawing on top of the widget, e.g. to display additional information.
+	*/
+	//template function, thus implemented in header
+	template <typename T>
+	void ImageView::setExternalPostPaintFunction(T* object, void(T::*function)(QPainter&)) {
+		_externalPostPaint = std::bind(function, object, std::placeholders::_1);
+		_externalPostPaintFunctionAssigned = true;
+	}
 
 }
 
