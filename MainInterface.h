@@ -32,7 +32,7 @@ namespace sv {
 		//functions
 		cv::Mat readImage(QString path) const;
 		QString getFullImagePath(size_t index) const;
-		void loadImage(QString path = QString());
+		void loadImage(QString path);
 		void displayImageIfOk(QString const& displayName = QString());
 		void loadNextImage();
 		void loadPreviousImage();
