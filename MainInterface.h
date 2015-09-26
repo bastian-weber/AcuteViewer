@@ -39,10 +39,11 @@ namespace sv {
 		void loadPreviousImage();
 		void enterFullscreen();
 		void exitFullscreen();
-		void infoPaintFunction(QPainter& canvas);
+		void showMenuBar();
 
 		//variables
-		QString programTitle = "Simple Viewer";
+		const QString programTitle = "Simple Viewer";
+		const int mouseHideDelay = 1000;
 		cv::Mat image;
 		QDir currentDirectory;
 		QVector<QString> filesInDirectory;
@@ -60,14 +61,19 @@ namespace sv {
 		hb::ImageView* imageView;
 		//menus
 		QMenu* fileMenu;
+		QMenu* viewMenu;
 		//actions
 		QAction* quitAction;
+		QAction* showInfoAction;
 		//timer
 		QTimer* mouseHideTimer;
 	private slots:
 		void quit();
 		void hideMouse() const;
 		void showMouse() const;
+		void reactToshowInfoToggle(bool value);
+		void hideMenuBar(QAction* triggeringAction = nullptr);
+		void infoPaintFunction(QPainter& canvas);
 	};
 }
 #endif
