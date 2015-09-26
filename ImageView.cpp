@@ -8,6 +8,7 @@ namespace hb{
 		: QWidget(parent),
 		  _interfaceOutline(true),
 		  _useHighQualityDownscaling(true),
+		  _rightClickForHundredPercentView(true),
 		  _imageAssigned(false),
 		  _isMat(false),
 		  _zoomBasis(1.5),
@@ -658,7 +659,7 @@ namespace hb{
 				}
 			}
 
-			if (e->button() == Qt::RightButton) {
+			if (e->button() == Qt::RightButton && _rightClickForHundredPercentView) {
 				//zoom to 100%
 				if (_magnificationIsHundredPercent) {
 					resetZoom();

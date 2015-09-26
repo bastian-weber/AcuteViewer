@@ -33,6 +33,7 @@ namespace hb{
 
 		void setShowInterfaceOutline(bool value);
 		void setInterfaceBackgroundColor(QColor const& color);
+		void setRightClickForHundredPercentView(bool value);
 
 		void rotateLeft();
 		void rotateRight();
@@ -149,6 +150,7 @@ namespace hb{
 		//related to general interface settings
 		bool _interfaceOutline;
 		QColor _backgroundColor;
+		bool _rightClickForHundredPercentView;
 		//the users transformations (panning, zooming)
 		double _zoomExponent;
 		const double _zoomBasis;
