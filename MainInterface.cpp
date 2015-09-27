@@ -147,43 +147,48 @@ namespace sv {
 
 	cv::Mat MainInterface::readImage(QString path, bool emitSignals) {
 	#ifdef Q_OS_WIN
-		//QFile file(path);
-		//std::vector<char> buffer;
-		//buffer.resize(file.size());
-		//if (!file.open(QIODevice::ReadOnly)) {
-		//	this->loading = false;
-		//	if (emitSignals) emit(readImageFinished(cv::Mat()));
-		//	return cv::Mat();
-		//}
-		//file.read(buffer.data(), file.size());
-		//file.close();
+		cv::Mat image;
+		if (!isASCII(path)) {
+			//QFile file(path);
+			//std::vector<char> buffer;
+			//buffer.resize(file.size());
+			//if (!file.open(QIODevice::ReadOnly)) {
+			//	this->loading = false;
+			//	if (emitSignals) emit(readImageFinished(cv::Mat()));
+			//	return cv::Mat();
+			//}
+			//file.read(buffer.data(), file.size());
+			//file.close();
 
-		std::ifstream file(path.toStdWString(), std::iostream::binary);
-		if (!file.good()) {
-			this->loading = false;
-			if (emitSignals) emit(readImageFinished(cv::Mat()));
-			return cv::Mat();
-		}
-		file.exceptions(std::ifstream::badbit | std::ifstream::failbit | std::ifstream::eofbit);
-		file.seekg(0, std::ios::end);
-		std::streampos length(file.tellg());
-		std::vector<char> buffer(static_cast<std::size_t>(length));
-		if (static_cast<std::size_t>(length) == 0) {
-			this->loading = false;
-			if (emitSignals) emit(readImageFinished(cv::Mat()));
-			return cv::Mat();
-		}
-		file.seekg(0, std::ios::beg);
-		try {
-			file.read(buffer.data(), static_cast<std::size_t>(length));
-		} catch (...) {
-			this->loading = false;
-			if (emitSignals) emit(readImageFinished(cv::Mat()));
-			return cv::Mat();
-		}
-		file.close();
+			std::ifstream file(path.toStdWString(), std::iostream::binary);
+			if (!file.good()) {
+				this->loading = false;
+				if (emitSignals) emit(readImageFinished(cv::Mat()));
+				return cv::Mat();
+			}
+			file.exceptions(std::ifstream::badbit | std::ifstream::failbit | std::ifstream::eofbit);
+			file.seekg(0, std::ios::end);
+			std::streampos length(file.tellg());
+			std::vector<char> buffer(static_cast<std::size_t>(length));
+			if (static_cast<std::size_t>(length) == 0) {
+				this->loading = false;
+				if (emitSignals) emit(readImageFinished(cv::Mat()));
+				return cv::Mat();
+			}
+			file.seekg(0, std::ios::beg);
+			try {
+				file.read(buffer.data(), static_cast<std::size_t>(length));
+			} catch (...) {
+				this->loading = false;
+				if (emitSignals) emit(readImageFinished(cv::Mat()));
+				return cv::Mat();
+			}
+			file.close();
 
-		cv::Mat image = cv::imdecode(buffer, CV_LOAD_IMAGE_COLOR);
+			image = cv::imdecode(buffer, CV_LOAD_IMAGE_COLOR);
+		} else {
+			image = cv::imread(path.toStdString(), CV_LOAD_IMAGE_COLOR);
+		}
 	#else
 		cv::Mat image = cv::imread(path.toStdString(), CV_LOAD_IMAGE_COLOR);
 	#endif
@@ -191,6 +196,14 @@ namespace sv {
 		this->loading = false;
 		if (emitSignals) emit(readImageFinished(image));
 		return image;
+	}
+
+	bool MainInterface::isASCII(QString const& string) {
+		bool isASCII = true;
+		for (QString::ConstIterator i = string.begin(); i != string.end(); ++i) {
+			isASCII = isASCII && (i->unicode() < 128);
+		}
+		return isASCII;
 	}
 
 	QString MainInterface::getFullImagePath(size_t index) const {

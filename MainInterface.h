@@ -33,6 +33,7 @@ namespace sv {
 	private:
 		//functions
 		cv::Mat readImage(QString path, bool emitSignals = false);
+		static bool isASCII(QString const& string);
 		QString getFullImagePath(size_t index) const;
 		void loadImage(QString path);
 		void displayImageIfOk();
