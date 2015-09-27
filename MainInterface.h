@@ -6,6 +6,7 @@
 #include <iostream>
 #include <future>
 #include <chrono>
+#include <fstream>
 
 //OpenCV
 #include <opencv2/core.hpp>
