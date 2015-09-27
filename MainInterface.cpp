@@ -339,15 +339,16 @@ namespace sv {
 		canvas.setBackground(base);
 		canvas.setBackgroundMode(Qt::OpaqueMode);
 		QFontMetrics metrics(font);
+		double lineSpacing = 30;
 		if (this->currentImageUnreadable) {
 			QString message = tr("This file could not be read:");
-			double lineSpacing = 30;
 			canvas.drawText(QPoint((canvas.device()->width() - metrics.width(message)) / 2.0, canvas.device()->height() / 2.0 - 0.5*lineSpacing), message);
 			canvas.drawText(QPoint((canvas.device()->width() - metrics.width(this->currentFileInfo.fileName())) / 2.0, canvas.device()->height() / 2.0 + 0.5*lineSpacing + metrics.height()), this->currentFileInfo.fileName());
 		}
-		if (this->showInfoAction->isChecked()) {
+		if (this->showInfoAction->isChecked() && this->imageView->imageAssigned()) {
 		//draw current filename
 			canvas.drawText(QPoint(30, 30 + metrics.height()), this->currentFileInfo.fileName());
+			canvas.drawText(QPoint(30, 30 + lineSpacing + 2 * metrics.height()), QString("%1 Mb").arg(this->currentFileInfo.size() / 1048576.0, 0, 'f', 2));
 		}
 	}
 
