@@ -32,7 +32,7 @@ namespace sv {
 		void mouseMoveEvent(QMouseEvent* e);
 	private:
 		//functions
-		cv::Mat readImage(QString path) const;
+		cv::Mat readImage(QString path, bool emitSignals = false);
 		QString getFullImagePath(size_t index) const;
 		void loadImage(QString path);
 		void displayImageIfOk();
@@ -46,10 +46,11 @@ namespace sv {
 		const QString programTitle = "Simple Viewer";
 		const int mouseHideDelay = 1000;
 		cv::Mat image;
+		std::atomic<bool> loading{ false };
 		QDir currentDirectory;
 		QVector<QString> filesInDirectory;
 		size_t fileIndex;
-		QString nameOfCurrentFile;
+		QFileInfo currentFileInfo;
 		bool currentImageUnreadable = false;
 		cv::Mat previousImage;
 		cv::Mat nextImage;
@@ -75,6 +76,9 @@ namespace sv {
 		void reactToshowInfoToggle(bool value);
 		void hideMenuBar(QAction* triggeringAction = nullptr);
 		void infoPaintFunction(QPainter& canvas);
+		void reactToReadImageCompletion(cv::Mat image);
+	signals:
+		void readImageFinished(cv::Mat image);
 	};
 }
 #endif
