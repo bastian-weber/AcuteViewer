@@ -99,7 +99,7 @@ namespace sv {
 		} else if (e->key() == Qt::Key_Escape) {
 			if (this->menuBar()->isVisible()) {
 				this->hideMenuBar();
-			}else if (this->isFullScreen()) {
+			} else if (this->isFullScreen()) {
 				this->exitFullscreen();
 			}
 		} else {
@@ -136,7 +136,7 @@ namespace sv {
 	void MainInterface::mouseMoveEvent(QMouseEvent* e) {
 		if (this->isFullScreen()) {
 			this->showMouse();
-			if(!this->menuBar()->isVisible()) this->mouseHideTimer->start(this->mouseHideDelay);
+			if (!this->menuBar()->isVisible()) this->mouseHideTimer->start(this->mouseHideDelay);
 		}
 		e->ignore();
 	}
@@ -145,19 +145,18 @@ namespace sv {
 
 	cv::Mat MainInterface::readImage(QString path) const {
 //I'm puzzled here
-	//#ifdef Q_OS_WIN
-	//	//workaround for non-ascii filenames
-	//	wchar_t* str;
-	//	path.toWCharArray(str);
-	//	FILE* file = _wfopen(str, L"r");
-	//	delete[] str;
-	//	cv::Mat()
-	//	cv::imdecode(cv::Mat(file), CV_LOAD_IMAGE_COLOR);
-	//	delete file;
-	//#else
+	#ifdef Q_OS_WIN
+		QFile file(path);
+		std::vector<char> buffer;
+		buffer.resize(file.size());
+		if (!file.open(QIODevice::ReadOnly)) return cv::Mat();
+		file.read(buffer.data(), file.size());
+		file.close();
+		cv::Mat image = cv::imdecode(buffer, CV_LOAD_IMAGE_COLOR);
+	#else
 		cv::Mat image = cv::imread(path.toStdString(), CV_LOAD_IMAGE_COLOR);
-	//#endif
-		if(image.data) cv::cvtColor(image, image, CV_BGR2RGB);
+	#endif
+		if (image.data) cv::cvtColor(image, image, CV_BGR2RGB);
 		return image;
 	}
 
@@ -189,7 +188,7 @@ namespace sv {
 			this->previousImageThread = std::async(std::launch::async, &MainInterface::readImage, this, this->getFullImagePath((this->fileIndex - 1) % this->filesInDirectory.size()));
 			this->nextImageThread = std::async(std::launch::async, &MainInterface::readImage, this, this->getFullImagePath((this->fileIndex + 1) % this->filesInDirectory.size()));
 		}
-	}
+		}
 
 	void MainInterface::displayImageIfOk() {
 		if (this->image.data) {
@@ -297,7 +296,7 @@ namespace sv {
 		this->close();
 	}
 
-	void MainInterface::hideMouse() const{
+	void MainInterface::hideMouse() const {
 		qApp->setOverrideCursor(Qt::BlankCursor);
 		mouseHideTimer->stop();
 	}
@@ -320,4 +319,4 @@ namespace sv {
 		if (this->isFullScreen()) this->mouseHideTimer->start(this->mouseHideDelay);
 	}
 
-}
+	}
