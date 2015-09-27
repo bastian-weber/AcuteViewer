@@ -221,7 +221,11 @@ namespace sv {
 			this->currentDirectory = directory;
 			QStringList filters;
 			filters << "*.bmp" << "*.dib" << "*.jpeg" << "*.jpg" << "*.jpe" << "*.jpeg" << "*.jp2" << "*.png" << "*.webp" << "*.pbm" << "*.pgm" << "*.ppm" << "*.sr" << "*.ras" << "*.tiff" << "*.tif";
-			this->filesInDirectory = directory.entryList(filters, QDir::Files).toVector();
+			QStringList contents = directory.entryList(filters, QDir::Files);
+			QCollator collator;
+			collator.setNumericMode(true);
+			std::sort(contents.begin(), contents.end(), collator);
+			this->filesInDirectory = contents.toVector();
 		}
 		if (this->filesInDirectory.size() == 0 || this->fileIndex <= 0 || this->fileIndex >= this->filesInDirectory.size() || this->filesInDirectory.at(this->fileIndex) != filename) {
 			this->fileIndex = this->filesInDirectory.indexOf(filename);
