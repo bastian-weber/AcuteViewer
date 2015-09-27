@@ -67,6 +67,7 @@ namespace sv {
 		QMenu* viewMenu;
 		//actions
 		QAction* quitAction;
+		QAction* openAction;
 		QAction* showInfoAction;
 		//timer
 		QTimer* mouseHideTimer;
@@ -78,6 +79,7 @@ namespace sv {
 		void hideMenuBar(QAction* triggeringAction = nullptr);
 		void infoPaintFunction(QPainter& canvas);
 		void reactToReadImageCompletion(cv::Mat image);
+		void openDialog();
 	signals:
 		void readImageFinished(cv::Mat image);
 	};

@@ -24,6 +24,15 @@ namespace sv {
 		this->fileMenu = this->menuBar()->addMenu(tr("&File"));
 		this->viewMenu = this->menuBar()->addMenu(tr("&View"));
 
+		this->openAction = new QAction(tr("&Open File"), this);
+		this->openAction->setShortcut(QKeySequence::Open);
+		this->openAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->openAction, SIGNAL(triggered()), this, SLOT(openDialog()));
+		this->fileMenu->addAction(this->openAction);
+		this->addAction(this->openAction);
+
+		this->fileMenu->addSeparator();
+
 		this->quitAction = new QAction(tr("&Quit"), this);
 		this->quitAction->setShortcut(Qt::CTRL + Qt::Key_Q);
 		this->quitAction->setShortcutContext(Qt::ApplicationShortcut);
@@ -51,6 +60,7 @@ namespace sv {
 		delete this->fileMenu;
 		delete this->viewMenu;
 		delete this->quitAction;
+		delete this->openAction;
 		delete this->showInfoAction;
 		delete this->mouseHideTimer;
 	}
@@ -350,6 +360,14 @@ namespace sv {
 			//preload next and previous image in background
 			this->previousImageThread = std::async(std::launch::async, &MainInterface::readImage, this, this->getFullImagePath((this->fileIndex - 1) % this->filesInDirectory.size()), false);
 			this->nextImageThread = std::async(std::launch::async, &MainInterface::readImage, this, this->getFullImagePath((this->fileIndex + 1) % this->filesInDirectory.size()), false);
+		}
+	}
+
+	void MainInterface::openDialog() {
+		QString path = QFileDialog::getOpenFileName(this, tr("Open Config File"), QDir::rootPath(), "All Files (*.*);; Image Files (*.bmp *.dib *.jpeg *.jpg *.jpe *.jpeg *.jp2 *.png *.webp *.pbm *.pgm *.ppm *.sr *.ras *.tiff *.tif);;");
+
+		if (!path.isEmpty()) {
+			this->loadImage(path);
 		}
 	}
 
