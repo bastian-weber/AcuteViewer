@@ -3,7 +3,8 @@
 namespace sv {
 
 	MainInterface::MainInterface(QWidget *parent)
-		: QMainWindow(parent) {
+		: QMainWindow(parent),
+		settings(QFileInfo(QCoreApplication::applicationFilePath()).absoluteDir().path() + "/SimpleViewer.ini", QSettings::IniFormat) {
 
 		setAcceptDrops(true);
 		qRegisterMetaType<cv::Mat>("cv::Mat");
@@ -82,6 +83,12 @@ namespace sv {
 		//mouse hide timer in fullscreen
 		this->mouseHideTimer = new QTimer(this);
 		QObject::connect(this->mouseHideTimer, SIGNAL(timeout()), this, SLOT(hideMouse()));
+
+		//load settings
+		this->showInfoAction->setChecked(this->settings.value("showImageInfo", false).toBool());
+		this->enlargementAction->setChecked(this->settings.value("enlargeSmallImages", false).toBool());
+		this->smoothingAction->setChecked(this->settings.value("useSmoothEnlargmentInterpolation", false).toBool());
+		this->menuBarAutoHideAction->setChecked(!this->settings.value("autoHideMenuBar", true).toBool());
 	}
 
 	MainInterface::~MainInterface() {
@@ -238,7 +245,7 @@ namespace sv {
 		this->loading = false;
 		if (emitSignals) emit(readImageFinished(image));
 		return image;
-	}
+		}
 
 	bool MainInterface::isASCII(QString const& string) {
 		bool isASCII = true;
@@ -417,6 +424,7 @@ namespace sv {
 
 	void MainInterface::reactToshowInfoToggle(bool value) {
 		this->imageView->update();
+		this->settings.setValue("showImageInfo", value);
 	}
 
 	void MainInterface::reactToReadImageCompletion(cv::Mat image) {
@@ -441,14 +449,17 @@ namespace sv {
 
 	void MainInterface::reactToSmoothingToggle(bool value) {
 		this->imageView->setUseSmoothTransform(value);
+		this->settings.setValue("useSmoothEnlargmentInterpolation", value);
 	}
 
 	void MainInterface::reactToEnlargementToggle(bool value) {
 		this->imageView->setPreventMagnificationInDefaultZoom(!value);
+		this->settings.setValue("enlargeSmallImages", value);
 	}
 
 	void MainInterface::reactoToAutoHideMenuBarToggle(bool value) {
 		this->autoHideMenuBar = !value;
+		this->settings.setValue("autoHideMenuBar", !value);
 		if (!this->autoHideMenuBar) {
 			this->showMenuBar();
 		} else {
@@ -456,4 +467,4 @@ namespace sv {
 		}
 	}
 
-}
+	}
