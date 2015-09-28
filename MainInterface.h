@@ -41,7 +41,7 @@ namespace sv {
 		void loadPreviousImage();
 		void enterFullscreen();
 		void exitFullscreen();
-		void showMenuBar();
+		void infoPaintFunction(QPainter& canvas);
 
 		//variables
 		const QString programTitle = "Simple Viewer";
@@ -59,6 +59,7 @@ namespace sv {
 		std::future<cv::Mat> nextImageThread;
 		std::atomic<bool> previousImageCached{ false };
 		std::atomic<bool> nextImageCached{ false };
+		bool autoHideMenuBar = false;
 
 		//widgets
 		hb::ImageView* imageView;
@@ -69,17 +70,23 @@ namespace sv {
 		QAction* quitAction;
 		QAction* openAction;
 		QAction* showInfoAction;
+		QAction* smoothingAction;
+		QAction* enlargementAction;
+		QAction* menuBarAutoHideAction;
 		//timer
 		QTimer* mouseHideTimer;
 	private slots:
 		void quit();
 		void hideMouse() const;
 		void showMouse() const;
-		void reactToshowInfoToggle(bool value);
+		void showMenuBar();
 		void hideMenuBar(QAction* triggeringAction = nullptr);
-		void infoPaintFunction(QPainter& canvas);
+		void reactToshowInfoToggle(bool value);
 		void reactToReadImageCompletion(cv::Mat image);
 		void openDialog();
+		void reactToSmoothingToggle(bool value);
+		void reactToEnlargementToggle(bool value);
+		void reactoToAutoHideMenuBarToggle(bool value);
 	signals:
 		void readImageFinished(cv::Mat image);
 	};
