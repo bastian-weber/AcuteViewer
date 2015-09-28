@@ -73,7 +73,7 @@ add_executable(${EXECUTABLE_NAME_1} ${SOURCEFILES})
 
 #set entry point in case windows subsystem is used and enable whole program optimization
 if(MSVC)
-	set_target_properties(${EXECUTABLE_NAME_1} PROPERTIES LINK_FLAGS "/ENTRY:\"mainCRTStartup\"")
+	set_target_properties(${EXECUTABLE_NAME_1} PROPERTIES LINK_FLAGS "/ENTRY:\"wmainCRTStartup\"")
 	set_target_properties(${EXECUTABLE_NAME_1} PROPERTIES LINK_FLAGS_RELEASE "/LTCG")
 	set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /GL")
 endif(MSVC)
