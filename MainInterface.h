@@ -18,7 +18,7 @@ namespace sv {
 	class MainInterface : public QMainWindow {
 		Q_OBJECT
 	public:
-		MainInterface(QWidget *parent = 0);
+		MainInterface(QString openWithFilename, QWidget *parent = 0);
 		~MainInterface();
 		QSize sizeHint() const;
 	protected:

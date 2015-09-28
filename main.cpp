@@ -1,6 +1,6 @@
 #include "MainInterface.h"
 
-int init(int argc, char* argv[]) {
+int init(int argc, char* argv[], QString openWithFilename) {
 	QApplication app(argc, argv);
 
 	//QIcon icon;
@@ -14,12 +14,17 @@ int init(int argc, char* argv[]) {
 	//icon.addFile("./data/icon_256.png");
 	//app.setWindowIcon(icon);
 
-	sv::MainInterface* mainInterface = new sv::MainInterface();
+	sv::MainInterface* mainInterface = new sv::MainInterface(openWithFilename);
 	mainInterface->show();
 
 	return app.exec();
 }
 
-int main(int argc, char* argv[]) {
-	return init(argc, argv);
+//int main(int argc, char* argv[]) {
+int wmain(int argc, wchar_t* argv[]) {
+	QString openWithFilename;
+	if (argc > 1) {
+		openWithFilename = QString::fromWCharArray(argv[1], wcslen(argv[1]));
+	}
+	return init(0, NULL, openWithFilename);
 }

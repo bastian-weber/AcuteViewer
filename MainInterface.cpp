@@ -2,7 +2,7 @@
 
 namespace sv {
 
-	MainInterface::MainInterface(QWidget *parent)
+	MainInterface::MainInterface(QString openWithFilename, QWidget *parent)
 		: QMainWindow(parent),
 		settings(QFileInfo(QCoreApplication::applicationFilePath()).absoluteDir().path() + "/SimpleViewer.ini", QSettings::IniFormat) {
 
@@ -89,6 +89,10 @@ namespace sv {
 		this->enlargementAction->setChecked(this->settings.value("enlargeSmallImages", false).toBool());
 		this->smoothingAction->setChecked(this->settings.value("useSmoothEnlargmentInterpolation", false).toBool());
 		this->menuBarAutoHideAction->setChecked(!this->settings.value("autoHideMenuBar", true).toBool());
+
+		if (openWithFilename != QString()) {
+			this->loadImage(openWithFilename);
+		}
 	}
 
 	MainInterface::~MainInterface() {
