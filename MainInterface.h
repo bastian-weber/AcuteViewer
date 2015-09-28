@@ -60,6 +60,7 @@ namespace sv {
 		std::atomic<bool> previousImageCached{ false };
 		std::atomic<bool> nextImageCached{ false };
 		bool autoHideMenuBar = false;
+		QSettings settings;
 
 		//widgets
 		hb::ImageView* imageView;
