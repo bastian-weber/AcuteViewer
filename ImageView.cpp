@@ -110,6 +110,7 @@ namespace hb {
 	///If set to true, images won't be enlarged at the default magnification (fit view).
 	void ImageView::setPreventMagnificationInDefaultZoom(bool value) {
 		_preventMagnificationInDefaultZoom = value;
+		update();
 	}
 
 	///Makes the \c ImageView display the image \p image, shallow copy assignment.

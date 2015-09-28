@@ -41,7 +41,7 @@ namespace sv {
 		//so shortcuts also work when menu bar is not visible
 		this->addAction(this->quitAction);
 
-		this->showInfoAction = new QAction(tr("Show &Info"), this);
+		this->showInfoAction = new QAction(tr("Show Image &Info"), this);
 		this->showInfoAction->setCheckable(true);
 		this->showInfoAction->setChecked(false);
 		this->showInfoAction->setShortcut(Qt::Key_I);
@@ -49,6 +49,35 @@ namespace sv {
 		QObject::connect(this->showInfoAction, SIGNAL(triggered(bool)), this, SLOT(reactToshowInfoToggle(bool)));
 		this->viewMenu->addAction(this->showInfoAction);
 		this->addAction(this->showInfoAction);
+
+		this->enlargementAction = new QAction(tr("&Enlarge Smaller Images"), this);
+		this->enlargementAction->setCheckable(true);
+		this->enlargementAction->setChecked(false);
+		this->enlargementAction->setShortcut(Qt::Key_E);
+		this->enlargementAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->enlargementAction, SIGNAL(triggered(bool)), this, SLOT(reactToEnlargementToggle(bool)));
+		this->viewMenu->addAction(this->enlargementAction);
+		this->addAction(this->enlargementAction);
+
+		this->smoothingAction = new QAction(tr("Use &Smooth Interpolation when Enlarging"), this);
+		this->smoothingAction->setCheckable(true);
+		this->smoothingAction->setChecked(false);
+		this->smoothingAction->setShortcut(Qt::Key_S);
+		this->smoothingAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->smoothingAction, SIGNAL(triggered(bool)), this, SLOT(reactToSmoothingToggle(bool)));
+		this->viewMenu->addAction(this->smoothingAction);
+		this->addAction(this->smoothingAction);
+
+		this->viewMenu->addSeparator();
+
+		this->menuBarAutoHideAction = new QAction(tr("&Always Show Menu Bar"), this);
+		this->menuBarAutoHideAction->setCheckable(true);
+		this->menuBarAutoHideAction->setChecked(false);
+		this->menuBarAutoHideAction->setShortcut(Qt::Key_M);
+		this->menuBarAutoHideAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->menuBarAutoHideAction, SIGNAL(triggered(bool)), this, SLOT(reactoToAutoHideMenuBarToggle(bool)));
+		this->viewMenu->addAction(this->menuBarAutoHideAction);
+		this->addAction(this->menuBarAutoHideAction);
 
 		//mouse hide timer in fullscreen
 		this->mouseHideTimer = new QTimer(this);
@@ -62,6 +91,9 @@ namespace sv {
 		delete this->quitAction;
 		delete this->openAction;
 		delete this->showInfoAction;
+		delete this->smoothingAction;
+		delete this->enlargementAction;
+		delete this->menuBarAutoHideAction;
 		delete this->mouseHideTimer;
 	}
 
@@ -315,6 +347,7 @@ namespace sv {
 	void MainInterface::enterFullscreen() {
 		//this->imageView->setInterfaceBackgroundColor(Qt::black);
 		this->showFullScreen();
+		this->hideMenuBar();
 		this->mouseHideTimer->start(this->mouseHideDelay);
 	}
 
@@ -322,6 +355,7 @@ namespace sv {
 		//QPalette palette = qApp->palette();
 		//this->imageView->setInterfaceBackgroundColor(palette.base().color());
 		this->showNormal();
+		if (!this->autoHideMenuBar) showMenuBar();
 		this->mouseHideTimer->stop();
 		this->showMouse();
 	}
@@ -352,6 +386,39 @@ namespace sv {
 		}
 	}
 
+
+
+	//============================================================================ PRIVATE SLOTS =============================================================================\\
+
+	void MainInterface::quit() {
+		this->close();
+	}
+
+	void MainInterface::hideMouse() const {
+		qApp->setOverrideCursor(Qt::BlankCursor);
+		mouseHideTimer->stop();
+	}
+
+	void MainInterface::showMouse() const {
+		qApp->setOverrideCursor(Qt::ArrowCursor);
+	}
+
+	void MainInterface::showMenuBar() {
+		if (this->isFullScreen()) this->mouseHideTimer->stop();
+		this->menuBar()->setVisible(true);
+	}
+
+	void MainInterface::hideMenuBar(QAction* triggeringAction) {
+		if (this->autoHideMenuBar || this->isFullScreen()) {
+			this->menuBar()->setVisible(false);
+			if (this->isFullScreen()) this->mouseHideTimer->start(this->mouseHideDelay);
+		}
+	}
+
+	void MainInterface::reactToshowInfoToggle(bool value) {
+		this->imageView->update();
+	}
+
 	void MainInterface::reactToReadImageCompletion(cv::Mat image) {
 		this->image = image;
 		this->displayImageIfOk();
@@ -372,33 +439,21 @@ namespace sv {
 		}
 	}
 
-	//============================================================================ PRIVATE SLOTS =============================================================================\\
-
-	void MainInterface::quit() {
-		this->close();
+	void MainInterface::reactToSmoothingToggle(bool value) {
+		this->imageView->setUseSmoothTransform(value);
 	}
 
-	void MainInterface::hideMouse() const {
-		qApp->setOverrideCursor(Qt::BlankCursor);
-		mouseHideTimer->stop();
+	void MainInterface::reactToEnlargementToggle(bool value) {
+		this->imageView->setPreventMagnificationInDefaultZoom(!value);
 	}
 
-	void MainInterface::showMouse() const {
-		qApp->setOverrideCursor(Qt::ArrowCursor);
+	void MainInterface::reactoToAutoHideMenuBarToggle(bool value) {
+		this->autoHideMenuBar = !value;
+		if (!this->autoHideMenuBar) {
+			this->showMenuBar();
+		} else {
+			this->hideMenuBar();
+		}
 	}
 
-	void MainInterface::reactToshowInfoToggle(bool value) {
-		this->imageView->update();
-	}
-
-	void MainInterface::showMenuBar() {
-		if (this->isFullScreen()) this->mouseHideTimer->stop();
-		this->menuBar()->setVisible(true);
-	}
-
-	void MainInterface::hideMenuBar(QAction* triggeringAction) {
-		this->menuBar()->setVisible(false);
-		if (this->isFullScreen()) this->mouseHideTimer->start(this->mouseHideDelay);
-	}
-
-	}
+}
