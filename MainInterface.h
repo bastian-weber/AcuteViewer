@@ -46,6 +46,7 @@ namespace sv {
 		//variables
 		const QString programTitle = "Simple Viewer";
 		const int mouseHideDelay = 1000;
+		const int eventProcessIntervalDuringWait = 16;
 		cv::Mat image;
 		std::atomic<bool> loading{ false };
 		QDir currentDirectory;

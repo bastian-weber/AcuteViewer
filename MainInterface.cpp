@@ -317,6 +317,9 @@ namespace sv {
 					this->loading = true;
 					this->setWindowTitle(this->windowTitle() + QString(tr(" - Loading...")));
 				}
+				while (this->nextImageThread.wait_for(std::chrono::milliseconds(this->eventProcessIntervalDuringWait)) != std::future_status::ready) {
+					qApp->processEvents();
+				}
 				this->image = this->nextImageThread.get();
 				this->loading = false;
 			}
@@ -344,6 +347,9 @@ namespace sv {
 				if (this->previousImageThread.wait_for(std::chrono::milliseconds(1)) != std::future_status::ready) {
 					this->loading = true;
 					this->setWindowTitle(this->windowTitle() + QString(tr(" - Loading...")));
+				}
+				while (this->previousImageThread.wait_for(std::chrono::milliseconds(this->eventProcessIntervalDuringWait)) != std::future_status::ready) {
+					qApp->processEvents();
 				}
 				this->image = this->previousImageThread.get();
 				this->loading = false;
