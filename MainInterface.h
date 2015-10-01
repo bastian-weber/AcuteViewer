@@ -60,7 +60,6 @@ namespace sv {
 		std::future<cv::Mat> nextImageThread;
 		std::atomic<bool> previousImageCached{ false };
 		std::atomic<bool> nextImageCached{ false };
-		bool autoHideMenuBar = false;
 		QSettings settings;
 
 		//widgets

@@ -20,7 +20,6 @@ namespace sv {
 		this->imageView->setPreventMagnificationInDefaultZoom(true);
 		setCentralWidget(this->imageView);
 
-		this->menuBar()->setVisible(false);
 		QObject::connect(this->menuBar(), SIGNAL(triggered(QAction*)), this, SLOT(hideMenuBar(QAction*)));
 		this->fileMenu = this->menuBar()->addMenu(tr("&File"));
 		this->viewMenu = this->menuBar()->addMenu(tr("&View"));
@@ -89,6 +88,9 @@ namespace sv {
 		this->enlargementAction->setChecked(this->settings.value("enlargeSmallImages", false).toBool());
 		this->smoothingAction->setChecked(this->settings.value("useSmoothEnlargmentInterpolation", false).toBool());
 		this->menuBarAutoHideAction->setChecked(!this->settings.value("autoHideMenuBar", true).toBool());
+		
+		std::cout << this->menuBarAutoHideAction->isChecked() << std::endl;
+		this->menuBar()->setVisible(this->menuBarAutoHideAction->isChecked());
 
 		if (openWithFilename != QString()) {
 			this->loadImage(openWithFilename);
@@ -372,7 +374,7 @@ namespace sv {
 		//QPalette palette = qApp->palette();
 		//this->imageView->setInterfaceBackgroundColor(palette.base().color());
 		this->showNormal();
-		if (!this->autoHideMenuBar) showMenuBar();
+		if (this->menuBarAutoHideAction->isChecked()) showMenuBar();
 		this->mouseHideTimer->stop();
 		this->showMouse();
 	}
@@ -426,7 +428,7 @@ namespace sv {
 	}
 
 	void MainInterface::hideMenuBar(QAction* triggeringAction) {
-		if (this->autoHideMenuBar || this->isFullScreen()) {
+		if (!this->menuBarAutoHideAction->isChecked() || this->isFullScreen()) {
 			this->menuBar()->setVisible(false);
 			if (this->isFullScreen()) this->mouseHideTimer->start(this->mouseHideDelay);
 		}
@@ -468,9 +470,8 @@ namespace sv {
 	}
 
 	void MainInterface::reactoToAutoHideMenuBarToggle(bool value) {
-		this->autoHideMenuBar = !value;
 		this->settings.setValue("autoHideMenuBar", !value);
-		if (!this->autoHideMenuBar) {
+		if (value) {
 			this->showMenuBar();
 		} else {
 			this->hideMenuBar();
