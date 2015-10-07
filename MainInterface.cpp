@@ -428,7 +428,7 @@ namespace sv {
 		std::lock_guard<std::mutex> lock(this->threadDeletionMutex);
 		for (std::map<QString, std::shared_future<cv::Mat>>::iterator it = this->threads.begin(); it != this->threads.end();) {
 			int index = this->filesInDirectory.indexOf(it->first);
-			if (index != -1 && (index < (this->fileIndex - 1) || index >(this->fileIndex + 1)) && it->second.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
+			if (index != -1 && (index < (long(this->fileIndex) - 1) || index > (long(this->fileIndex) + 1)) && it->second.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
 				it = this->threads.erase(it);
 			} else {
 				++it;
