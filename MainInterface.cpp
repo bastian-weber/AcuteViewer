@@ -89,7 +89,6 @@ namespace sv {
 		this->smoothingAction->setChecked(this->settings.value("useSmoothEnlargmentInterpolation", false).toBool());
 		this->menuBarAutoHideAction->setChecked(!this->settings.value("autoHideMenuBar", true).toBool());
 		
-		std::cout << this->menuBarAutoHideAction->isChecked() << std::endl;
 		this->menuBar()->setVisible(this->menuBarAutoHideAction->isChecked());
 
 		if (openWithFilename != QString()) {
@@ -217,7 +216,6 @@ namespace sv {
 
 			std::ifstream file(path.toStdWString(), std::iostream::binary);
 			if (!file.good()) {
-				this->loading = false;
 				if (emitSignals) emit(readImageFinished(cv::Mat()));
 				return cv::Mat();
 			}
@@ -226,7 +224,6 @@ namespace sv {
 			std::streampos length(file.tellg());
 			std::vector<char> buffer(static_cast<std::size_t>(length));
 			if (static_cast<std::size_t>(length) == 0) {
-				this->loading = false;
 				if (emitSignals) emit(readImageFinished(cv::Mat()));
 				return cv::Mat();
 			}
@@ -234,7 +231,6 @@ namespace sv {
 			try {
 				file.read(buffer.data(), static_cast<std::size_t>(length));
 			} catch (...) {
-				this->loading = false;
 				if (emitSignals) emit(readImageFinished(cv::Mat()));
 				return cv::Mat();
 			}
@@ -248,7 +244,6 @@ namespace sv {
 		cv::Mat image = cv::imread(path.toStdString(), CV_LOAD_IMAGE_COLOR);
 	#endif
 		if (image.data) cv::cvtColor(image, image, CV_BGR2RGB);
-		this->loading = false;
 		if (emitSignals) emit(readImageFinished(image));
 		return image;
 		}
@@ -259,6 +254,32 @@ namespace sv {
 			isASCII = isASCII && (i->unicode() < 128);
 		}
 		return isASCII;
+	}
+
+	void MainInterface::clearThreads() {
+		for (QMap<QString, std::shared_future<cv::Mat>>::iterator it = this->threads.begin(); it != this->threads.end(); ++it) {
+			this->waitForThreadToFinish(*it);
+		}
+		this->threads.clear();
+	}
+
+	void MainInterface::waitForThreadToFinish(std::shared_future<cv::Mat> const& thread) {
+		if (!thread.valid()) return;
+		if (thread.wait_for(std::chrono::milliseconds(0)) != std::future_status::ready) {
+			this->setWindowTitle(this->windowTitle() + QString(tr(" - Loading...")));
+		}
+
+		while (thread.wait_for(std::chrono::milliseconds(this->eventProcessIntervalDuringWait)) != std::future_status::ready) {
+			qApp->processEvents();
+		}
+	}
+
+	size_t MainInterface::nextFileIndex() const {
+		return (this->fileIndex + 1) % this->filesInDirectory.size();
+	}
+
+	size_t MainInterface::previousFileIndex() const {
+		return (this->fileIndex - 1) % this->filesInDirectory.size();
 	}
 
 	QString MainInterface::getFullImagePath(size_t index) const {
@@ -286,7 +307,8 @@ namespace sv {
 			this->fileIndex = this->filesInDirectory.indexOf(filename);
 		}
 		this->currentFileInfo = fileInfo;
-		std::thread(&MainInterface::readImage, this, path, true).detach();
+		this->clearThreads();
+		this->threads[filename] = std::async(std::launch::async, &MainInterface::readImage, this, path, true);
 		this->setWindowTitle(this->windowTitle() + QString(tr(" - Loading...")));
 	}
 
@@ -303,64 +325,46 @@ namespace sv {
 
 	void MainInterface::loadNextImage() {
 		if (this->loading) return;
+		this->loading = true;
+
 		if (this->filesInDirectory.size() != 0) {
-			this->fileIndex = (this->fileIndex + 1) % this->filesInDirectory.size();
-			if (this->image.data) {
-				this->previousImage = this->image;
-				this->previousImageCached = true;
-			} else {
-				this->previousImageThread = std::async(std::launch::async, &MainInterface::readImage, this, this->getFullImagePath((this->fileIndex - 1) % this->filesInDirectory.size()), false);
-				this->previousImageCached = false;
-			}
-			if (this->nextImageCached) {
-				this->image = this->nextImage;
-			} else {
-				if (this->nextImageThread.wait_for(std::chrono::milliseconds(1)) != std::future_status::ready) {
-					this->loading = true;
-					this->setWindowTitle(this->windowTitle() + QString(tr(" - Loading...")));
-				}
-				while (this->nextImageThread.wait_for(std::chrono::milliseconds(this->eventProcessIntervalDuringWait)) != std::future_status::ready) {
-					qApp->processEvents();
-				}
-				this->image = this->nextImageThread.get();
+			this->fileIndex = this->nextFileIndex();
+			if (!this->threads.contains(this->filesInDirectory[this->fileIndex])) {
 				this->loading = false;
+				return;
 			}
-			this->nextImageThread = std::async(std::launch::async, &MainInterface::readImage, this, this->getFullImagePath((this->fileIndex + 1) % this->filesInDirectory.size()), false);
-			this->nextImageCached = false;
+			this->waitForThreadToFinish(this->threads[this->filesInDirectory[this->fileIndex]]);
+			this->image = this->threads[this->filesInDirectory[this->fileIndex]].get();
+
 			this->currentFileInfo = QFileInfo(this->getFullImagePath(this->fileIndex));
+			//start loading next image
+			if (!this->threads.contains(this->filesInDirectory[this->nextFileIndex()])) {
+				this->threads[this->filesInDirectory[this->nextFileIndex()]] = std::async(std::launch::async, &MainInterface::readImage, this, this->getFullImagePath(this->nextFileIndex()), false);
+			}
 			this->displayImageIfOk();
 		}
+		this->loading = false;
 	}
 
 	void MainInterface::loadPreviousImage() {
 		if (this->loading) return;
+		this->loading = true;
 		if (this->filesInDirectory.size() != 0) {
-			this->fileIndex = (this->fileIndex - 1) % this->filesInDirectory.size();
-			if (this->image.data) {
-				this->nextImage = this->image;
-				this->nextImageCached = true;
-			} else {
-				this->nextImageThread = std::async(std::launch::async, &MainInterface::readImage, this, this->getFullImagePath((this->fileIndex + 1) % this->filesInDirectory.size()), false);
-				this->nextImageCached = false;
-			}
-			if (this->previousImageCached) {
-				this->image = this->previousImage;
-			} else {
-				if (this->previousImageThread.wait_for(std::chrono::milliseconds(1)) != std::future_status::ready) {
-					this->loading = true;
-					this->setWindowTitle(this->windowTitle() + QString(tr(" - Loading...")));
-				}
-				while (this->previousImageThread.wait_for(std::chrono::milliseconds(this->eventProcessIntervalDuringWait)) != std::future_status::ready) {
-					qApp->processEvents();
-				}
-				this->image = this->previousImageThread.get();
+			this->fileIndex = this->previousFileIndex();
+			if (!this->threads.contains(this->filesInDirectory[this->fileIndex])) {
 				this->loading = false;
+				return;
 			}
-			this->previousImageThread = std::async(std::launch::async, &MainInterface::readImage, this, this->getFullImagePath((this->fileIndex - 1) % this->filesInDirectory.size()), false);
-			this->previousImageCached = false;
+			this->waitForThreadToFinish(this->threads[this->filesInDirectory[this->fileIndex]]);
+			this->image = this->threads[this->filesInDirectory[this->fileIndex]].get();
 			this->currentFileInfo = QFileInfo(this->getFullImagePath(this->fileIndex));
+			//start loading previous image
+			if (!this->threads.contains(this->filesInDirectory[this->previousFileIndex()])) {
+				this->threads[this->filesInDirectory[this->previousFileIndex()]] = std::async(std::launch::async, &MainInterface::readImage, this, this->getFullImagePath(this->previousFileIndex()), false);
+			}
 			this->displayImageIfOk();
 		}
+		this->loading = false;
 	}
 
 	void MainInterface::enterFullscreen() {
@@ -442,13 +446,16 @@ namespace sv {
 	void MainInterface::reactToReadImageCompletion(cv::Mat image) {
 		this->image = image;
 		this->displayImageIfOk();
-		this->previousImageCached = false;
-		this->nextImageCached = false;
 		if (this->filesInDirectory.size() != 0) {
 			//preload next and previous image in background
-			this->previousImageThread = std::async(std::launch::async, &MainInterface::readImage, this, this->getFullImagePath((this->fileIndex - 1) % this->filesInDirectory.size()), false);
-			this->nextImageThread = std::async(std::launch::async, &MainInterface::readImage, this, this->getFullImagePath((this->fileIndex + 1) % this->filesInDirectory.size()), false);
+			if (!this->threads.contains(this->filesInDirectory[this->previousFileIndex()])) {
+				this->threads[this->filesInDirectory[this->previousFileIndex()]] = std::async(std::launch::async, &MainInterface::readImage, this, this->getFullImagePath(this->previousFileIndex()), false);
+			}
+			if (!this->threads.contains(this->filesInDirectory[this->nextFileIndex()])) {
+				this->threads[this->filesInDirectory[this->nextFileIndex()]] = std::async(std::launch::async, &MainInterface::readImage, this, this->getFullImagePath(this->nextFileIndex()), false);
+			}
 		}
+		this->loading = false;
 	}
 
 	void MainInterface::openDialog() {
@@ -478,4 +485,4 @@ namespace sv {
 		}
 	}
 
-	}
+}
