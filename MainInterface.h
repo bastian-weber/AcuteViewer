@@ -33,6 +33,10 @@ namespace sv {
 	private:
 		//functions
 		cv::Mat readImage(QString path, bool emitSignals = false);
+		void clearThreads();
+		void waitForThreadToFinish(std::shared_future<cv::Mat> const& thread);
+		size_t nextFileIndex() const;
+		size_t previousFileIndex() const;
 		static bool isASCII(QString const& string);
 		QString getFullImagePath(size_t index) const;
 		void loadImage(QString path);
@@ -54,12 +58,7 @@ namespace sv {
 		size_t fileIndex;
 		QFileInfo currentFileInfo;
 		bool currentImageUnreadable = false;
-		cv::Mat previousImage;
-		cv::Mat nextImage;
-		std::future<cv::Mat> previousImageThread;
-		std::future<cv::Mat> nextImageThread;
-		std::atomic<bool> previousImageCached{ false };
-		std::atomic<bool> nextImageCached{ false };
+		QMap<QString, std::shared_future<cv::Mat>> threads;
 		QSettings settings;
 
 		//widgets
