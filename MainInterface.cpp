@@ -83,6 +83,11 @@ namespace sv {
 		this->mouseHideTimer = new QTimer(this);
 		QObject::connect(this->mouseHideTimer, SIGNAL(timeout()), this, SLOT(hideMouse()));
 
+		//timer for thread cleanup
+		this->threadCleanUpTimer = new QTimer(this);
+		this->threadCleanUpTimer->setSingleShot(true);
+		QObject::connect(this->mouseHideTimer, SIGNAL(timeout()), this, SLOT(cleanUpThreads()));
+
 		//load settings
 		this->showInfoAction->setChecked(this->settings.value("showImageInfo", false).toBool());
 		this->enlargementAction->setChecked(this->settings.value("enlargeSmallImages", false).toBool());
@@ -257,8 +262,8 @@ namespace sv {
 	}
 
 	void MainInterface::clearThreads() {
-		for (QMap<QString, std::shared_future<cv::Mat>>::iterator it = this->threads.begin(); it != this->threads.end(); ++it) {
-			this->waitForThreadToFinish(*it);
+		for (std::map<QString, std::shared_future<cv::Mat>>::iterator it = this->threads.begin(); it != this->threads.end(); ++it) {
+			this->waitForThreadToFinish(it->second);
 		}
 		this->threads.clear();
 	}
@@ -329,7 +334,7 @@ namespace sv {
 
 		if (this->filesInDirectory.size() != 0) {
 			this->fileIndex = this->nextFileIndex();
-			if (!this->threads.contains(this->filesInDirectory[this->fileIndex])) {
+			if (this->threads.find(this->filesInDirectory[this->fileIndex]) == this->threads.end()) {
 				this->loading = false;
 				return;
 			}
@@ -338,12 +343,15 @@ namespace sv {
 
 			this->currentFileInfo = QFileInfo(this->getFullImagePath(this->fileIndex));
 			//start loading next image
-			if (!this->threads.contains(this->filesInDirectory[this->nextFileIndex()])) {
+			std::unique_lock<std::mutex> lock(this->threadDeletionMutex);
+			if (this->threads.find(this->filesInDirectory[this->nextFileIndex()]) == this->threads.end()) {
 				this->threads[this->filesInDirectory[this->nextFileIndex()]] = std::async(std::launch::async, &MainInterface::readImage, this, this->getFullImagePath(this->nextFileIndex()), false);
 			}
+			lock.unlock();
 			this->displayImageIfOk();
 		}
 		this->loading = false;
+		this->cleanUpThreads();
 	}
 
 	void MainInterface::loadPreviousImage() {
@@ -351,7 +359,7 @@ namespace sv {
 		this->loading = true;
 		if (this->filesInDirectory.size() != 0) {
 			this->fileIndex = this->previousFileIndex();
-			if (!this->threads.contains(this->filesInDirectory[this->fileIndex])) {
+			if (this->threads.find(this->filesInDirectory[this->fileIndex]) == this->threads.end()) {
 				this->loading = false;
 				return;
 			}
@@ -359,12 +367,15 @@ namespace sv {
 			this->image = this->threads[this->filesInDirectory[this->fileIndex]].get();
 			this->currentFileInfo = QFileInfo(this->getFullImagePath(this->fileIndex));
 			//start loading previous image
-			if (!this->threads.contains(this->filesInDirectory[this->previousFileIndex()])) {
+			std::unique_lock<std::mutex> lock(this->threadDeletionMutex);
+			if (this->threads.find(this->filesInDirectory[this->previousFileIndex()]) == this->threads.end()) {
 				this->threads[this->filesInDirectory[this->previousFileIndex()]] = std::async(std::launch::async, &MainInterface::readImage, this, this->getFullImagePath(this->previousFileIndex()), false);
 			}
+			lock.unlock();
 			this->displayImageIfOk();
 		}
 		this->loading = false;
+		this->cleanUpThreads();
 	}
 
 	void MainInterface::enterFullscreen() {
@@ -413,6 +424,19 @@ namespace sv {
 
 	//============================================================================ PRIVATE SLOTS =============================================================================\\
 
+	void MainInterface::cleanUpThreads() {
+		std::lock_guard<std::mutex> lock(this->threadDeletionMutex);
+		for (std::map<QString, std::shared_future<cv::Mat>>::iterator it = this->threads.begin(); it != this->threads.end();) {
+			int index = this->filesInDirectory.indexOf(it->first);
+			if (index != -1 && (index < (this->fileIndex - 1) || index >(this->fileIndex + 1)) && it->second.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
+				it = this->threads.erase(it);
+			} else {
+				++it;
+			}
+		}
+		if (this->threads.size() > 3) this->threadCleanUpTimer->start(this->threadCleanUpInterval);
+	}
+
 	void MainInterface::quit() {
 		this->close();
 	}
@@ -448,10 +472,11 @@ namespace sv {
 		this->displayImageIfOk();
 		if (this->filesInDirectory.size() != 0) {
 			//preload next and previous image in background
-			if (!this->threads.contains(this->filesInDirectory[this->previousFileIndex()])) {
+			std::lock_guard<std::mutex> lock(this->threadDeletionMutex);
+			if (this->threads.find(this->filesInDirectory[this->previousFileIndex()]) == this->threads.end()) {
 				this->threads[this->filesInDirectory[this->previousFileIndex()]] = std::async(std::launch::async, &MainInterface::readImage, this, this->getFullImagePath(this->previousFileIndex()), false);
 			}
-			if (!this->threads.contains(this->filesInDirectory[this->nextFileIndex()])) {
+			if (this->threads.find(this->filesInDirectory[this->nextFileIndex()]) == this->threads.end()) {
 				this->threads[this->filesInDirectory[this->nextFileIndex()]] = std::async(std::launch::async, &MainInterface::readImage, this, this->getFullImagePath(this->nextFileIndex()), false);
 			}
 		}

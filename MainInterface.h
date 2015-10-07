@@ -50,15 +50,17 @@ namespace sv {
 		//variables
 		const QString programTitle = "Simple Viewer";
 		const int mouseHideDelay = 1000;
+		const int threadCleanUpInterval = 500;
 		const int eventProcessIntervalDuringWait = 16;
 		cv::Mat image;
 		std::atomic<bool> loading{ false };
+		std::mutex threadDeletionMutex;
 		QDir currentDirectory;
 		QVector<QString> filesInDirectory;
 		size_t fileIndex;
 		QFileInfo currentFileInfo;
 		bool currentImageUnreadable = false;
-		QMap<QString, std::shared_future<cv::Mat>> threads;
+		std::map<QString, std::shared_future<cv::Mat>> threads;
 		QSettings settings;
 
 		//widgets
@@ -75,7 +77,9 @@ namespace sv {
 		QAction* menuBarAutoHideAction;
 		//timer
 		QTimer* mouseHideTimer;
+		QTimer* threadCleanUpTimer;
 	private slots:
+		void cleanUpThreads();
 		void quit();
 		void hideMouse() const;
 		void showMouse() const;
