@@ -1,1 +1,25 @@
-IDI_ICON1               ICON    DISCARDABLE     "data/icon_installer.ico"
+IDI_ICON1 ICON DISCARDABLE "data/icon_installer.ico"
+1 VERSIONINFO
+FILEVERSION    0, 5, 0, 0
+FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+FILEFLAGS 0x1L
+#else
+FILEFLAGS 0x0L
+#endif
+FILEOS 0x4L
+FILETYPE 0x1L
+FILESUBTYPE 0x0L
+{
+	BLOCK "StringFileInfo" {
+		BLOCK "040904b0"{
+			VALUE "FileDescription",  "Installs Simple Viewer on a Microsoft Windows system.\0"
+			VALUE "OriginalFilename", "WinInstaller.exe\0"
+			VALUE "ProductName",      "Simple Viewer Installer\0"
+			VALUE "ProductVersion",   "Alpha 2\0"
+		}
+	}
+	BLOCK "VarFileInfo" {
+		VALUE "Translation", 0x409, 1200
+	}
+}
