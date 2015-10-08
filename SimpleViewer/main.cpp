@@ -3,16 +3,16 @@
 int init(int argc, char* argv[], QString openWithFilename) {
 	QApplication app(argc, argv);
 
-	//QIcon icon;
-	//icon.addFile("./data/icon_16.png");
-	//icon.addFile("./data/icon_32.png");
-	//icon.addFile("./data/icon_48.png");
-	//icon.addFile("./data/icon_64.png");
-	//icon.addFile("./data/icon_96.png");
-	//icon.addFile("./data/icon_128.png");
-	//icon.addFile("./data/icon_192.png");
-	//icon.addFile("./data/icon_256.png");
-	//app.setWindowIcon(icon);
+	QIcon icon;
+	icon.addFile("./data/icon_16.png");
+	icon.addFile("./data/icon_32.png");
+	icon.addFile("./data/icon_48.png");
+	icon.addFile("./data/icon_64.png");
+	icon.addFile("./data/icon_96.png");
+	icon.addFile("./data/icon_128.png");
+	icon.addFile("./data/icon_192.png");
+	icon.addFile("./data/icon_256.png");
+	app.setWindowIcon(icon);
 
 	sv::MainInterface* mainInterface = new sv::MainInterface(openWithFilename);
 	mainInterface->show();
