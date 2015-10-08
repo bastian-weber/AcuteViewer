@@ -31,7 +31,7 @@ file(GLOB SOURCEFILES_WININSTALLER "./WinInstaller/*.h"  "./WinInstaller/*.hpp" 
 
 if(WIN32)
 	#add application icon ressource
-	#list(APPEND SOURCEFILES_WININSTALLER "${CMAKE_CURRENT_SOURCE_DIR}/WinInstaller/main.rc")
+	list(APPEND SOURCEFILES_SIMPLE_VIEWER "${CMAKE_CURRENT_SOURCE_DIR}/SimpleViewer/main.rc")
 endif()
 
 #OpenCV
