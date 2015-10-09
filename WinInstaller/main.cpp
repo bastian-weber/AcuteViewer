@@ -73,14 +73,16 @@ void clearRegistryEntries() {
 }
 
 void copyAllFilesInDirectory(QDir const& sourceDir, QDir const& destinationDir) {
-	QStringList filesInFolder = sourceDir.entryList();
-	for(QString const& entry : filesInFolder) {
-		QString oldPath = sourceDir.absoluteFilePath(entry);
-		QString newPath = destinationDir.absoluteFilePath(entry);
-		if (QFile::exists(newPath)) {
-			QFile::remove(newPath);
+	if (sourceDir != destinationDir) {
+		QStringList filesInFolder = sourceDir.entryList();
+		for (QString const& entry : filesInFolder) {
+			QString oldPath = sourceDir.absoluteFilePath(entry);
+			QString newPath = destinationDir.absoluteFilePath(entry);
+			if (QFile::exists(newPath)) {
+				QFile::remove(newPath);
+			}
+			QFile::copy(oldPath, newPath);
 		}
-		QFile::copy(oldPath, newPath);
 	}
 }
 
@@ -97,6 +99,16 @@ void installFiles(QDir installPath) {
 	installPath.cd("../platforms");
 	QStringList filesInPlatformsFolder = currentPath.entryList();
 	copyAllFilesInDirectory(currentPath, installPath);
+}
+
+void removeFiles() {
+	QSettings registry("HKEY_LOCAL_MACHINE\\SOFTWARE", QSettings::NativeFormat);
+	QString programPath = registry.value("Classes/SimpleViewer.AssocFile.TIF/shell/open/command/.").toString();
+	programPath = programPath.section('"', 1, 1);
+	std::cout << programPath.toStdString() << std::endl;
+	if (QFileInfo(programPath).exists()) {
+		std::cout << "exists" << std::endl;
+	}
 }
 
 int init(int argc, char* argv[]) {
@@ -116,13 +128,16 @@ int init(int argc, char* argv[]) {
 	//sv::MainInterface* mainInterface = new sv::MainInterface(openWithFilename);
 	//mainInterface->show();
 
-	QDir installPath = QDir::cleanPath(QString(getenv("PROGRAMFILES")) + QString("/Simple Viewer"));
-	installFiles(installPath);
-	registerProgramInRegistry(installPath.absolutePath().replace("/", "\\"));
-
+	if (QCoreApplication::arguments().contains("-uninstall", Qt::CaseInsensitive)) {
+		removeFiles();
+	} else {
+		QDir installPath = QDir::cleanPath(QString(getenv("PROGRAMFILES")) + QString("/Simple Viewer"));
+		installFiles(installPath);
+		registerProgramInRegistry(installPath.absolutePath().replace("/", "\\"));
+	}
 	return app.exec();
 }
 
-int wmain(int argc, wchar_t* argv[]) {
-	return init(0, NULL);
+int main(int argc, char* argv[]) {
+	return init(argc, argv);
 }
