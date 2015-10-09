@@ -85,6 +85,7 @@ namespace sv {
 		void showMouse() const;
 		void showMenuBar();
 		void hideMenuBar(QAction* triggeringAction = nullptr);
+		void runInstaller();
 		void reactToshowInfoToggle(bool value);
 		void reactToReadImageCompletion(cv::Mat image);
 		void openDialog();
