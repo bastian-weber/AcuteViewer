@@ -1,7 +1,12 @@
 #include "MainInterface.h"
 
-int init(int argc, char* argv[], QString openWithFilename) {
+int init(int argc, char* argv[]) {
 	QApplication app(argc, argv);
+
+	QString openWithFilename;
+	if (QCoreApplication::arguments().size() > 1) {
+		openWithFilename = QCoreApplication::arguments().at(1);
+	}
 
 	QIcon icon;
 	icon.addFile("./data/icon_16.png");
@@ -21,10 +26,6 @@ int init(int argc, char* argv[], QString openWithFilename) {
 }
 
 //int main(int argc, char* argv[]) {
-int wmain(int argc, wchar_t* argv[]) {
-	QString openWithFilename;
-	if (argc > 1) {
-		openWithFilename = QString::fromWCharArray(argv[1], wcslen(argv[1]));
-	}
-	return init(0, NULL, openWithFilename);
+int main(int argc, char* argv[]) {
+	return init(argc, argv);
 }
