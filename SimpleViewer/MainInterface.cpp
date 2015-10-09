@@ -99,6 +99,7 @@ namespace sv {
 		if (openWithFilename != QString()) {
 			this->loadImage(openWithFilename);
 		}
+
 	}
 
 	MainInterface::~MainInterface() {
@@ -459,6 +460,18 @@ namespace sv {
 		if (!this->menuBarAutoHideAction->isChecked() || this->isFullScreen()) {
 			this->menuBar()->setVisible(false);
 			if (this->isFullScreen()) this->mouseHideTimer->start(this->mouseHideDelay);
+		}
+	}
+
+	void MainInterface::runInstaller() {
+		QString installerPath = QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("WinInstaller.exe");
+		if (QFileInfo(installerPath).exists()) {
+			QDesktopServices::openUrl(QUrl::fromLocalFile(installerPath));
+		} else {
+			QMessageBox msgBox;
+			msgBox.setWindowTitle("Installer not found.");
+			msgBox.setText("The installer executable (WinInstaller.exe) could not be found. Make sure it is located in the same directory as SimpleViewer.exe.");
+			msgBox.exec();
 		}
 	}
 
