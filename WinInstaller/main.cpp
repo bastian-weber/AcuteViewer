@@ -1,11 +1,14 @@
+#include <iostream>
+
 #include <QtCore/QtCore>
 #include <QtGui/QtGui>
 #include <QtWidgets/QtWidgets>
 
-void registerProgramInRegistry() {
+void registerProgramInRegistry(QString installPath) {
+	installPath.replace("/", "\\");
 	QSettings registry("HKEY_LOCAL_MACHINE\\SOFTWARE", QSettings::NativeFormat);
 	//filetypes
-	QString openCommand("\"G:\\Documents\\C++ Projects\\SimpleViewer\\Release\\SimpleViewer.exe\" \"%1\"");
+	QString openCommand = QString("\"%1\\SimpleViewer.exe\" \"%2\"").arg(installPath).arg("%1");
 	registry.setValue("Classes/SimpleViewer.AssocFile.TIF/.", "Tif Image File");
 	registry.setValue("Classes/SimpleViewer.AssocFile.TIF/shell/open/command/.", openCommand);
 	registry.setValue("Classes/SimpleViewer.AssocFile.BMP/.", "Bitmap ImageFile");
@@ -69,6 +72,33 @@ void clearRegistryEntries() {
 	registry.remove("RegisteredApplications/Simple Viewer");
 }
 
+void copyAllFilesInDirectory(QDir const& sourceDir, QDir const& destinationDir) {
+	QStringList filesInFolder = sourceDir.entryList();
+	for(QString const& entry : filesInFolder) {
+		QString oldPath = sourceDir.absoluteFilePath(entry);
+		QString newPath = destinationDir.absoluteFilePath(entry);
+		if (QFile::exists(newPath)) {
+			QFile::remove(newPath);
+		}
+		QFile::copy(oldPath, newPath);
+	}
+}
+
+void installFiles(QDir installPath) {
+	if (!installPath.exists()) installPath.mkpath(installPath.absolutePath());
+	installPath.mkpath(QDir::cleanPath(installPath.absolutePath() + QString("/data")));
+	installPath.mkpath(QDir::cleanPath(installPath.absolutePath() + QString("/platforms")));
+	QDir currentPath(QCoreApplication::applicationDirPath());
+	copyAllFilesInDirectory(currentPath, installPath);
+	currentPath.cd("data");
+	installPath.cd("data");
+	copyAllFilesInDirectory(currentPath, installPath);
+	currentPath.cd("../platforms");
+	installPath.cd("../platforms");
+	QStringList filesInPlatformsFolder = currentPath.entryList();
+	copyAllFilesInDirectory(currentPath, installPath);
+}
+
 int init(int argc, char* argv[]) {
 	QApplication app(argc, argv);
 
@@ -86,7 +116,9 @@ int init(int argc, char* argv[]) {
 	//sv::MainInterface* mainInterface = new sv::MainInterface(openWithFilename);
 	//mainInterface->show();
 
-	//QFile::copy(QCoreApplication::applicationFilePath(), QDir("G:/Desktop").absoluteFilePath(QFileInfo(QCoreApplication::applicationFilePath()).fileName()));
+	QDir installPath = QDir::cleanPath(QString(getenv("PROGRAMFILES")) + QString("/Simple Viewer"));
+	installFiles(installPath);
+	registerProgramInRegistry(installPath.absolutePath().replace("/", "\\"));
 
 	return app.exec();
 }

@@ -116,7 +116,7 @@ namespace sv {
 	}
 
 	QSize MainInterface::sizeHint() const {
-		return QSize(1053, 570);
+		return QSize(900, 600);
 	}
 
 	//============================================================================== PROTECTED ==============================================================================\\
@@ -299,8 +299,9 @@ namespace sv {
 		QFileInfo fileInfo = QFileInfo(QDir::cleanPath(path));
 		QDir directory = fileInfo.absoluteDir();
 		QString filename = fileInfo.fileName();
-		if (directory != this->currentDirectory) {
+		if (directory != this->currentDirectory || this->noCurrentDir) {
 			this->currentDirectory = directory;
+			this->noCurrentDir = false;
 			QStringList filters;
 			filters << "*.bmp" << "*.dib" << "*.jpeg" << "*.jpg" << "*.jpe" << "*.jpeg" << "*.jp2" << "*.png" << "*.webp" << "*.pbm" << "*.pgm" << "*.ppm" << "*.sr" << "*.ras" << "*.tiff" << "*.tif";
 			QStringList contents = directory.entryList(filters, QDir::Files);

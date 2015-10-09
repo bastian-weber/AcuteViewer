@@ -56,6 +56,7 @@ namespace sv {
 		std::atomic<bool> loading{ false };
 		std::mutex threadDeletionMutex;
 		QDir currentDirectory;
+		bool noCurrentDir = true;
 		QVector<QString> filesInDirectory;
 		size_t fileIndex;
 		QFileInfo currentFileInfo;
