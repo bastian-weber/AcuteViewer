@@ -5,7 +5,7 @@
 #include <QtWidgets/QtWidgets>
 
 void registerProgramInRegistry(QString installPath) {
-	installPath.replace("/", "\\");
+	installPath = QDir::toNativeSeparators(installPath);
 	QSettings registry("HKEY_LOCAL_MACHINE\\SOFTWARE", QSettings::NativeFormat);
 	//filetypes
 	QString openCommand = QString("\"%1\\SimpleViewer.exe\" \"%2\"").arg(installPath).arg("%1");
@@ -102,13 +102,61 @@ void installFiles(QDir installPath) {
 }
 
 void removeFiles() {
-	QSettings registry("HKEY_LOCAL_MACHINE\\SOFTWARE", QSettings::NativeFormat);
-	QString programPath = registry.value("Classes/SimpleViewer.AssocFile.TIF/shell/open/command/.").toString();
-	programPath = programPath.section('"', 1, 1);
-	std::cout << programPath.toStdString() << std::endl;
-	if (QFileInfo(programPath).exists()) {
-		std::cout << "exists" << std::endl;
+	//QSettings registry("HKEY_LOCAL_MACHINE\\SOFTWARE", QSettings::NativeFormat);
+	//QString programPath = registry.value("Classes/SimpleViewer.AssocFile.TIF/shell/open/command/.").toString();
+	//programPath = programPath.section('"', 1, 1);
+	//std::cout << programPath.toStdString() << std::endl;
+	//if (QFileInfo(programPath).exists()) {
+	//	std::cout << "exists" << std::endl;
+	//}
+	QStringList files({ "icudt54.dll",
+						"icuin54.dll",
+					    "icuuc54.dll",
+					    "opencv_world300.dll",
+					    "SimpleViewer.exe",
+					    "data/icon.ico",
+					    "data/icon_16.png",
+					    "data/icon_16_installer.png",
+					    "data/icon_24.png",
+					    "data/icon_24_installer.png",
+					    "data/icon_32.png",
+					    "data/icon_32_installer.png",
+					    "data/icon_48.png",
+					    "data/icon_48_installer.png",
+					    "data/icon_64.png",
+					    "data/icon_64_installer.png",
+					    "data/icon_96.png",
+					    "data/icon_96_installer.png",
+					    "data/icon_128.png",
+					    "data/icon_128_installer.png",
+					    "data/icon_192.png",
+					    "data/icon_192_installer.png",
+					    "data/icon_256.png",
+					    "data/icon_256_installer.png",
+					    "data/icon_installer.ico",
+					    "platforms/qminimal.dll",
+					    "platforms/qminimald.dll",
+					    "platforms/qoffscreen.dll",
+					    "platforms/qoffscreend.dll",
+					    "platforms/qwindows.dll",
+					    "platforms/qwindowsd.dll" });
+	for (QString const& entry : files) {
+		QString path = QDir(QCoreApplication::applicationDirPath()).filePath(entry);
+		QFile::remove(path);
 	}
+	QDir dataDir(QCoreApplication::applicationDirPath());
+	dataDir.rmdir("data");
+	//remove files that can only be removed after installer terminated
+	QDir installDir(QCoreApplication::applicationDirPath());
+	QString file1 = QDir::toNativeSeparators(installDir.absoluteFilePath("WinInstaller.exe"));
+	QString file2 = QDir::toNativeSeparators(installDir.absoluteFilePath("Qt5Core.dll"));
+	QString file3 = QDir::toNativeSeparators(installDir.absoluteFilePath("Qt5Gui.dll"));
+	QString file4 = QDir::toNativeSeparators(installDir.absoluteFilePath("Qt5Widgets.dll"));
+	QString file5 = QDir::toNativeSeparators(installDir.absoluteFilePath("platforms/qwindows.dll"));
+	QString path1 = QDir::toNativeSeparators(installDir.absoluteFilePath("platforms"));
+	QString path2 = QDir::toNativeSeparators(installDir.absolutePath());
+	QString parameters = QString("/C choice /C Y /N /D Y /T 3 & del \"%1\" & del \"%2\" & del \"%3\" & del \"%4\" & del \"%5\" & rmdir \"%6\" & rmdir \"%7\" ").arg(file1).arg(file2).arg(file3).arg(file4).arg(file5).arg(path1).arg(path2);
+	ShellExecute(0, 0, "cmd.exe", parameters.toStdString().c_str(), QDir::rootPath().toStdString().c_str(), SW_HIDE);
 }
 
 int init(int argc, char* argv[]) {
@@ -129,13 +177,14 @@ int init(int argc, char* argv[]) {
 	//mainInterface->show();
 
 	if (QCoreApplication::arguments().contains("-uninstall", Qt::CaseInsensitive)) {
+		clearRegistryEntries();
 		removeFiles();
 	} else {
 		QDir installPath = QDir::cleanPath(QString(getenv("PROGRAMFILES")) + QString("/Simple Viewer"));
 		installFiles(installPath);
 		registerProgramInRegistry(installPath.absolutePath().replace("/", "\\"));
 	}
-	return app.exec();
+	return 0;//app.exec();
 }
 
 int main(int argc, char* argv[]) {
