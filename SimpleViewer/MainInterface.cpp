@@ -470,8 +470,8 @@ namespace sv {
 			QDesktopServices::openUrl(QUrl::fromLocalFile(installerPath));
 		} else {
 			QMessageBox msgBox;
-			msgBox.setWindowTitle("Installer not found.");
-			msgBox.setText("The installer executable (WinInstaller.exe) could not be found. Make sure it is located in the same directory as SimpleViewer.exe.");
+			msgBox.setWindowTitle(tr("Installer not found."));
+			msgBox.setText(tr("The installer executable (WinInstaller.exe) could not be found. Make sure it is located in the same directory as SimpleViewer.exe."));
 			msgBox.exec();
 		}
 	}
