@@ -1,5 +1,5 @@
-#ifndef CT_MAININTERFACE
-#define CT_MAININTERFACE
+#ifndef CT_InstallerInterface
+#define CT_InstallerInterface
 
 #include <iostream>
 
@@ -8,13 +8,13 @@
 #include <QtGui/QtGui>
 #include <QtWidgets/QtWidgets>
 
-namespace sv {
+namespace wi {
 
-	class MainInterface : public QMainWindow {
+	class InstallerInterface : public QMainWindow {
 		Q_OBJECT
 	public:
-		MainInterface(QWidget *parent = 0);
-		~MainInterface();
+		InstallerInterface(QWidget *parent = 0);
+		~InstallerInterface();
 		QSize sizeHint() const;
 	private:
 		//functions

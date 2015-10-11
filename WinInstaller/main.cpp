@@ -4,7 +4,7 @@
 #include <QtGui/QtGui>
 #include <QtWidgets/QtWidgets>
 
-#include "MainInterface.h"
+#include "InstallerInterface.h"
 
 void clearRegistryEntries() {
 	QSettings registry("HKEY_LOCAL_MACHINE\\SOFTWARE", QSettings::NativeFormat);
@@ -94,8 +94,6 @@ int init(int argc, char* argv[]) {
 	icon.addFile("./data/icon_256_installer.png");
 	app.setWindowIcon(icon);
 
-
-
 	if (QCoreApplication::arguments().contains("-uninstall", Qt::CaseInsensitive)) {
 		QMessageBox msgBox;
 		msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
@@ -111,8 +109,8 @@ int init(int argc, char* argv[]) {
 		}
 		return 0;
 	} else {
-		sv::MainInterface* mainInterface = new sv::MainInterface();
-		mainInterface->show();
+		wi::InstallerInterface* InstallerInterface = new wi::InstallerInterface();
+		InstallerInterface->show();
 		return app.exec();
 	}
 

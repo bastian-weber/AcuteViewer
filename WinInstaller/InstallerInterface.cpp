@@ -1,18 +1,18 @@
-#include "MainInterface.h"
+#include "InstallerInterface.h"
 
-namespace sv {
+namespace wi {
 
-	MainInterface::MainInterface(QWidget *parent)
+	InstallerInterface::InstallerInterface(QWidget *parent)
 		: QMainWindow(parent) {
 		QDir installPath = QDir::toNativeSeparators(QDir::cleanPath(QString(getenv("PROGRAMFILES")) + QString("/Simple Viewer")));
-		MainInterface::install(installPath.absolutePath());
+		InstallerInterface::install(installPath.absolutePath());
 	}
 
-	MainInterface::~MainInterface() {
+	InstallerInterface::~InstallerInterface() {
 
 	}
 
-	QSize MainInterface::sizeHint() const {
+	QSize InstallerInterface::sizeHint() const {
 		return QSize(900, 600);
 	}
 
@@ -22,12 +22,12 @@ namespace sv {
 
 	//=============================================================================== PRIVATE ===============================================================================\\
 
-	void MainInterface::install(QString installPath) {
-		MainInterface::installFiles(installPath);
-		MainInterface::registerProgramInRegistry(installPath);
+	void InstallerInterface::install(QString installPath) {
+		InstallerInterface::installFiles(installPath);
+		InstallerInterface::registerProgramInRegistry(installPath);
 	}
 
-	void MainInterface::registerProgramInRegistry(QString installPath) {
+	void InstallerInterface::registerProgramInRegistry(QString installPath) {
 		installPath = QDir::toNativeSeparators(installPath);
 		QSettings registry("HKEY_LOCAL_MACHINE\\SOFTWARE", QSettings::NativeFormat);
 		//filetypes
@@ -78,7 +78,7 @@ namespace sv {
 		registry.setValue("RegisteredApplications/Simple Viewer", "SOFTWARE\\Simple Viewer\\Capabilities");
 	}
 
-	void MainInterface::copyAllFilesInDirectory(QDir const& sourceDir, QDir const& destinationDir) {
+	void InstallerInterface::copyAllFilesInDirectory(QDir const& sourceDir, QDir const& destinationDir) {
 		if (sourceDir != destinationDir) {
 			QStringList filesInFolder = sourceDir.entryList();
 			for (QString const& entry : filesInFolder) {
@@ -92,19 +92,19 @@ namespace sv {
 		}
 	}
 
-	void MainInterface::installFiles(QDir installPath) {
+	void InstallerInterface::installFiles(QDir installPath) {
 		if (!installPath.exists()) installPath.mkpath(installPath.absolutePath());
 		installPath.mkpath(QDir::cleanPath(installPath.absolutePath() + QString("/data")));
 		installPath.mkpath(QDir::cleanPath(installPath.absolutePath() + QString("/platforms")));
 		QDir currentPath(QCoreApplication::applicationDirPath());
-		MainInterface::copyAllFilesInDirectory(currentPath, installPath);
+		InstallerInterface::copyAllFilesInDirectory(currentPath, installPath);
 		currentPath.cd("data");
 		installPath.cd("data");
-		MainInterface::copyAllFilesInDirectory(currentPath, installPath);
+		InstallerInterface::copyAllFilesInDirectory(currentPath, installPath);
 		currentPath.cd("../platforms");
 		installPath.cd("../platforms");
 		QStringList filesInPlatformsFolder = currentPath.entryList();
-		MainInterface::copyAllFilesInDirectory(currentPath, installPath);
+		InstallerInterface::copyAllFilesInDirectory(currentPath, installPath);
 	}
 
 	//============================================================================ PRIVATE SLOTS =============================================================================\\
