@@ -98,7 +98,7 @@ int init(int argc, char* argv[]) {
 		QMessageBox msgBox;
 		msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
 		msgBox.setWindowTitle(QObject::tr("Uninstall"));
-		msgBox.setText(QObject::tr("Are you sure you want to remove the program from your system?"));
+		msgBox.setText(QObject::tr("Are you sure you want to remove the Simple Viewer application from your system?"));
 		if (QMessageBox::Yes == msgBox.exec()) {
 			clearRegistryEntries();
 			removeFiles();
