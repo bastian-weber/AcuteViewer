@@ -21,7 +21,9 @@ namespace wi {
 
 		this->okButton = new QPushButton(tr("Ok"), this);
 		this->okButton->setDefault(true);
+		QObject::connect(this->okButton, SIGNAL(clicked()), this, SLOT(install()));
 		this->cancelButton = new QPushButton(tr("Cancel"), this);
+		QObject::connect(this->cancelButton, SIGNAL(clicked()), this, SLOT(close()));
 
 		this->buttonLayout = new QHBoxLayout();
 		this->buttonLayout->addStretch(1);
@@ -67,16 +69,10 @@ namespace wi {
 
 	//=============================================================================== PRIVATE ===============================================================================\\
 
-	void InstallerInterface::install(QString installPath) {
-		InstallerInterface::installFiles(installPath);
-		InstallerInterface::registerProgramInRegistry(installPath);
-	}
-
-	void InstallerInterface::registerProgramInRegistry(QString installPath) {
-		installPath = QDir::toNativeSeparators(installPath);
+	void InstallerInterface::registerProgramInRegistry(QDir installPath) {
 		QSettings registry("HKEY_LOCAL_MACHINE\\SOFTWARE", QSettings::NativeFormat);
 		//filetypes
-		QString openCommand = QString("\"%1\\SimpleViewer.exe\" \"%2\"").arg(installPath).arg("%1");
+		QString openCommand = QString("\"%1\\SimpleViewer.exe\" \"%2\"").arg(QDir::toNativeSeparators(installPath.absolutePath())).arg("%1");
 		registry.setValue("Classes/SimpleViewer.AssocFile.TIF/.", "Tif Image File");
 		registry.setValue("Classes/SimpleViewer.AssocFile.TIF/shell/open/command/.", openCommand);
 		registry.setValue("Classes/SimpleViewer.AssocFile.BMP/.", "Bitmap ImageFile");
@@ -163,6 +159,9 @@ namespace wi {
 
 	//============================================================================ PRIVATE SLOTS =============================================================================\\
 
-
+	void InstallerInterface::install() {
+		InstallerInterface::installFiles(this->currentlySelectedPath);
+		InstallerInterface::registerProgramInRegistry(this->currentlySelectedPath);
+	}
 
 }
