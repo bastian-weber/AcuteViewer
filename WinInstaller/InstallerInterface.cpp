@@ -8,11 +8,12 @@ namespace wi {
 
 		this->mainWidget = new QWidget(this);
 
-		this->descriptionLabel = new QLabel(tr("This will install Simple Viewer on your system under the specified path (a subdirectory will automatically be created). It will also register the application for the \"Default Programs\" selection dialog and add an uninstallation entry to \"Programs and Features\"."), this);
+		this->descriptionLabel = new QLabel(tr("This will install Simple Viewer on your system under the specified path (a subdirectory will be created automatically). The application will also be registered for the \"Default Programs\" selection dialog and an uninstallation entry will be added to \"Programs and Features\"."), this);
 		this->descriptionLabel->setWordWrap(true);
 		this->descriptionLabel->setMinimumHeight(this->descriptionLabel->sizeHint().height());
 
 		this->pathInput = new QLineEdit(this->currentlySelectedPath.absolutePath(), this);
+		this->pathInput->setReadOnly(true);
 
 		this->browseButton = new QPushButton(tr("&Browse"), this);
 		QObject::connect(this->browseButton, SIGNAL(clicked()), this, SLOT(reactToBrowseButtonClick()));
@@ -44,8 +45,6 @@ namespace wi {
 		this->mainWidget->setLayout(this->mainLayout);
 
 		this->setCentralWidget(this->mainWidget);
-
-		//InstallerInterface::install(installPath.absolutePath());
 	}
 
 	InstallerInterface::~InstallerInterface() {
@@ -158,11 +157,37 @@ namespace wi {
 		InstallerInterface::copyAllFilesInDirectory(currentPath, installPath);
 	}
 
+	void InstallerInterface::disableControls() {
+		this->browseButton->setEnabled(false);
+		this->startMenuCheckbox->setEnabled(false);
+		this->okButton->setEnabled(false);
+		this->cancelButton->setEnabled(false);
+	}
+
 	//============================================================================ PRIVATE SLOTS =============================================================================\\
 
 	void InstallerInterface::install() {
+		this->disableControls();
+		QProgressDialog progressDialog(tr("Calculating thinned image, please wait."), QString(), 0, 100, this, Qt::CustomizeWindowHint | Qt::WindowTitleHint);
+		progressDialog.setWindowModality(Qt::WindowModal);
+		progressDialog.setMinimumWidth(350);
+		progressDialog.setWindowTitle(tr("Installing..."));
+		progressDialog.reset();
+		progressDialog.show();
+		QCoreApplication::processEvents();
 		InstallerInterface::installFiles(this->currentlySelectedPath);
+		progressDialog.setValue(50);
+		QCoreApplication::processEvents();
 		InstallerInterface::registerProgramInRegistry(this->currentlySelectedPath);
+		progressDialog.setValue(100);
+		QCoreApplication::processEvents();
+		progressDialog.close();
+		QMessageBox msgBox;
+		msgBox.setWindowTitle(QObject::tr("Installation Successful"));
+		msgBox.setText(QObject::tr("The installation was successful."));
+		msgBox.setStandardButtons(QMessageBox::Close);
+		msgBox.exec();
+		this->close();
 	}
 
 	void InstallerInterface::reactToBrowseButtonClick() {
