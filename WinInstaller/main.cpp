@@ -21,6 +21,8 @@ void clearRegistryEntries() {
 	registry.remove("Simple Viewer");
 	//application registration
 	registry.remove("RegisteredApplications/Simple Viewer");
+	//uninstallation entries
+	registry.remove("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer");
 }
 
 void removeFiles() {
