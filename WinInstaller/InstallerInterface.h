@@ -21,6 +21,7 @@ namespace wi {
 		static void registerProgramInRegistry(QDir installPath);
 		static void copyAllFilesInDirectory(QDir const& sourceDir, QDir const& destinationDir);
 		static void installFiles(QDir installPath);
+		void disableControls();
 
 		//variables
 		QDir currentlySelectedPath;
