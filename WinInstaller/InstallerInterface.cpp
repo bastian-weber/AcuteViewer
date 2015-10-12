@@ -8,21 +8,22 @@ namespace wi {
 
 		this->mainWidget = new QWidget(this);
 
-		this->descriptionLabel = new QLabel(tr("This will install Simple Viewer on your system under the specified path. It will also register the application for the \"Default Programs\" selection dialog and add an uninstallation entry to \"Programs and Features\"."), this);
+		this->descriptionLabel = new QLabel(tr("This will install Simple Viewer on your system under the specified path (a subdirectory will automatically be created). It will also register the application for the \"Default Programs\" selection dialog and add an uninstallation entry to \"Programs and Features\"."), this);
 		this->descriptionLabel->setWordWrap(true);
-		this->descriptionLabel->setMinimumHeight(40);
+		this->descriptionLabel->setMinimumHeight(this->descriptionLabel->sizeHint().height());
 
 		this->pathInput = new QLineEdit(this->currentlySelectedPath.absolutePath(), this);
 
-		this->browseButton = new QPushButton(tr("Browse"), this);
+		this->browseButton = new QPushButton(tr("&Browse"), this);
+		QObject::connect(this->browseButton, SIGNAL(clicked()), this, SLOT(reactToBrowseButtonClick()));
 
 		this->startMenuCheckbox = new QCheckBox(tr("Create Start Menu Entry"), 0);
 		this->startMenuCheckbox->setChecked(true);
 
-		this->okButton = new QPushButton(tr("Ok"), this);
+		this->okButton = new QPushButton(tr("&Ok"), this);
 		this->okButton->setDefault(true);
 		QObject::connect(this->okButton, SIGNAL(clicked()), this, SLOT(install()));
-		this->cancelButton = new QPushButton(tr("Cancel"), this);
+		this->cancelButton = new QPushButton(tr("&Cancel"), this);
 		QObject::connect(this->cancelButton, SIGNAL(clicked()), this, SLOT(close()));
 
 		this->buttonLayout = new QHBoxLayout();
@@ -130,7 +131,7 @@ namespace wi {
 
 	void InstallerInterface::copyAllFilesInDirectory(QDir const& sourceDir, QDir const& destinationDir) {
 		if (sourceDir != destinationDir) {
-			QStringList filesInFolder = sourceDir.entryList();
+			QStringList filesInFolder = sourceDir.entryList(QDir::NoDotAndDotDot | QDir::Files);
 			for (QString const& entry : filesInFolder) {
 				QString oldPath = sourceDir.absoluteFilePath(entry);
 				QString newPath = destinationDir.absoluteFilePath(entry);
@@ -162,6 +163,15 @@ namespace wi {
 	void InstallerInterface::install() {
 		InstallerInterface::installFiles(this->currentlySelectedPath);
 		InstallerInterface::registerProgramInRegistry(this->currentlySelectedPath);
+	}
+
+	void InstallerInterface::reactToBrowseButtonClick() {
+		QString path = QFileDialog::getExistingDirectory(this, tr("Select Installation Directory"), this->currentlySelectedPath.absolutePath());
+
+		if (!path.isEmpty()) {
+			this->currentlySelectedPath = QDir(path).absoluteFilePath("Simple Viewer");
+			this->pathInput->setText(this->currentlySelectedPath.absolutePath());
+		}
 	}
 
 }
