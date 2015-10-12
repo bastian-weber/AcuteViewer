@@ -18,8 +18,7 @@ namespace wi {
 		QSize sizeHint() const;
 	private:
 		//functions
-		static void install(QString installPath);
-		static void registerProgramInRegistry(QString installPath);
+		static void registerProgramInRegistry(QDir installPath);
 		static void copyAllFilesInDirectory(QDir const& sourceDir, QDir const& destinationDir);
 		static void installFiles(QDir installPath);
 
@@ -36,6 +35,8 @@ namespace wi {
 		QCheckBox* startMenuCheckbox;
 		QPushButton* okButton;
 		QPushButton* cancelButton;
+	private slots:
+		void install();
 	signals:
 	};
 }
