@@ -79,7 +79,10 @@ void removeFiles() {
 	QString path1 = QDir::toNativeSeparators(installDir.absoluteFilePath("platforms"));
 	QString path2 = QDir::toNativeSeparators(installDir.absolutePath());
 	QString parameters = QString("/C choice /C Y /N /D Y /T 3 & del \"%1\" & del \"%2\" & del \"%3\" & del \"%4\" & del \"%5\" & rmdir \"%6\" & rmdir \"%7\" ").arg(file1).arg(file2).arg(file3).arg(file4).arg(file5).arg(path1).arg(path2);
-	ShellExecute(0, 0, "cmd.exe", parameters.toStdString().c_str(), QDir::rootPath().toStdString().c_str(), SW_HIDE);
+	TCHAR szFile[MAX_PATH];
+	GetEnvironmentVariable("ComSpec", szFile, MAX_PATH);
+	std::cout << szFile << std::endl;
+	ShellExecute(0, 0, QString("\"%1\"").arg(szFile).toStdString().c_str(), parameters.toStdString().c_str(), QDir::rootPath().toStdString().c_str(), SW_HIDE);
 }
 
 int init(int argc, char* argv[]) {
