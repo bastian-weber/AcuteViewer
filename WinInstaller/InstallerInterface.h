@@ -24,11 +24,18 @@ namespace wi {
 		static void installFiles(QDir installPath);
 
 		//variables
+		QDir currentlySelectedPath;
 
 		//widgets
-		//menus
-		//actions
-		//timer
+		QWidget* mainWidget;
+		QVBoxLayout* mainLayout;
+		QHBoxLayout* buttonLayout;
+		QLabel* descriptionLabel;
+		QLineEdit* pathInput;
+		QPushButton* browseButton;
+		QCheckBox* startMenuCheckbox;
+		QPushButton* okButton;
+		QPushButton* cancelButton;
 	signals:
 	};
 }

@@ -3,22 +3,67 @@
 namespace wi {
 
 	InstallerInterface::InstallerInterface(QWidget *parent)
-		: QMainWindow(parent) {
-		QDir installPath = QDir::toNativeSeparators(QDir::cleanPath(QString(getenv("PROGRAMFILES")) + QString("/Simple Viewer")));
-		InstallerInterface::install(installPath.absolutePath());
+		: QMainWindow(parent),
+		currentlySelectedPath(QDir::toNativeSeparators(QDir::cleanPath(QString(getenv("PROGRAMFILES")) + QString("/Simple Viewer")))) {
+
+		this->mainWidget = new QWidget(this);
+
+		this->descriptionLabel = new QLabel(tr("This will install Simple Viewer on your system under the specified path. It will also register the application for the \"Default Programs\" selection dialog and add an uninstallation entry to \"Programs and Features\"."), this);
+		this->descriptionLabel->setWordWrap(true);
+		this->descriptionLabel->setMinimumHeight(40);
+
+		this->pathInput = new QLineEdit(this->currentlySelectedPath.absolutePath(), this);
+
+		this->browseButton = new QPushButton(tr("Browse"), this);
+
+		this->startMenuCheckbox = new QCheckBox(tr("Create Start Menu Entry"), 0);
+		this->startMenuCheckbox->setChecked(true);
+
+		this->okButton = new QPushButton(tr("Ok"), this);
+		this->okButton->setDefault(true);
+		this->cancelButton = new QPushButton(tr("Cancel"), this);
+
+		this->buttonLayout = new QHBoxLayout();
+		this->buttonLayout->addStretch(1);
+		this->buttonLayout->addWidget(this->okButton);
+		this->buttonLayout->addWidget(this->cancelButton);
+
+		this->mainLayout = new QVBoxLayout();
+		this->mainLayout->addWidget(this->descriptionLabel);
+		this->mainLayout->addSpacing(20);
+		this->mainLayout->addWidget(this->pathInput);
+		this->mainLayout->addWidget(this->browseButton, 0, Qt::AlignRight);
+		this->mainLayout->addSpacing(20);
+		this->mainLayout->addWidget(this->startMenuCheckbox);
+		this->mainLayout->addSpacing(20);
+		this->mainLayout->addLayout(this->buttonLayout);
+
+		this->mainWidget->setLayout(this->mainLayout);
+
+		this->setCentralWidget(this->mainWidget);
+
+		//InstallerInterface::install(installPath.absolutePath());
 	}
 
 	InstallerInterface::~InstallerInterface() {
-
+		delete this->mainWidget;
+		delete this->mainLayout;
+		delete this->buttonLayout;
+		delete this->descriptionLabel;
+		delete this->pathInput;
+		delete this->browseButton;
+		delete this->startMenuCheckbox;
+		delete this->okButton;
+		delete this->cancelButton;
 	}
 
 	QSize InstallerInterface::sizeHint() const {
-		return QSize(900, 600);
+		return QSize(400, -1);
 	}
 
 	//============================================================================== PROTECTED ==============================================================================\\
 
-	
+
 
 	//=============================================================================== PRIVATE ===============================================================================\\
 
@@ -76,6 +121,15 @@ namespace wi {
 		registry.setValue("Simple Viewer/Capabilities/FileAssociations/.ras", "SimpleViewer.AssocFile.SR");
 		//register application
 		registry.setValue("RegisteredApplications/Simple Viewer", "SOFTWARE\\Simple Viewer\\Capabilities");
+		//uninstallation entry
+		registry.setValue("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/DisplayName", "Simple Viewer");
+		registry.setValue("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/UninstallString", QString("\"%1\" %2").arg(QDir::toNativeSeparators(QDir(installPath).absoluteFilePath("WinInstaller.exe"))).arg("-uninstall"));
+		registry.setValue("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/DisplayIcon", QString("\"%1\"").arg(QDir::toNativeSeparators(QDir(installPath).absoluteFilePath("data/icon.ico"))));
+		registry.setValue("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/EstimatedSize", 84787);
+		registry.setValue("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/Publisher", "Bastian Weber");
+		registry.setValue("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/DisplayVersion", "Alpha 2");
+		registry.setValue("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/NoModify", "1");
+		registry.setValue("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/NoRepair", "1");
 	}
 
 	void InstallerInterface::copyAllFilesInDirectory(QDir const& sourceDir, QDir const& destinationDir) {
