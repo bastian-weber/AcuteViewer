@@ -37,6 +37,7 @@ namespace wi {
 		QPushButton* cancelButton;
 	private slots:
 		void install();
+		void reactToBrowseButtonClick();
 	signals:
 	};
 }
