@@ -5,6 +5,12 @@ namespace wi {
 	InstallerInterface::InstallerInterface(QWidget *parent)
 		: QMainWindow(parent),
 		currentlySelectedPath(QDir::toNativeSeparators(QDir::cleanPath(QString(getenv("PROGRAMFILES")) + QString("/Simple Viewer")))) {
+		
+		QSettings registry("HKEY_LOCAL_MACHINE\\SOFTWARE", QSettings::NativeFormat);
+		if (registry.contains("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/UninstallString")) {
+			currentlySelectedPath = QDir(QFileInfo(registry.value("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/UninstallString").toString().section('"', 1, 1)).path());
+		}
+		this->setWindowTitle("Simple Viewer Installer");
 
 		this->mainWidget = new QWidget(this);
 
@@ -138,6 +144,7 @@ namespace wi {
 					QFile::remove(newPath);
 				}
 				QFile::copy(oldPath, newPath);
+				QCoreApplication::processEvents();
 			}
 		}
 	}
@@ -157,6 +164,43 @@ namespace wi {
 		InstallerInterface::copyAllFilesInDirectory(currentPath, installPath);
 	}
 
+	bool InstallerInterface::createStartMenuEntry(QString targetPath) {
+		targetPath = QDir::toNativeSeparators(targetPath);
+
+		WCHAR startMenuPath[MAX_PATH];
+		HRESULT result = SHGetFolderPathW(NULL, CSIDL_COMMON_PROGRAMS, NULL, 0, startMenuPath);
+
+		if (SUCCEEDED(result)) {
+			QString linkPath = QDir(QString::fromWCharArray(startMenuPath)).absoluteFilePath("Simple Viewer.lnk");
+
+			CoInitialize(NULL);
+			IShellLinkW* shellLink = NULL;
+			result = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_ALL, IID_IShellLinkW, (void**)&shellLink);
+			if (SUCCEEDED(result)) {
+				shellLink->SetPath(reinterpret_cast<LPCWSTR>(targetPath.utf16()));
+				shellLink->SetDescription(L"Simple Viewer image viewer");
+				shellLink->SetIconLocation(reinterpret_cast<LPCWSTR>(targetPath.utf16()), 0);
+
+				IPersistFile* persistFile;
+				result = shellLink->QueryInterface(IID_IPersistFile, (void**)&persistFile);
+
+				if (SUCCEEDED(result)) {
+					result = persistFile->Save(reinterpret_cast<LPCOLESTR>(linkPath.utf16()), TRUE);
+
+					persistFile->Release();
+				} else {
+					return false;
+				}
+				shellLink->Release();
+			} else {
+				return false;
+			}
+		} else {
+			return false;
+		}
+		return true;
+	}
+
 	void InstallerInterface::disableControls() {
 		this->browseButton->setEnabled(false);
 		this->startMenuCheckbox->setEnabled(false);
@@ -168,23 +212,13 @@ namespace wi {
 
 	void InstallerInterface::install() {
 		this->disableControls();
-		QProgressDialog progressDialog(tr("Calculating thinned image, please wait."), QString(), 0, 100, this, Qt::CustomizeWindowHint | Qt::WindowTitleHint);
-		progressDialog.setWindowModality(Qt::WindowModal);
-		progressDialog.setMinimumWidth(350);
-		progressDialog.setWindowTitle(tr("Installing..."));
-		progressDialog.reset();
-		progressDialog.show();
-		QCoreApplication::processEvents();
+		this->setWindowTitle(this->windowTitle() + QString("- Installing..."));
 		InstallerInterface::installFiles(this->currentlySelectedPath);
-		progressDialog.setValue(50);
-		QCoreApplication::processEvents();
 		InstallerInterface::registerProgramInRegistry(this->currentlySelectedPath);
-		progressDialog.setValue(100);
-		QCoreApplication::processEvents();
-		progressDialog.close();
+		if (this->startMenuCheckbox->isChecked()) this->createStartMenuEntry(this->currentlySelectedPath.absoluteFilePath("SimpleViewer.exe"));
 		QMessageBox msgBox;
 		msgBox.setWindowTitle(QObject::tr("Installation Successful"));
-		msgBox.setText(QObject::tr("The installation was successful."));
+		msgBox.setText(QObject::tr("The installation was successful. The installer will now quit."));
 		msgBox.setStandardButtons(QMessageBox::Close);
 		msgBox.exec();
 		this->close();

@@ -8,6 +8,9 @@
 #include <QtGui/QtGui>
 #include <QtWidgets/QtWidgets>
 
+//for creating windows shortcuts
+#include <shlobj.h>
+
 namespace wi {
 
 	class InstallerInterface : public QMainWindow {
@@ -21,6 +24,7 @@ namespace wi {
 		static void registerProgramInRegistry(QDir installPath);
 		static void copyAllFilesInDirectory(QDir const& sourceDir, QDir const& destinationDir);
 		static void installFiles(QDir installPath);
+		static bool createStartMenuEntry(QString targetPath);
 		void disableControls();
 
 		//variables
