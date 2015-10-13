@@ -13,7 +13,7 @@ FILESUBTYPE 0x0L
 {
 	BLOCK "StringFileInfo" {
 		BLOCK "040904b0"{
-				VALUE "FileDescription",  "An image viewer featuring a minimal interface design and high-quality image display.\0"
+				VALUE "FileDescription",  "Simple Viewer.\0"
 				VALUE "OriginalFilename", "SimpleViewer.exe\0"
 				VALUE "ProductName",      "Simple Viewer\0"
 				VALUE "ProductVersion",   "1 Beta 1\0"
