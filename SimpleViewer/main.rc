@@ -16,7 +16,7 @@ FILESUBTYPE 0x0L
 				VALUE "FileDescription",  "An image viewer featuring a minimal interface design and high-quality image display.\0"
 				VALUE "OriginalFilename", "SimpleViewer.exe\0"
 				VALUE "ProductName",      "Simple Viewer\0"
-				VALUE "ProductVersion",   "Alpha 2\0"
+				VALUE "ProductVersion",   "1 Beta 1\0"
 				VALUE "CompanyName",	  "Bastian Weber\0"
 				VALUE "InternalName",	  "Simple Viewer\0"
 			}

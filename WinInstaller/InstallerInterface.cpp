@@ -76,62 +76,76 @@ namespace wi {
 	//=============================================================================== PRIVATE ===============================================================================\\
 
 	void InstallerInterface::registerProgramInRegistry(QDir installPath) {
-		QSettings registry("HKEY_LOCAL_MACHINE\\SOFTWARE", QSettings::NativeFormat);
-		//filetypes
+		QDir dataPath = installPath;
+		dataPath.cd("data");
 		QString openCommand = QString("\"%1\\SimpleViewer.exe\" \"%2\"").arg(QDir::toNativeSeparators(installPath.absolutePath())).arg("%1");
-		registry.setValue("Classes/SimpleViewer.AssocFile.TIF/.", "Tif Image File");
-		registry.setValue("Classes/SimpleViewer.AssocFile.TIF/shell/open/command/.", openCommand);
-		registry.setValue("Classes/SimpleViewer.AssocFile.BMP/.", "Bitmap ImageFile");
-		registry.setValue("Classes/SimpleViewer.AssocFile.BMP/shell/open/command/.", openCommand);
-		registry.setValue("Classes/SimpleViewer.AssocFile.JPG/.", "Jpeg Image File");
-		registry.setValue("Classes/SimpleViewer.AssocFile.JPG/shell/open/command/.", openCommand);
-		registry.setValue("Classes/SimpleViewer.AssocFile.JP2/.", "Jpeg 2000 Image File");
-		registry.setValue("Classes/SimpleViewer.AssocFile.JP2/shell/open/command/.", openCommand);
-		registry.setValue("Classes/SimpleViewer.AssocFile.PNG/.", "Portable Network Graphics");
-		registry.setValue("Classes/SimpleViewer.AssocFile.PNG/shell/open/command/.", openCommand);
-		registry.setValue("Classes/SimpleViewer.AssocFile.WEBP/.", "WebP Image File");
-		registry.setValue("Classes/SimpleViewer.AssocFile.WEBP/shell/open/command/.", openCommand);
-		registry.setValue("Classes/SimpleViewer.AssocFile.PBM/.", "Portable Image Format");
-		registry.setValue("Classes/SimpleViewer.AssocFile.PBM/shell/open/command/.", openCommand);
-		registry.setValue("Classes/SimpleViewer.AssocFile.SR/.", "Sun Raster");
-		registry.setValue("Classes/SimpleViewer.AssocFile.SR/shell/open/command/.", openCommand);
+		//filetypes
+		QString icoPath = QString("\"%1\\%2.ico\"").arg(QDir::toNativeSeparators(dataPath.absolutePath()));
+		QSettings registryHklm("HKEY_LOCAL_MACHINE\\SOFTWARE", QSettings::NativeFormat);
+		registryHklm.setValue("Classes/SimpleViewer.AssocFile.TIF/.", "Tif Image File");
+		registryHklm.setValue("Classes/SimpleViewer.AssocFile.TIF/DefaultIcon/.", icoPath.arg("tif"));
+		registryHklm.setValue("Classes/SimpleViewer.AssocFile.TIF/shell/open/command/.", openCommand);
+		registryHklm.setValue("Classes/SimpleViewer.AssocFile.BMP/.", "Bitmap ImageFile");
+		registryHklm.setValue("Classes/SimpleViewer.AssocFile.BMP/DefaultIcon/.", icoPath.arg("bmp"));
+		registryHklm.setValue("Classes/SimpleViewer.AssocFile.BMP/shell/open/command/.", openCommand);
+		registryHklm.setValue("Classes/SimpleViewer.AssocFile.JPG/.", "Jpeg Image File");
+		registryHklm.setValue("Classes/SimpleViewer.AssocFile.JPG/DefaultIcon/.", icoPath.arg("jpg"));
+		registryHklm.setValue("Classes/SimpleViewer.AssocFile.JPG/shell/open/command/.", openCommand);
+		registryHklm.setValue("Classes/SimpleViewer.AssocFile.JP2/.", "Jpeg 2000 Image File");
+		registryHklm.setValue("Classes/SimpleViewer.AssocFile.JP2/DefaultIcon/.", icoPath.arg("jp2"));
+		registryHklm.setValue("Classes/SimpleViewer.AssocFile.JP2/shell/open/command/.", openCommand);
+		registryHklm.setValue("Classes/SimpleViewer.AssocFile.PNG/.", "Portable Network Graphics");
+		registryHklm.setValue("Classes/SimpleViewer.AssocFile.PNG/DefaultIcon/.", icoPath.arg("png"));
+		registryHklm.setValue("Classes/SimpleViewer.AssocFile.PNG/shell/open/command/.", openCommand);
+		registryHklm.setValue("Classes/SimpleViewer.AssocFile.WEBP/.", "WebP Image File");
+		registryHklm.setValue("Classes/SimpleViewer.AssocFile.WEBP/DefaultIcon/.", icoPath.arg("webp"));
+		registryHklm.setValue("Classes/SimpleViewer.AssocFile.WEBP/shell/open/command/.", openCommand);
+		registryHklm.setValue("Classes/SimpleViewer.AssocFile.PBM/.", "Portable Image Format");
+		registryHklm.setValue("Classes/SimpleViewer.AssocFile.PBM/DefaultIcon/.", icoPath.arg("pbm"));
+		registryHklm.setValue("Classes/SimpleViewer.AssocFile.PBM/shell/open/command/.", openCommand);
+		registryHklm.setValue("Classes/SimpleViewer.AssocFile.SR/.", "Sun Raster");
+		registryHklm.setValue("Classes/SimpleViewer.AssocFile.SR/DefaultIcon/.", icoPath.arg("sr"));
+		registryHklm.setValue("Classes/SimpleViewer.AssocFile.SR/shell/open/command/.", openCommand);
 		//capabilities
-		registry.setValue("Simple Viewer/Capabilities/ApplicationName", "Simple Viewer");
-		registry.setValue("Simple Viewer/Capabilities/ApplicationDescription", "An image viewer featuring a minimal interface design and high-quality image display.");
+		registryHklm.setValue("Simple Viewer/Capabilities/ApplicationName", "Simple Viewer");
+		registryHklm.setValue("Simple Viewer/Capabilities/ApplicationDescription", "An image viewer featuring a minimal interface design and high-quality image display.");
 		//tif
-		registry.setValue("Simple Viewer/Capabilities/FileAssociations/.tif", "SimpleViewer.AssocFile.TIF");
-		registry.setValue("Simple Viewer/Capabilities/FileAssociations/.tiff", "SimpleViewer.AssocFile.TIF");
+		registryHklm.setValue("Simple Viewer/Capabilities/FileAssociations/.tif", "SimpleViewer.AssocFile.TIF");
+		registryHklm.setValue("Simple Viewer/Capabilities/FileAssociations/.tiff", "SimpleViewer.AssocFile.TIF");
 		//bmp, dib
-		registry.setValue("Simple Viewer/Capabilities/FileAssociations/.bmp", "SimpleViewer.AssocFile.BMP");
-		registry.setValue("Simple Viewer/Capabilities/FileAssociations/.dib", "SimpleViewer.AssocFile.BMP");
+		registryHklm.setValue("Simple Viewer/Capabilities/FileAssociations/.bmp", "SimpleViewer.AssocFile.BMP");
+		registryHklm.setValue("Simple Viewer/Capabilities/FileAssociations/.dib", "SimpleViewer.AssocFile.BMP");
 		//jpeg, jpg, jpe
-		registry.setValue("Simple Viewer/Capabilities/FileAssociations/.jpeg", "SimpleViewer.AssocFile.JPG");
-		registry.setValue("Simple Viewer/Capabilities/FileAssociations/.jpg", "SimpleViewer.AssocFile.JPG");
-		registry.setValue("Simple Viewer/Capabilities/FileAssociations/.jpe", "SimpleViewer.AssocFile.JPG");
+		registryHklm.setValue("Simple Viewer/Capabilities/FileAssociations/.jpeg", "SimpleViewer.AssocFile.JPG");
+		registryHklm.setValue("Simple Viewer/Capabilities/FileAssociations/.jpg", "SimpleViewer.AssocFile.JPG");
+		registryHklm.setValue("Simple Viewer/Capabilities/FileAssociations/.jpe", "SimpleViewer.AssocFile.JPG");
 		//jp2
-		registry.setValue("Simple Viewer/Capabilities/FileAssociations/.jp2", "SimpleViewer.AssocFile.JP2");
+		registryHklm.setValue("Simple Viewer/Capabilities/FileAssociations/.jp2", "SimpleViewer.AssocFile.JP2");
 		//png
-		registry.setValue("Simple Viewer/Capabilities/FileAssociations/.png", "SimpleViewer.AssocFile.PNG");
+		registryHklm.setValue("Simple Viewer/Capabilities/FileAssociations/.png", "SimpleViewer.AssocFile.PNG");
 		//webp
-		registry.setValue("Simple Viewer/Capabilities/FileAssociations/.webp", "SimpleViewer.AssocFile.WEBP");
+		registryHklm.setValue("Simple Viewer/Capabilities/FileAssociations/.webp", "SimpleViewer.AssocFile.WEBP");
 		//pbm, pgm, ppm
-		registry.setValue("Simple Viewer/Capabilities/FileAssociations/.pbm", "SimpleViewer.AssocFile.PBM");
-		registry.setValue("Simple Viewer/Capabilities/FileAssociations/.pgm", "SimpleViewer.AssocFile.PBM");
-		registry.setValue("Simple Viewer/Capabilities/FileAssociations/.ppm", "SimpleViewer.AssocFile.PBM");
+		registryHklm.setValue("Simple Viewer/Capabilities/FileAssociations/.pbm", "SimpleViewer.AssocFile.PBM");
+		registryHklm.setValue("Simple Viewer/Capabilities/FileAssociations/.pgm", "SimpleViewer.AssocFile.PBM");
+		registryHklm.setValue("Simple Viewer/Capabilities/FileAssociations/.ppm", "SimpleViewer.AssocFile.PBM");
 		//sr, ras
-		registry.setValue("Simple Viewer/Capabilities/FileAssociations/.sr", "SimpleViewer.AssocFile.SR");
-		registry.setValue("Simple Viewer/Capabilities/FileAssociations/.ras", "SimpleViewer.AssocFile.SR");
+		registryHklm.setValue("Simple Viewer/Capabilities/FileAssociations/.sr", "SimpleViewer.AssocFile.SR");
+		registryHklm.setValue("Simple Viewer/Capabilities/FileAssociations/.ras", "SimpleViewer.AssocFile.SR");
 		//register application
-		registry.setValue("RegisteredApplications/Simple Viewer", "SOFTWARE\\Simple Viewer\\Capabilities");
+		registryHklm.setValue("RegisteredApplications/Simple Viewer", "SOFTWARE\\Simple Viewer\\Capabilities");
 		//uninstallation entry
-		registry.setValue("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/DisplayName", "Simple Viewer");
-		registry.setValue("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/UninstallString", QString("\"%1\" %2").arg(QDir::toNativeSeparators(QDir(installPath).absoluteFilePath("WinInstaller.exe"))).arg("-uninstall"));
-		registry.setValue("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/DisplayIcon", QString("\"%1\"").arg(QDir::toNativeSeparators(QDir(installPath).absoluteFilePath("data/icon.ico"))));
-		registry.setValue("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/EstimatedSize", 84787);
-		registry.setValue("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/Publisher", "Bastian Weber");
-		registry.setValue("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/DisplayVersion", "Alpha 2");
-		registry.setValue("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/NoModify", "1");
-		registry.setValue("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/NoRepair", "1");
+		registryHklm.setValue("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/DisplayName", "Simple Viewer");
+		registryHklm.setValue("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/UninstallString", QString("\"%1\" %2").arg(QDir::toNativeSeparators(QDir(installPath).absoluteFilePath("WinInstaller.exe"))).arg("-uninstall"));
+		registryHklm.setValue("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/DisplayIcon", QString("\"%1\"").arg(QDir::toNativeSeparators(QDir(installPath).absoluteFilePath("data/icon.ico"))));
+		registryHklm.setValue("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/EstimatedSize", 84787);
+		registryHklm.setValue("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/Publisher", "Bastian Weber");
+		registryHklm.setValue("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/DisplayVersion", "1.0 Beta 1");
+		registryHklm.setValue("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/NoModify", "1");
+		registryHklm.setValue("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/NoRepair", "1");
+		//set friendly app name
+		QSettings registryHkcr("HKEY_CLASSES_ROOT\\Applications", QSettings::NativeFormat);
+		registryHkcr.setValue("SimpleViewer.exe/shell/open/FriendlyAppName", "Simple Viewer");
 	}
 
 	void InstallerInterface::copyAllFilesInDirectory(QDir const& sourceDir, QDir const& destinationDir) {
@@ -213,6 +227,7 @@ namespace wi {
 	void InstallerInterface::install() {
 		this->disableControls();
 		this->setWindowTitle(this->windowTitle() + QString("- Installing..."));
+		QCoreApplication::processEvents();
 		InstallerInterface::installFiles(this->currentlySelectedPath);
 		InstallerInterface::registerProgramInRegistry(this->currentlySelectedPath);
 		if (this->startMenuCheckbox->isChecked()) this->createStartMenuEntry(this->currentlySelectedPath.absoluteFilePath("SimpleViewer.exe"));
