@@ -63,6 +63,14 @@ void removeFiles(QDir const& installDir) {
 	}
 	installDir.rmdir("data");
 
+	//remove start menu entry
+	WCHAR startMenuPath[MAX_PATH];
+	HRESULT result = SHGetFolderPathW(NULL, CSIDL_COMMON_PROGRAMS, NULL, 0, startMenuPath);
+
+	if (SUCCEEDED(result)) {
+		QFile::remove(QDir(QString::fromWCharArray(startMenuPath)).absoluteFilePath("Simple Viewer.lnk"));
+	}
+
 }
 
 void initiateSelfRemoval(QDir installDir) {
