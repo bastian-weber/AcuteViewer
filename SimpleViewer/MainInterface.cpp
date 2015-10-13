@@ -86,7 +86,7 @@ namespace sv {
 		//timer for thread cleanup
 		this->threadCleanUpTimer = new QTimer(this);
 		this->threadCleanUpTimer->setSingleShot(true);
-		QObject::connect(this->mouseHideTimer, SIGNAL(timeout()), this, SLOT(cleanUpThreads()));
+		QObject::connect(this->threadCleanUpTimer, SIGNAL(timeout()), this, SLOT(cleanUpThreads()));
 
 		//load settings
 		this->showInfoAction->setChecked(this->settings.value("showImageInfo", false).toBool());
@@ -285,6 +285,7 @@ namespace sv {
 	}
 
 	size_t MainInterface::previousFileIndex() const {
+		if (this->fileIndex == 0) return this->filesInDirectory.size() - 1;
 		return (this->fileIndex - 1) % this->filesInDirectory.size();
 	}
 
@@ -294,6 +295,7 @@ namespace sv {
 
 	void MainInterface::loadImage(QString path) {
 		if (this->loading) return;
+		std::unique_lock<std::mutex> lock(this->threadDeletionMutex);
 		this->loading = true;
 		//find the path in the current directory listing
 		QFileInfo fileInfo = QFileInfo(QDir::cleanPath(path));
@@ -332,6 +334,7 @@ namespace sv {
 
 	void MainInterface::loadNextImage() {
 		if (this->loading) return;
+		std::unique_lock<std::mutex> lock(this->threadDeletionMutex);
 		this->loading = true;
 
 		if (this->filesInDirectory.size() != 0) {
@@ -345,7 +348,6 @@ namespace sv {
 
 			this->currentFileInfo = QFileInfo(this->getFullImagePath(this->fileIndex));
 			//start loading next image
-			std::unique_lock<std::mutex> lock(this->threadDeletionMutex);
 			if (this->threads.find(this->filesInDirectory[this->nextFileIndex()]) == this->threads.end()) {
 				this->threads[this->filesInDirectory[this->nextFileIndex()]] = std::async(std::launch::async, &MainInterface::readImage, this, this->getFullImagePath(this->nextFileIndex()), false);
 			}
@@ -358,6 +360,7 @@ namespace sv {
 
 	void MainInterface::loadPreviousImage() {
 		if (this->loading) return;
+		std::unique_lock<std::mutex> lock(this->threadDeletionMutex);
 		this->loading = true;
 		if (this->filesInDirectory.size() != 0) {
 			this->fileIndex = this->previousFileIndex();
@@ -369,7 +372,6 @@ namespace sv {
 			this->image = this->threads[this->filesInDirectory[this->fileIndex]].get();
 			this->currentFileInfo = QFileInfo(this->getFullImagePath(this->fileIndex));
 			//start loading previous image
-			std::unique_lock<std::mutex> lock(this->threadDeletionMutex);
 			if (this->threads.find(this->filesInDirectory[this->previousFileIndex()]) == this->threads.end()) {
 				this->threads[this->filesInDirectory[this->previousFileIndex()]] = std::async(std::launch::async, &MainInterface::readImage, this, this->getFullImagePath(this->previousFileIndex()), false);
 			}
@@ -428,9 +430,11 @@ namespace sv {
 
 	void MainInterface::cleanUpThreads() {
 		std::lock_guard<std::mutex> lock(this->threadDeletionMutex);
+		size_t previousIndex = this->previousFileIndex();
+		size_t nextIndex = this->nextFileIndex();
 		for (std::map<QString, std::shared_future<cv::Mat>>::iterator it = this->threads.begin(); it != this->threads.end();) {
 			int index = this->filesInDirectory.indexOf(it->first);
-			if (index != -1 && (index < (long(this->fileIndex) - 1) || index > (long(this->fileIndex) + 1)) && it->second.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
+			if (index != -1 && index != this->fileIndex && index != previousIndex && index != nextIndex && it->second.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
 				it = this->threads.erase(it);
 			} else {
 				++it;
