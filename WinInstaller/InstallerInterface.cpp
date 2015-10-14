@@ -164,18 +164,20 @@ namespace wi {
 	}
 
 	void InstallerInterface::installFiles(QDir installPath) {
-		if (!installPath.exists()) installPath.mkpath(installPath.absolutePath());
-		installPath.mkpath(QDir::cleanPath(installPath.absolutePath() + QString("/data")));
-		installPath.mkpath(QDir::cleanPath(installPath.absolutePath() + QString("/platforms")));
 		QDir currentPath(QCoreApplication::applicationDirPath());
-		InstallerInterface::copyAllFilesInDirectory(currentPath, installPath);
-		currentPath.cd("data");
-		installPath.cd("data");
-		InstallerInterface::copyAllFilesInDirectory(currentPath, installPath);
-		currentPath.cd("../platforms");
-		installPath.cd("../platforms");
-		QStringList filesInPlatformsFolder = currentPath.entryList();
-		InstallerInterface::copyAllFilesInDirectory(currentPath, installPath);
+		if (currentPath != installPath) {
+			if (!installPath.exists()) installPath.mkpath(installPath.absolutePath());
+			installPath.mkpath(QDir::cleanPath(installPath.absolutePath() + QString("/data")));
+			installPath.mkpath(QDir::cleanPath(installPath.absolutePath() + QString("/platforms")));
+			InstallerInterface::copyAllFilesInDirectory(currentPath, installPath);
+			currentPath.cd("data");
+			installPath.cd("data");
+			InstallerInterface::copyAllFilesInDirectory(currentPath, installPath);
+			currentPath.cd("../platforms");
+			installPath.cd("../platforms");
+			QStringList filesInPlatformsFolder = currentPath.entryList();
+			InstallerInterface::copyAllFilesInDirectory(currentPath, installPath);
+		}
 	}
 
 	bool InstallerInterface::createStartMenuEntry(QString targetPath) {
@@ -234,6 +236,7 @@ namespace wi {
 		QMessageBox msgBox;
 		msgBox.setWindowTitle(QObject::tr("Installation Successful"));
 		msgBox.setText(QObject::tr("The installation was successful. The installer will now quit."));
+		msgBox.setIcon(QMessageBox::Information);
 		msgBox.setStandardButtons(QMessageBox::Close);
 		msgBox.exec();
 		this->close();

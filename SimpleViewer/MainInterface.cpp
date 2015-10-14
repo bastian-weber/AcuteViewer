@@ -476,6 +476,7 @@ namespace sv {
 			QMessageBox msgBox;
 			msgBox.setWindowTitle(tr("Installer not found."));
 			msgBox.setText(tr("The installer executable (WinInstaller.exe) could not be found. Make sure it is located in the same directory as SimpleViewer.exe."));
+			msgBox.setIcon(QMessageBox::Critical);
 			msgBox.exec();
 		}
 	}

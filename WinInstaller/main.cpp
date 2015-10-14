@@ -106,6 +106,7 @@ int init(int argc, char* argv[]) {
 		QSettings registry("HKEY_LOCAL_MACHINE\\SOFTWARE", QSettings::NativeFormat);
 		if (registry.contains("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/UninstallString")) {
 			msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+			msgBox.setIcon(QMessageBox::Question);
 			msgBox.setWindowTitle(QObject::tr("Uninstall"));
 			msgBox.setText(QObject::tr("Are you sure you want to remove the Simple Viewer application from your system?"));
 			if (QMessageBox::Yes == msgBox.exec()) {
@@ -115,14 +116,16 @@ int init(int argc, char* argv[]) {
 				clearRegistryEntries();
 				msgBox.setWindowTitle(QObject::tr("Uninstall"));
 				msgBox.setText(QObject::tr("The application was successfully removed."));
+				msgBox.setIcon(QMessageBox::Information);
 				msgBox.setStandardButtons(QMessageBox::Ok);
 				msgBox.exec();
 				initiateSelfRemoval(installDir);
 			}
 		} else {
 			clearRegistryEntries();
-			msgBox.setWindowTitle(QObject::tr("Program Not Found"));
+			msgBox.setWindowTitle(QObject::tr("Application Not Found"));
 			msgBox.setText(QObject::tr("Uninstallation is not possible because no existing Simple Viewer installation could be found."));
+			msgBox.setIcon(QMessageBox::Critical);
 			msgBox.setStandardButtons(QMessageBox::Close);
 			msgBox.exec();
 		}
