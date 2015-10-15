@@ -1,4 +1,6 @@
 #include <iostream>
+#include <chrono>
+#include <thread>
 
 #include <QtCore/QtCore>
 #include <QtGui/QtGui>
@@ -31,6 +33,7 @@ void removeFiles(QDir const& installDir) {
 						"icuuc54.dll",
 						"opencv_world300.dll",
 						"SimpleViewer.exe",
+						"SimpleViewer.ini",
 						"data/icon.ico",
 						"data/icon_16.png",
 						"data/icon_16_installer.png",
