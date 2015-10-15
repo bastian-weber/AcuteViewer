@@ -239,7 +239,7 @@ namespace wi {
 		msgBox.setIcon(QMessageBox::Information);
 		msgBox.setStandardButtons(QMessageBox::Close);
 		msgBox.exec();
-		this->close();
+		QCoreApplication::quit();
 	}
 
 	void InstallerInterface::reactToBrowseButtonClick() {

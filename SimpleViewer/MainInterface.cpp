@@ -23,6 +23,14 @@ namespace sv {
 		QObject::connect(this->menuBar(), SIGNAL(triggered(QAction*)), this, SLOT(hideMenuBar(QAction*)));
 		this->fileMenu = this->menuBar()->addMenu(tr("&File"));
 		this->viewMenu = this->menuBar()->addMenu(tr("&View"));
+#ifdef Q_OS_WIN
+		this->applicationMenu = this->menuBar()->addMenu(tr("&Application"));
+		QObject::connect(this->applicationMenu, SIGNAL(aboutToShow()), this, SLOT(populateApplicationMenu()));
+		this->installAction = new QAction(tr("&Install"), this);
+		QObject::connect(this->installAction, SIGNAL(triggered()), this, SLOT(runInstaller()));
+		this->uninstallAction = new QAction(tr("&Uninstall"), this);
+		QObject::connect(this->uninstallAction, SIGNAL(triggered()), this, SLOT(runUninstaller()));
+#endif
 
 		this->openAction = new QAction(tr("&Open File"), this);
 		this->openAction->setShortcut(QKeySequence::Open);
@@ -106,13 +114,17 @@ namespace sv {
 		delete this->imageView;
 		delete this->fileMenu;
 		delete this->viewMenu;
+		delete this->applicationMenu;
 		delete this->quitAction;
 		delete this->openAction;
 		delete this->showInfoAction;
 		delete this->smoothingAction;
 		delete this->enlargementAction;
 		delete this->menuBarAutoHideAction;
+		delete this->installAction;
+		delete this->uninstallAction;
 		delete this->mouseHideTimer;
+		delete this->threadCleanUpTimer;
 	}
 
 	QSize MainInterface::sizeHint() const {
@@ -424,7 +436,16 @@ namespace sv {
 		}
 	}
 
+	bool MainInterface::applicationIsInstalled() {
+#ifdef Q_OS_WIN
+		QSettings registry("HKEY_LOCAL_MACHINE\\SOFTWARE", QSettings::NativeFormat);
+		return registry.contains("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/UninstallString");
 
+#else
+		return false;
+#endif
+
+	}
 
 	//============================================================================ PRIVATE SLOTS =============================================================================\\
 
@@ -444,7 +465,7 @@ namespace sv {
 	}
 
 	void MainInterface::quit() {
-		this->close();
+		QCoreApplication::quit();
 	}
 
 	void MainInterface::hideMouse() const {
@@ -468,10 +489,22 @@ namespace sv {
 		}
 	}
 
+	void MainInterface::populateApplicationMenu() {
+		this->applicationMenu->removeAction(installAction);
+		this->applicationMenu->removeAction(uninstallAction);
+		if (applicationIsInstalled()) {
+			this->applicationMenu->addAction(this->uninstallAction);
+		} else {
+			this->applicationMenu->addAction(this->installAction);
+		}
+
+	}
+
 	void MainInterface::runInstaller() {
 		QString installerPath = QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("WinInstaller.exe");
 		if (QFileInfo(installerPath).exists()) {
-			QDesktopServices::openUrl(QUrl::fromLocalFile(installerPath));
+			ShellExecuteW(GetDesktopWindow(), nullptr, reinterpret_cast<LPCWSTR>(installerPath.utf16()), nullptr, reinterpret_cast<LPCWSTR>(QCoreApplication::applicationDirPath().utf16()), SW_SHOW);
+			QCoreApplication::quit();
 		} else {
 			QMessageBox msgBox;
 			msgBox.setWindowTitle(tr("Installer not found."));
@@ -479,6 +512,22 @@ namespace sv {
 			msgBox.setIcon(QMessageBox::Critical);
 			msgBox.exec();
 		}
+	}
+
+	void MainInterface::runUninstaller() {
+#ifdef Q_OS_WIN
+		QString installerPath = QDir::toNativeSeparators(QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("WinInstaller.exe"));
+		if (QFileInfo(installerPath).exists()) {
+			ShellExecuteW(GetDesktopWindow(), nullptr, reinterpret_cast<LPCWSTR>(installerPath.utf16()), L"-uninstall -dontask", reinterpret_cast<LPCWSTR>(QCoreApplication::applicationDirPath().utf16()), SW_SHOW);
+			QCoreApplication::quit();
+		} else {
+			QMessageBox msgBox;
+			msgBox.setWindowTitle(tr("Installer not found."));
+			msgBox.setText(tr("The installer executable (WinInstaller.exe) could not be found. Make sure it is located in the same directory as SimpleViewer.exe."));
+			msgBox.setIcon(QMessageBox::Critical);
+			msgBox.exec();
+		}
+#endif
 	}
 
 	void MainInterface::reactToshowInfoToggle(bool value) {

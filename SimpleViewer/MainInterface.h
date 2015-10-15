@@ -46,6 +46,7 @@ namespace sv {
 		void enterFullscreen();
 		void exitFullscreen();
 		void infoPaintFunction(QPainter& canvas);
+		bool applicationIsInstalled();
 
 		//variables
 		const QString programTitle = "Simple Viewer";
@@ -69,6 +70,7 @@ namespace sv {
 		//menus
 		QMenu* fileMenu;
 		QMenu* viewMenu;
+		QMenu* applicationMenu;
 		//actions
 		QAction* quitAction;
 		QAction* openAction;
@@ -76,6 +78,8 @@ namespace sv {
 		QAction* smoothingAction;
 		QAction* enlargementAction;
 		QAction* menuBarAutoHideAction;
+		QAction* installAction;
+		QAction* uninstallAction;
 		//timer
 		QTimer* mouseHideTimer;
 		QTimer* threadCleanUpTimer;
@@ -86,7 +90,9 @@ namespace sv {
 		void showMouse() const;
 		void showMenuBar();
 		void hideMenuBar(QAction* triggeringAction = nullptr);
+		void populateApplicationMenu();
 		void runInstaller();
+		void runUninstaller();
 		void reactToshowInfoToggle(bool value);
 		void reactToReadImageCompletion(cv::Mat image);
 		void openDialog();
