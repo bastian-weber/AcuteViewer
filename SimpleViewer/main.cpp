@@ -25,7 +25,6 @@ int init(int argc, char* argv[]) {
 	return app.exec();
 }
 
-//int main(int argc, char* argv[]) {
 int main(int argc, char* argv[]) {
 	return init(argc, argv);
 }
