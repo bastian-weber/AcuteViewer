@@ -503,7 +503,7 @@ namespace sv {
 	void MainInterface::runInstaller() {
 		QString installerPath = QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("WinInstaller.exe");
 		if (QFileInfo(installerPath).exists()) {
-			ShellExecuteW(GetDesktopWindow(), nullptr, reinterpret_cast<LPCWSTR>(installerPath.utf16()), nullptr, reinterpret_cast<LPCWSTR>(QCoreApplication::applicationDirPath().utf16()), SW_SHOW);
+			ShellExecuteW(GetDesktopWindow(), nullptr, reinterpret_cast<LPCWSTR>(installerPath.utf16()), nullptr, reinterpret_cast<LPCWSTR>(QCoreApplication::applicationDirPath().utf16()), SW_SHOWNORMAL);
 			QCoreApplication::quit();
 		} else {
 			QMessageBox msgBox;
@@ -518,7 +518,7 @@ namespace sv {
 #ifdef Q_OS_WIN
 		QString installerPath = QDir::toNativeSeparators(QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("WinInstaller.exe"));
 		if (QFileInfo(installerPath).exists()) {
-			ShellExecuteW(GetDesktopWindow(), nullptr, reinterpret_cast<LPCWSTR>(installerPath.utf16()), L"-uninstall -dontask", reinterpret_cast<LPCWSTR>(QCoreApplication::applicationDirPath().utf16()), SW_SHOW);
+			ShellExecuteW(GetDesktopWindow(), nullptr, reinterpret_cast<LPCWSTR>(installerPath.utf16()), L"-uninstall -dontask", reinterpret_cast<LPCWSTR>(QCoreApplication::applicationDirPath().utf16()), SW_SHOWNORMAL);
 			QCoreApplication::quit();
 		} else {
 			QMessageBox msgBox;
