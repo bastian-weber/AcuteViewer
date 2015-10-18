@@ -20,7 +20,7 @@ namespace sv {
 		this->imageView->setPreventMagnificationInDefaultZoom(true);
 		this->imageView->setEnablePostResizeSharpening(false);
 		this->imageView->setPostResizeSharpeningRadius(1);
-		this->imageView->setPostResizeSharpeningStrength(1);
+		this->imageView->setPostResizeSharpeningStrength(0.5);
 		setCentralWidget(this->imageView);
 
 		QObject::connect(this->menuBar(), SIGNAL(triggered(QAction*)), this, SLOT(hideMenuBar(QAction*)));
