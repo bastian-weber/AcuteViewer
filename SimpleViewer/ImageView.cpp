@@ -38,7 +38,7 @@ namespace hb {
 		_renderPolyline(false),
 		_useSmoothTransform(true),
 		_enablePostResizeSharpening(false),
-		_postResizeSharpeningStrength(1),
+		_postResizeSharpeningStrength(0.5),
 		_postResizeSharpeningRadius(1),
 		_polylineManipulationActive(false),
 		_polylinePointGrabbed(false),
