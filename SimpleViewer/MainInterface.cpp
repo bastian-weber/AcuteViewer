@@ -23,14 +23,14 @@ namespace sv {
 		QObject::connect(this->menuBar(), SIGNAL(triggered(QAction*)), this, SLOT(hideMenuBar(QAction*)));
 		this->fileMenu = this->menuBar()->addMenu(tr("&File"));
 		this->viewMenu = this->menuBar()->addMenu(tr("&View"));
-#ifdef Q_OS_WIN
+	#ifdef Q_OS_WIN
 		this->applicationMenu = this->menuBar()->addMenu(tr("&Application"));
 		QObject::connect(this->applicationMenu, SIGNAL(aboutToShow()), this, SLOT(populateApplicationMenu()));
 		this->installAction = new QAction(tr("&Install"), this);
 		QObject::connect(this->installAction, SIGNAL(triggered()), this, SLOT(runInstaller()));
 		this->uninstallAction = new QAction(tr("&Uninstall"), this);
 		QObject::connect(this->uninstallAction, SIGNAL(triggered()), this, SLOT(runUninstaller()));
-#endif
+	#endif
 
 		this->openAction = new QAction(tr("&Open File"), this);
 		this->openAction->setShortcut(QKeySequence::Open);
@@ -101,7 +101,7 @@ namespace sv {
 		this->enlargementAction->setChecked(this->settings.value("enlargeSmallImages", false).toBool());
 		this->smoothingAction->setChecked(this->settings.value("useSmoothEnlargmentInterpolation", false).toBool());
 		this->menuBarAutoHideAction->setChecked(!this->settings.value("autoHideMenuBar", true).toBool());
-		
+
 		this->menuBar()->setVisible(this->menuBarAutoHideAction->isChecked());
 
 		if (openWithFilename != QString()) {
@@ -264,7 +264,7 @@ namespace sv {
 		if (image.data) cv::cvtColor(image, image, CV_BGR2RGB);
 		if (emitSignals) emit(readImageFinished(image));
 		return image;
-		}
+	}
 
 	bool MainInterface::isASCII(QString const& string) {
 		bool isASCII = true;
@@ -341,7 +341,8 @@ namespace sv {
 			this->currentImageUnreadable = true;
 			this->imageView->resetImage();
 		}
-		this->setWindowTitle(QString("%1 - %2 - %3 of %4").arg(this->programTitle, this->currentFileInfo.fileName()).arg(this->fileIndex + 1).arg(this->filesInDirectory.size()));
+		this->setWindowTitle(QString("%1 - %2 - %3 of %4").arg(this->programTitle, 
+															   this->currentFileInfo.fileName()).arg(this->fileIndex + 1).arg(this->filesInDirectory.size()));
 	}
 
 	void MainInterface::loadNextImage() {
@@ -361,7 +362,11 @@ namespace sv {
 			this->currentFileInfo = QFileInfo(this->getFullImagePath(this->fileIndex));
 			//start loading next image
 			if (this->threads.find(this->filesInDirectory[this->nextFileIndex()]) == this->threads.end()) {
-				this->threads[this->filesInDirectory[this->nextFileIndex()]] = std::async(std::launch::async, &MainInterface::readImage, this, this->getFullImagePath(this->nextFileIndex()), false);
+				this->threads[this->filesInDirectory[this->nextFileIndex()]] = std::async(std::launch::async, 
+																						  &MainInterface::readImage, 
+																						  this, 
+																						  this->getFullImagePath(this->nextFileIndex()), 
+																						  false);
 			}
 			lock.unlock();
 			this->displayImageIfOk();
@@ -385,7 +390,11 @@ namespace sv {
 			this->currentFileInfo = QFileInfo(this->getFullImagePath(this->fileIndex));
 			//start loading previous image
 			if (this->threads.find(this->filesInDirectory[this->previousFileIndex()]) == this->threads.end()) {
-				this->threads[this->filesInDirectory[this->previousFileIndex()]] = std::async(std::launch::async, &MainInterface::readImage, this, this->getFullImagePath(this->previousFileIndex()), false);
+				this->threads[this->filesInDirectory[this->previousFileIndex()]] = std::async(std::launch::async, 
+																							  &MainInterface::readImage, 
+																							  this, 
+																							  this->getFullImagePath(this->previousFileIndex()), 
+																							  false);
 			}
 			lock.unlock();
 			this->displayImageIfOk();
@@ -426,24 +435,28 @@ namespace sv {
 		double lineSpacing = 30;
 		if (this->currentImageUnreadable) {
 			QString message = tr("This file could not be read:");
-			canvas.drawText(QPoint((canvas.device()->width() - metrics.width(message)) / 2.0, canvas.device()->height() / 2.0 - 0.5*lineSpacing), message);
-			canvas.drawText(QPoint((canvas.device()->width() - metrics.width(this->currentFileInfo.fileName())) / 2.0, canvas.device()->height() / 2.0 + 0.5*lineSpacing + metrics.height()), this->currentFileInfo.fileName());
+			canvas.drawText(QPoint((canvas.device()->width() - metrics.width(message)) / 2.0, canvas.device()->height() / 2.0 - 0.5*lineSpacing), 
+							message);
+			canvas.drawText(QPoint((canvas.device()->width() - metrics.width(this->currentFileInfo.fileName())) / 2.0, 
+								   canvas.device()->height() / 2.0 + 0.5*lineSpacing + metrics.height()), 
+							this->currentFileInfo.fileName());
 		}
 		if (this->showInfoAction->isChecked() && this->imageView->imageAssigned()) {
 		//draw current filename
-			canvas.drawText(QPoint(30, 30 + metrics.height()), this->currentFileInfo.fileName());
-			canvas.drawText(QPoint(30, 30 + lineSpacing + 2 * metrics.height()), QString("%1 Mb").arg(this->currentFileInfo.size() / 1048576.0, 0, 'f', 2));
+			canvas.drawText(QPoint(30, 30 + metrics.height()), 
+							this->currentFileInfo.fileName());
+			canvas.drawText(QPoint(30, 30 + lineSpacing + 2 * metrics.height()), 
+							QString("%1 Mb").arg(this->currentFileInfo.size() / 1048576.0, 0, 'f', 2));
 		}
 	}
 
 	bool MainInterface::applicationIsInstalled() {
-#ifdef Q_OS_WIN
+	#ifdef Q_OS_WIN
 		QSettings registry("HKEY_LOCAL_MACHINE\\SOFTWARE", QSettings::NativeFormat);
 		return registry.contains("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/UninstallString");
-
-#else
+	#else
 		return false;
-#endif
+	#endif
 
 	}
 
@@ -503,31 +516,39 @@ namespace sv {
 	void MainInterface::runInstaller() {
 		QString installerPath = QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("WinInstaller.exe");
 		if (QFileInfo(installerPath).exists()) {
-			ShellExecuteW(GetDesktopWindow(), nullptr, reinterpret_cast<LPCWSTR>(installerPath.utf16()), nullptr, reinterpret_cast<LPCWSTR>(QCoreApplication::applicationDirPath().utf16()), SW_SHOWNORMAL);
+			ShellExecuteW(GetDesktopWindow(), 
+						  nullptr, 
+						  reinterpret_cast<LPCWSTR>(installerPath.utf16()), 
+						  nullptr, 
+						  reinterpret_cast<LPCWSTR>(QCoreApplication::applicationDirPath().utf16()), 
+						  SW_SHOWNORMAL);
 			QCoreApplication::quit();
 		} else {
-			QMessageBox msgBox;
-			msgBox.setWindowTitle(tr("Installer not found."));
-			msgBox.setText(tr("The installer executable (WinInstaller.exe) could not be found. Make sure it is located in the same directory as SimpleViewer.exe."));
-			msgBox.setIcon(QMessageBox::Critical);
-			msgBox.exec();
+			QMessageBox::critical(this,
+								  tr("Installer not found"),
+								  tr("The installer executable (WinInstaller.exe) could not be found. Make sure it is located in the same directory as SimpleViewer.exe."),
+								  QMessageBox::Close);
 		}
 	}
 
 	void MainInterface::runUninstaller() {
-#ifdef Q_OS_WIN
+	#ifdef Q_OS_WIN
 		QString installerPath = QDir::toNativeSeparators(QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("WinInstaller.exe"));
 		if (QFileInfo(installerPath).exists()) {
-			ShellExecuteW(GetDesktopWindow(), nullptr, reinterpret_cast<LPCWSTR>(installerPath.utf16()), L"-uninstall -dontask", reinterpret_cast<LPCWSTR>(QCoreApplication::applicationDirPath().utf16()), SW_SHOWNORMAL);
+			ShellExecuteW(GetDesktopWindow(), 
+						  nullptr, 
+						  reinterpret_cast<LPCWSTR>(installerPath.utf16()), 
+						  L"-uninstall", 
+						  reinterpret_cast<LPCWSTR>(QCoreApplication::applicationDirPath().utf16()), 
+						  SW_SHOWNORMAL);
 			QCoreApplication::quit();
 		} else {
-			QMessageBox msgBox;
-			msgBox.setWindowTitle(tr("Installer not found."));
-			msgBox.setText(tr("The installer executable (WinInstaller.exe) could not be found. Make sure it is located in the same directory as SimpleViewer.exe."));
-			msgBox.setIcon(QMessageBox::Critical);
-			msgBox.exec();
+			QMessageBox::critical(this,
+								  tr("Installer not found"),
+								  tr("The installer executable (WinInstaller.exe) could not be found. Make sure it is located in the same directory as SimpleViewer.exe."),
+								  QMessageBox::Close);
 		}
-#endif
+	#endif
 	}
 
 	void MainInterface::reactToshowInfoToggle(bool value) {
@@ -542,17 +563,27 @@ namespace sv {
 			//preload next and previous image in background
 			std::lock_guard<std::mutex> lock(this->threadDeletionMutex);
 			if (this->threads.find(this->filesInDirectory[this->previousFileIndex()]) == this->threads.end()) {
-				this->threads[this->filesInDirectory[this->previousFileIndex()]] = std::async(std::launch::async, &MainInterface::readImage, this, this->getFullImagePath(this->previousFileIndex()), false);
+				this->threads[this->filesInDirectory[this->previousFileIndex()]] = std::async(std::launch::async, 
+																							  &MainInterface::readImage, 
+																							  this, 
+																							  this->getFullImagePath(this->previousFileIndex()), 
+																							  false);
 			}
 			if (this->threads.find(this->filesInDirectory[this->nextFileIndex()]) == this->threads.end()) {
-				this->threads[this->filesInDirectory[this->nextFileIndex()]] = std::async(std::launch::async, &MainInterface::readImage, this, this->getFullImagePath(this->nextFileIndex()), false);
+				this->threads[this->filesInDirectory[this->nextFileIndex()]] = std::async(std::launch::async, 
+																						  &MainInterface::readImage, 
+																						  this, this->getFullImagePath(this->nextFileIndex()), 
+																						  false);
 			}
 		}
 		this->loading = false;
 	}
 
 	void MainInterface::openDialog() {
-		QString path = QFileDialog::getOpenFileName(this, tr("Open Config File"), QDir::rootPath(), "All Files (*.*);; Image Files (*.bmp *.dib *.jpeg *.jpg *.jpe *.jpeg *.jp2 *.png *.webp *.pbm *.pgm *.ppm *.sr *.ras *.tiff *.tif);;");
+		QString path = QFileDialog::getOpenFileName(this, 
+													tr("Open Config File"), 
+													QDir::rootPath(), 
+													"All Files (*.*);; Image Files (*.bmp *.dib *.jpeg *.jpg *.jpe *.jpeg *.jp2 *.png *.webp *.pbm *.pgm *.ppm *.sr *.ras *.tiff *.tif);;");
 
 		if (!path.isEmpty()) {
 			this->loadImage(path);
