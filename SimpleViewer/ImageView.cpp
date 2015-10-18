@@ -37,6 +37,9 @@ namespace hb {
 		_polylineAssigned(false),
 		_renderPolyline(false),
 		_useSmoothTransform(true),
+		_enablePostResizeSharpening(false),
+		_postResizeSharpeningStrength(1),
+		_postResizeSharpeningRadius(1),
 		_polylineManipulationActive(false),
 		_polylinePointGrabbed(false),
 		_polylineSelected(false),
@@ -214,6 +217,11 @@ namespace hb {
 		update();
 	}
 
+	///Returns \c true if high quality downscaling is enabled, \c false otherwise.
+	bool ImageView::useHighQualityDownscaling() {
+		return _useHighQualityDownscaling;
+	}
+
 	///Specifies if the sampling will be done bilinear or nearest neighbour when the iamge is displayed at a magnification greater than 1.
 	void ImageView::setUseSmoothTransform(bool value) {
 		_useSmoothTransform = value;
@@ -223,6 +231,51 @@ namespace hb {
 	///Returns \c true if bilinear sampling is enabled, \c false otherwise.
 	bool ImageView::useSmoothTransform() const {
 		return _useSmoothTransform;
+	}
+
+	///If enabled the image will be unsharped masked after it has been downsampled to the current zoom level.
+	/**
+	* When resizing images to lower resolutions their sharpness impression might suffer.
+	* By enabling this feature images will be sharpened after they have resampled to a
+	* smaller size. The strenght and radius of this sharpening filter can be set via
+	* \c ImageView::setPostResizeSharpeningStrength(double value) and 
+	* \c ImageView::setPostResizeSharpeningRadius(double value). If the zoom level is
+	* at a level at which the image does not have to be downsampled, no sharpening
+	* filter will be applied.
+	*/
+	void ImageView::setEnablePostResizeSharpening(bool value) { 
+		_enablePostResizeSharpening = value;
+		updateResizedImage();
+		update();
+	}
+
+	///Returns \c true if the post resize sharpening is enabled, \c false otherwise.
+	bool ImageView::enablePostResizeSharpening() {
+		return _enablePostResizeSharpening;
+	}
+
+	///Sets the strength value of the post-resize unsharp masking filter to \p value.
+	void ImageView::setPostResizeSharpeningStrength(double value) { 
+		_postResizeSharpeningStrength = value;
+		updateResizedImage();
+		update();
+	}
+
+	///Returns the strength value of the post-resize unsharp masking filter.
+	double ImageView::postResizeSharpeningStrength() {
+		return _postResizeSharpeningStrength;
+	}
+
+	///Sets the radius value of the post-resize unsharp masking filter to \p value.
+	void ImageView::setPostResizeSharpeningRadius(double value) { 
+		_postResizeSharpeningRadius = value;
+		updateResizedImage();
+		update();
+	}
+
+	///Returns the radius value of the post-resize unsharp masking filter.
+	double ImageView::postResizeSharpeningRadius() {
+		return _postResizeSharpeningRadius;
 	}
 
 	///Enables or disables the ability to set new points and the ability to move already set ones; if adding points is enabled, manipulation of the polyline will be disabled.
@@ -1146,6 +1199,9 @@ namespace hb {
 						cv::Mat orig;
 						shallowCopyImageToMat(_image, orig);
 						cv::resize(orig, _downsampledMat, cv::Size(), scalingFactor, scalingFactor, cv::INTER_AREA);
+						if (_enablePostResizeSharpening) {
+							ImageView::sharpen(_downsampledMat, _postResizeSharpeningStrength, _postResizeSharpeningRadius);
+						}
 						deepCopyMatToImage(_downsampledMat, _downsampledImage);
 					} else {
 						//alternative
@@ -1153,6 +1209,9 @@ namespace hb {
 					}
 				} else {
 					cv::resize(_mat, _downsampledMat, cv::Size(), scalingFactor, scalingFactor, cv::INTER_AREA);
+					if (_enablePostResizeSharpening) {
+						ImageView::sharpen(_downsampledMat, _postResizeSharpeningStrength, _postResizeSharpeningRadius);
+					}
 					shallowCopyMatToImage(_downsampledMat, _downsampledImage);
 				}
 			}
@@ -1265,6 +1324,12 @@ namespace hb {
 			smallestDistance = std::abs(QVector2D::dotProduct(lineNormal, point1ToMouse));
 		}
 		return smallestDistance;
+	}
+
+	void ImageView::sharpen(cv::Mat& image, double strength, double radius) {
+		cv::Mat tmp;
+		cv::GaussianBlur(image, tmp, cv::Size(0, 0), radius);
+		cv::addWeighted(image, 1 + strength, tmp, -strength, 0, image);
 	}
 
 	void ImageView::shallowCopyMatToImage(const cv::Mat& mat, QImage& destImage) {

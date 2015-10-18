@@ -18,6 +18,9 @@ namespace sv {
 		this->imageView->setExternalPostPaintFunction(this, &MainInterface::infoPaintFunction);
 		this->imageView->setInterfaceBackgroundColor(Qt::black);
 		this->imageView->setPreventMagnificationInDefaultZoom(true);
+		this->imageView->setEnablePostResizeSharpening(false);
+		this->imageView->setPostResizeSharpeningRadius(1);
+		this->imageView->setPostResizeSharpeningStrength(1);
 		setCentralWidget(this->imageView);
 
 		QObject::connect(this->menuBar(), SIGNAL(triggered(QAction*)), this, SLOT(hideMenuBar(QAction*)));
@@ -67,6 +70,15 @@ namespace sv {
 		this->viewMenu->addAction(this->enlargementAction);
 		this->addAction(this->enlargementAction);
 
+		this->sharpeningAction = new QAction(tr("Sharpen Images After &Downsampling"), this);
+		this->sharpeningAction->setCheckable(true);
+		this->sharpeningAction->setChecked(false);
+		this->sharpeningAction->setShortcut(Qt::Key_P);
+		this->sharpeningAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->sharpeningAction, SIGNAL(triggered(bool)), this, SLOT(reactToSharpeningToggle(bool)));
+		this->viewMenu->addAction(this->sharpeningAction);
+		this->addAction(this->sharpeningAction);
+
 		this->smoothingAction = new QAction(tr("Use &Smooth Interpolation when Enlarging"), this);
 		this->smoothingAction->setCheckable(true);
 		this->smoothingAction->setChecked(false);
@@ -99,10 +111,13 @@ namespace sv {
 		//load settings
 		this->showInfoAction->setChecked(this->settings.value("showImageInfo", false).toBool());
 		this->enlargementAction->setChecked(this->settings.value("enlargeSmallImages", false).toBool());
+		this->reactToEnlargementToggle(this->enlargementAction->isChecked());
 		this->smoothingAction->setChecked(this->settings.value("useSmoothEnlargmentInterpolation", false).toBool());
+		this->reactToSmoothingToggle(this->smoothingAction->isChecked());
+		this->sharpeningAction->setChecked(this->settings.value("sharpenImagesAfterDownscale", false).toBool());
+		this->reactToSharpeningToggle(this->sharpeningAction->isChecked());
 		this->menuBarAutoHideAction->setChecked(!this->settings.value("autoHideMenuBar", true).toBool());
-
-		this->menuBar()->setVisible(this->menuBarAutoHideAction->isChecked());
+		this->reactoToAutoHideMenuBarToggle(this->menuBarAutoHideAction->isChecked());
 
 		if (openWithFilename != QString()) {
 			this->loadImage(openWithFilename);
@@ -120,6 +135,7 @@ namespace sv {
 		delete this->showInfoAction;
 		delete this->smoothingAction;
 		delete this->enlargementAction;
+		delete this->sharpeningAction;
 		delete this->menuBarAutoHideAction;
 		delete this->installAction;
 		delete this->uninstallAction;
@@ -598,6 +614,11 @@ namespace sv {
 	void MainInterface::reactToEnlargementToggle(bool value) {
 		this->imageView->setPreventMagnificationInDefaultZoom(!value);
 		this->settings.setValue("enlargeSmallImages", value);
+	}
+
+	void MainInterface::reactToSharpeningToggle(bool value) { 
+		this->imageView->setEnablePostResizeSharpening(value);
+		this->settings.setValue("sharpenImagesAfterDownscale", value);
 	}
 
 	void MainInterface::reactoToAutoHideMenuBarToggle(bool value) {
