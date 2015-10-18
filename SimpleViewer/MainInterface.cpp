@@ -309,12 +309,12 @@ namespace sv {
 	}
 
 	size_t MainInterface::nextFileIndex() const {
-		return (this->fileIndex + 1) % this->filesInDirectory.size();
+		return (this->currentFileIndex + 1) % this->filesInDirectory.size();
 	}
 
 	size_t MainInterface::previousFileIndex() const {
-		if (this->fileIndex == 0) return this->filesInDirectory.size() - 1;
-		return (this->fileIndex - 1) % this->filesInDirectory.size();
+		if (this->currentFileIndex == 0) return this->filesInDirectory.size() - 1;
+		return (this->currentFileIndex - 1) % this->filesInDirectory.size();
 	}
 
 	QString MainInterface::getFullImagePath(size_t index) const {
@@ -340,8 +340,8 @@ namespace sv {
 			std::sort(contents.begin(), contents.end(), collator);
 			this->filesInDirectory = contents.toVector();
 		}
-		if (this->filesInDirectory.size() == 0 || this->fileIndex <= 0 || this->fileIndex >= this->filesInDirectory.size() || this->filesInDirectory.at(this->fileIndex) != filename) {
-			this->fileIndex = this->filesInDirectory.indexOf(filename);
+		if (this->filesInDirectory.size() == 0 || this->currentFileIndex <= 0 || this->currentFileIndex >= this->filesInDirectory.size() || this->filesInDirectory.at(this->currentFileIndex) != filename) {
+			this->currentFileIndex = this->filesInDirectory.indexOf(filename);
 		}
 		this->currentFileInfo = fileInfo;
 		this->clearThreads();
@@ -358,7 +358,7 @@ namespace sv {
 			this->imageView->resetImage();
 		}
 		this->setWindowTitle(QString("%1 - %2 - %3 of %4").arg(this->programTitle, 
-															   this->currentFileInfo.fileName()).arg(this->fileIndex + 1).arg(this->filesInDirectory.size()));
+															   this->currentFileInfo.fileName()).arg(this->currentFileIndex + 1).arg(this->filesInDirectory.size()));
 	}
 
 	void MainInterface::loadNextImage() {
@@ -367,15 +367,15 @@ namespace sv {
 		this->loading = true;
 
 		if (this->filesInDirectory.size() != 0) {
-			this->fileIndex = this->nextFileIndex();
-			if (this->threads.find(this->filesInDirectory[this->fileIndex]) == this->threads.end()) {
+			this->currentFileIndex = this->nextFileIndex();
+			if (this->threads.find(this->filesInDirectory[this->currentFileIndex]) == this->threads.end()) {
 				this->loading = false;
 				return;
 			}
-			this->waitForThreadToFinish(this->threads[this->filesInDirectory[this->fileIndex]]);
-			this->image = this->threads[this->filesInDirectory[this->fileIndex]].get();
+			this->waitForThreadToFinish(this->threads[this->filesInDirectory[this->currentFileIndex]]);
+			this->image = this->threads[this->filesInDirectory[this->currentFileIndex]].get();
 
-			this->currentFileInfo = QFileInfo(this->getFullImagePath(this->fileIndex));
+			this->currentFileInfo = QFileInfo(this->getFullImagePath(this->currentFileIndex));
 			//start loading next image
 			if (this->threads.find(this->filesInDirectory[this->nextFileIndex()]) == this->threads.end()) {
 				this->threads[this->filesInDirectory[this->nextFileIndex()]] = std::async(std::launch::async, 
@@ -396,14 +396,14 @@ namespace sv {
 		std::unique_lock<std::mutex> lock(this->threadDeletionMutex);
 		this->loading = true;
 		if (this->filesInDirectory.size() != 0) {
-			this->fileIndex = this->previousFileIndex();
-			if (this->threads.find(this->filesInDirectory[this->fileIndex]) == this->threads.end()) {
+			this->currentFileIndex = this->previousFileIndex();
+			if (this->threads.find(this->filesInDirectory[this->currentFileIndex]) == this->threads.end()) {
 				this->loading = false;
 				return;
 			}
-			this->waitForThreadToFinish(this->threads[this->filesInDirectory[this->fileIndex]]);
-			this->image = this->threads[this->filesInDirectory[this->fileIndex]].get();
-			this->currentFileInfo = QFileInfo(this->getFullImagePath(this->fileIndex));
+			this->waitForThreadToFinish(this->threads[this->filesInDirectory[this->currentFileIndex]]);
+			this->image = this->threads[this->filesInDirectory[this->currentFileIndex]].get();
+			this->currentFileInfo = QFileInfo(this->getFullImagePath(this->currentFileIndex));
 			//start loading previous image
 			if (this->threads.find(this->filesInDirectory[this->previousFileIndex()]) == this->threads.end()) {
 				this->threads[this->filesInDirectory[this->previousFileIndex()]] = std::async(std::launch::async, 
@@ -484,7 +484,7 @@ namespace sv {
 		size_t nextIndex = this->nextFileIndex();
 		for (std::map<QString, std::shared_future<cv::Mat>>::iterator it = this->threads.begin(); it != this->threads.end();) {
 			int index = this->filesInDirectory.indexOf(it->first);
-			if (index != -1 && index != this->fileIndex && index != previousIndex && index != nextIndex && it->second.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
+			if (index != -1 && index != this->currentFileIndex && index != previousIndex && index != nextIndex && it->second.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
 				it = this->threads.erase(it);
 			} else {
 				++it;

@@ -59,7 +59,7 @@ namespace sv {
 		QDir currentDirectory;
 		bool noCurrentDir = true;
 		QVector<QString> filesInDirectory;
-		size_t fileIndex;
+		size_t currentFileIndex;
 		QFileInfo currentFileInfo;
 		bool currentImageUnreadable = false;
 		std::map<QString, std::shared_future<cv::Mat>> threads;
