@@ -5,7 +5,7 @@ namespace wi {
 	InstallerInterface::InstallerInterface(QWidget *parent)
 		: QMainWindow(parent),
 		currentlySelectedPath(QDir::toNativeSeparators(QDir::cleanPath(QString(getenv("PROGRAMFILES")) + QString("/Simple Viewer")))) {
-		
+
 		QSettings registry("HKEY_LOCAL_MACHINE\\SOFTWARE", QSettings::NativeFormat);
 		if (registry.contains("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/UninstallString")) {
 			currentlySelectedPath = QDir(QFileInfo(registry.value("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/UninstallString").toString().section('"', 1, 1)).path());
@@ -233,12 +233,10 @@ namespace wi {
 		InstallerInterface::installFiles(this->currentlySelectedPath);
 		InstallerInterface::registerProgramInRegistry(this->currentlySelectedPath);
 		if (this->startMenuCheckbox->isChecked()) this->createStartMenuEntry(this->currentlySelectedPath.absoluteFilePath("SimpleViewer.exe"));
-		QMessageBox msgBox;
-		msgBox.setWindowTitle(QObject::tr("Installation Successful"));
-		msgBox.setText(QObject::tr("The installation was successful. The installer will now quit."));
-		msgBox.setIcon(QMessageBox::Information);
-		msgBox.setStandardButtons(QMessageBox::Close);
-		msgBox.exec();
+		QMessageBox::information(this,
+								 tr("Installation Successful"),
+								 tr("The installation was successful. The installer will now quit."),
+								 QMessageBox::Close);
 		QCoreApplication::quit();
 	}
 

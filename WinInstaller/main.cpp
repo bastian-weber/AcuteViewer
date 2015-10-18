@@ -105,32 +105,28 @@ int init(int argc, char* argv[]) {
 	app.setWindowIcon(icon);
 
 	if (QCoreApplication::arguments().contains("-uninstall", Qt::CaseInsensitive)) {
-		QMessageBox msgBox;
 		QSettings registry("HKEY_LOCAL_MACHINE\\SOFTWARE", QSettings::NativeFormat);
 		if (registry.contains("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/UninstallString")) {
-			msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-			msgBox.setIcon(QMessageBox::Question);
-			msgBox.setWindowTitle(QObject::tr("Uninstall"));
-			msgBox.setText(QObject::tr("Are you sure you want to remove the Simple Viewer application from your system?"));
-			if (QMessageBox::Yes == msgBox.exec()) {
+			if (QMessageBox::Yes == QMessageBox::question(nullptr,
+														  QObject::tr("Uninstall"),
+														  QObject::tr("Are you sure you want to remove the Simple Viewer application from your system?"),
+														  QMessageBox::Yes | QMessageBox::No)) {
 				QSettings registry("HKEY_LOCAL_MACHINE\\SOFTWARE", QSettings::NativeFormat);
 				QDir installDir(QFileInfo(registry.value("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/UninstallString").toString().section('"', 1, 1)).path());
 				removeFiles(installDir);
 				clearRegistryEntries();
-				msgBox.setWindowTitle(QObject::tr("Uninstall"));
-				msgBox.setText(QObject::tr("The application was successfully removed."));
-				msgBox.setIcon(QMessageBox::Information);
-				msgBox.setStandardButtons(QMessageBox::Ok);
-				msgBox.exec();
+				QMessageBox::information(nullptr,
+										 QObject::tr("Uninstall"),
+										 QObject::tr("The application was successfully removed."),
+										 QMessageBox::Ok);
 				initiateSelfRemoval(installDir);
 			}
 		} else {
 			clearRegistryEntries();
-			msgBox.setWindowTitle(QObject::tr("Application Not Found"));
-			msgBox.setText(QObject::tr("Uninstallation is not possible because no existing Simple Viewer installation could be found."));
-			msgBox.setIcon(QMessageBox::Critical);
-			msgBox.setStandardButtons(QMessageBox::Close);
-			msgBox.exec();
+			QMessageBox::critical(nullptr,
+								  QObject::tr("Application Not Found"),
+								  QObject::tr("Uninstallation is not possible because no existing Simple Viewer installation could be found."),
+								  QMessageBox::Close);
 		}
 	} else {
 		wi::InstallerInterface* InstallerInterface = new wi::InstallerInterface();
