@@ -77,6 +77,7 @@ namespace sv {
 		QAction* showInfoAction;
 		QAction* smoothingAction;
 		QAction* enlargementAction;
+		QAction* sharpeningAction;
 		QAction* menuBarAutoHideAction;
 		QAction* installAction;
 		QAction* uninstallAction;
@@ -98,6 +99,7 @@ namespace sv {
 		void openDialog();
 		void reactToSmoothingToggle(bool value);
 		void reactToEnlargementToggle(bool value);
+		void reactToSharpeningToggle(bool value);
 		void reactoToAutoHideMenuBarToggle(bool value);
 	signals:
 		void readImageFinished(cv::Mat image);

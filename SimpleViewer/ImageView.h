@@ -50,8 +50,15 @@ namespace hb {
 
 		double getCurrentPreviewScalingFactor() const;
 		void setUseHighQualityDownscaling(bool value);
+		bool useHighQualityDownscaling();
 		void setUseSmoothTransform(bool value);
 		bool useSmoothTransform() const;
+		void setEnablePostResizeSharpening(bool value);
+		bool enablePostResizeSharpening();
+		void setPostResizeSharpeningStrength(double value);
+		double postResizeSharpeningStrength();
+		void setPostResizeSharpeningRadius(double value);
+		double postResizeSharpeningRadius();
 
 		void setPointEditing(bool enablePointAdding, bool enablePointManipulation);
 		void setRenderPoints(bool value);
@@ -130,6 +137,8 @@ namespace hb {
 		double smallestDistanceToPolylineSelection(QPointF const& mousePosition) const;
 		static double distanceOfPointToLineSegment(QPointF const& lineStart, QPointF const& lineEnd, QPointF const& point);
 
+		static void sharpen(cv::Mat& image, double strength, double radius);
+
 		static void shallowCopyMatToImage(const cv::Mat& mat, QImage& destImage);
 		static void deepCopyMatToImage(const cv::Mat& mat, QImage& destImage);
 		static void shallowCopyImageToMat(const QImage& image, cv::Mat& destMat);
@@ -171,6 +180,9 @@ namespace hb {
 		bool _imageAssigned;
 		bool _useHighQualityDownscaling;
 		bool _useSmoothTransform;
+		bool _enablePostResizeSharpening;
+		double _postResizeSharpeningStrength;
+		double _postResizeSharpeningRadius;
 		//related to mask painting
 		QBitmap _mask;
 		bool _paintingActive;
