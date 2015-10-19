@@ -1,5 +1,5 @@
-#ifndef CT_InstallerInterface
-#define CT_InstallerInterface
+#ifndef WI_INSTALLERINTERFACE
+#define WI_INSTALLERINTERFACE
 
 #include <iostream>
 

@@ -4,7 +4,7 @@ namespace sv {
 
 	MainInterface::MainInterface(QString openWithFilename, QWidget *parent)
 		: QMainWindow(parent),
-		settings(QFileInfo(QCoreApplication::applicationFilePath()).absoluteDir().path() + "/SimpleViewer.ini", QSettings::IniFormat) {
+		settings(QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("SimpleViewer.ini"), QSettings::IniFormat) {
 
 		setAcceptDrops(true);
 		qRegisterMetaType<cv::Mat>("cv::Mat");
@@ -26,6 +26,7 @@ namespace sv {
 		QObject::connect(this->menuBar(), SIGNAL(triggered(QAction*)), this, SLOT(hideMenuBar(QAction*)));
 		this->fileMenu = this->menuBar()->addMenu(tr("&File"));
 		this->viewMenu = this->menuBar()->addMenu(tr("&View"));
+		this->slideshowMenu = this->menuBar()->addMenu(tr("&Slideshow"));
 	#ifdef Q_OS_WIN
 		this->applicationMenu = this->menuBar()->addMenu(tr("&Application"));
 		QObject::connect(this->applicationMenu, SIGNAL(aboutToShow()), this, SLOT(populateApplicationMenu()));
@@ -64,7 +65,7 @@ namespace sv {
 		this->enlargementAction = new QAction(tr("&Enlarge Smaller Images"), this);
 		this->enlargementAction->setCheckable(true);
 		this->enlargementAction->setChecked(false);
-		this->enlargementAction->setShortcut(Qt::Key_E);
+		this->enlargementAction->setShortcut(Qt::Key_U);
 		this->enlargementAction->setShortcutContext(Qt::ApplicationShortcut);
 		QObject::connect(this->enlargementAction, SIGNAL(triggered(bool)), this, SLOT(reactToEnlargementToggle(bool)));
 		this->viewMenu->addAction(this->enlargementAction);
@@ -73,7 +74,7 @@ namespace sv {
 		this->sharpeningAction = new QAction(tr("Sharpen Images After &Downsampling"), this);
 		this->sharpeningAction->setCheckable(true);
 		this->sharpeningAction->setChecked(false);
-		this->sharpeningAction->setShortcut(Qt::Key_P);
+		this->sharpeningAction->setShortcut(Qt::Key_E);
 		this->sharpeningAction->setShortcutContext(Qt::ApplicationShortcut);
 		QObject::connect(this->sharpeningAction, SIGNAL(triggered(bool)), this, SLOT(reactToSharpeningToggle(bool)));
 		this->viewMenu->addAction(this->sharpeningAction);
@@ -99,6 +100,14 @@ namespace sv {
 		this->viewMenu->addAction(this->menuBarAutoHideAction);
 		this->addAction(this->menuBarAutoHideAction);
 
+		this->slideshowAction = new QAction(tr("&Start Slideshow"), this);
+		this->slideshowAction->setEnabled(false);
+		this->slideshowAction->setShortcut(Qt::Key_P);
+		this->slideshowAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->slideshowAction, SIGNAL(triggered()), this, SLOT(toggleSlideshow()));
+		this->slideshowMenu->addAction(this->slideshowAction);
+		this->addAction(this->slideshowAction);
+
 		//mouse hide timer in fullscreen
 		this->mouseHideTimer = new QTimer(this);
 		QObject::connect(this->mouseHideTimer, SIGNAL(timeout()), this, SLOT(hideMouse()));
@@ -107,6 +116,10 @@ namespace sv {
 		this->threadCleanUpTimer = new QTimer(this);
 		this->threadCleanUpTimer->setSingleShot(true);
 		QObject::connect(this->threadCleanUpTimer, SIGNAL(timeout()), this, SLOT(cleanUpThreads()));
+
+		//timer for the slideshow
+		this->slideshowTimer = new QTimer(this);
+		QObject::connect(this->slideshowTimer, SIGNAL(timeout()), this, SLOT(nextSlide()));
 
 		//load settings
 		this->showInfoAction->setChecked(this->settings.value("showImageInfo", false).toBool());
@@ -119,6 +132,10 @@ namespace sv {
 		this->menuBarAutoHideAction->setChecked(!this->settings.value("autoHideMenuBar", true).toBool());
 		this->reactoToAutoHideMenuBarToggle(this->menuBarAutoHideAction->isChecked());
 
+		this->slideshowDialog = new SlideshowDialog(this);
+		this->slideshowDialog->setWindowModality(Qt::WindowModal);
+		QObject::connect(this->slideshowDialog, SIGNAL(dialogConfirmed(double, bool)), this, SLOT(startSlideshow(double, bool)));
+
 		if (openWithFilename != QString()) {
 			this->loadImage(openWithFilename);
 		}
@@ -127,8 +144,10 @@ namespace sv {
 
 	MainInterface::~MainInterface() {
 		delete this->imageView;
+		delete this->slideshowDialog;
 		delete this->fileMenu;
 		delete this->viewMenu;
+		delete this->slideshowMenu;
 		delete this->applicationMenu;
 		delete this->quitAction;
 		delete this->openAction;
@@ -137,10 +156,12 @@ namespace sv {
 		delete this->enlargementAction;
 		delete this->sharpeningAction;
 		delete this->menuBarAutoHideAction;
+		delete this->slideshowAction;
 		delete this->installAction;
 		delete this->uninstallAction;
 		delete this->mouseHideTimer;
 		delete this->threadCleanUpTimer;
+		delete this->slideshowTimer;
 	}
 
 	QSize MainInterface::sizeHint() const {
@@ -282,6 +303,64 @@ namespace sv {
 		return image;
 	}
 
+	void MainInterface::loadNextImage() {
+		if (this->loading) return;
+		std::unique_lock<std::mutex> lock(this->threadDeletionMutex);
+		this->loading = true;
+
+		if (this->filesInDirectory.size() != 0) {
+			this->currentFileIndex = this->nextFileIndex();
+			if (this->threads.find(this->filesInDirectory[this->currentFileIndex]) == this->threads.end()) {
+				this->loading = false;
+				return;
+			}
+			this->waitForThreadToFinish(this->threads[this->filesInDirectory[this->currentFileIndex]]);
+			this->image = this->threads[this->filesInDirectory[this->currentFileIndex]].get();
+
+			this->currentFileInfo = QFileInfo(this->getFullImagePath(this->currentFileIndex));
+			//start loading next image
+			if (this->threads.find(this->filesInDirectory[this->nextFileIndex()]) == this->threads.end()) {
+				this->threads[this->filesInDirectory[this->nextFileIndex()]] = std::async(std::launch::async,
+																						  &MainInterface::readImage,
+																						  this,
+																						  this->getFullImagePath(this->nextFileIndex()),
+																						  false);
+			}
+			lock.unlock();
+			this->displayImageIfOk();
+		}
+		this->loading = false;
+		this->cleanUpThreads();
+	}
+
+	void MainInterface::loadPreviousImage() {
+		if (this->loading) return;
+		std::unique_lock<std::mutex> lock(this->threadDeletionMutex);
+		this->loading = true;
+		if (this->filesInDirectory.size() != 0) {
+			this->currentFileIndex = this->previousFileIndex();
+			if (this->threads.find(this->filesInDirectory[this->currentFileIndex]) == this->threads.end()) {
+				this->loading = false;
+				return;
+			}
+			this->waitForThreadToFinish(this->threads[this->filesInDirectory[this->currentFileIndex]]);
+			this->image = this->threads[this->filesInDirectory[this->currentFileIndex]].get();
+			this->currentFileInfo = QFileInfo(this->getFullImagePath(this->currentFileIndex));
+			//start loading previous image
+			if (this->threads.find(this->filesInDirectory[this->previousFileIndex()]) == this->threads.end()) {
+				this->threads[this->filesInDirectory[this->previousFileIndex()]] = std::async(std::launch::async,
+																							  &MainInterface::readImage,
+																							  this,
+																							  this->getFullImagePath(this->previousFileIndex()),
+																							  false);
+			}
+			lock.unlock();
+			this->displayImageIfOk();
+		}
+		this->loading = false;
+		this->cleanUpThreads();
+	}
+
 	bool MainInterface::isASCII(QString const& string) {
 		bool isASCII = true;
 		for (QString::ConstIterator i = string.begin(); i != string.end(); ++i) {
@@ -361,64 +440,6 @@ namespace sv {
 															   this->currentFileInfo.fileName()).arg(this->currentFileIndex + 1).arg(this->filesInDirectory.size()));
 	}
 
-	void MainInterface::loadNextImage() {
-		if (this->loading) return;
-		std::unique_lock<std::mutex> lock(this->threadDeletionMutex);
-		this->loading = true;
-
-		if (this->filesInDirectory.size() != 0) {
-			this->currentFileIndex = this->nextFileIndex();
-			if (this->threads.find(this->filesInDirectory[this->currentFileIndex]) == this->threads.end()) {
-				this->loading = false;
-				return;
-			}
-			this->waitForThreadToFinish(this->threads[this->filesInDirectory[this->currentFileIndex]]);
-			this->image = this->threads[this->filesInDirectory[this->currentFileIndex]].get();
-
-			this->currentFileInfo = QFileInfo(this->getFullImagePath(this->currentFileIndex));
-			//start loading next image
-			if (this->threads.find(this->filesInDirectory[this->nextFileIndex()]) == this->threads.end()) {
-				this->threads[this->filesInDirectory[this->nextFileIndex()]] = std::async(std::launch::async, 
-																						  &MainInterface::readImage, 
-																						  this, 
-																						  this->getFullImagePath(this->nextFileIndex()), 
-																						  false);
-			}
-			lock.unlock();
-			this->displayImageIfOk();
-		}
-		this->loading = false;
-		this->cleanUpThreads();
-	}
-
-	void MainInterface::loadPreviousImage() {
-		if (this->loading) return;
-		std::unique_lock<std::mutex> lock(this->threadDeletionMutex);
-		this->loading = true;
-		if (this->filesInDirectory.size() != 0) {
-			this->currentFileIndex = this->previousFileIndex();
-			if (this->threads.find(this->filesInDirectory[this->currentFileIndex]) == this->threads.end()) {
-				this->loading = false;
-				return;
-			}
-			this->waitForThreadToFinish(this->threads[this->filesInDirectory[this->currentFileIndex]]);
-			this->image = this->threads[this->filesInDirectory[this->currentFileIndex]].get();
-			this->currentFileInfo = QFileInfo(this->getFullImagePath(this->currentFileIndex));
-			//start loading previous image
-			if (this->threads.find(this->filesInDirectory[this->previousFileIndex()]) == this->threads.end()) {
-				this->threads[this->filesInDirectory[this->previousFileIndex()]] = std::async(std::launch::async, 
-																							  &MainInterface::readImage, 
-																							  this, 
-																							  this->getFullImagePath(this->previousFileIndex()), 
-																							  false);
-			}
-			lock.unlock();
-			this->displayImageIfOk();
-		}
-		this->loading = false;
-		this->cleanUpThreads();
-	}
-
 	void MainInterface::enterFullscreen() {
 		//this->imageView->setInterfaceBackgroundColor(Qt::black);
 		this->showFullScreen();
@@ -477,6 +498,13 @@ namespace sv {
 	}
 
 	//============================================================================ PRIVATE SLOTS =============================================================================\\
+
+	void MainInterface::nextSlide() {
+		this->loadNextImage();
+		if (!settings.value("slideshowLoop", false).toBool() && this->currentFileIndex == (this->filesInDirectory.size() - 1)) {
+			this->stopSlideshow();
+		}
+	}
 
 	void MainInterface::cleanUpThreads() {
 		std::lock_guard<std::mutex> lock(this->threadDeletionMutex);
@@ -567,6 +595,27 @@ namespace sv {
 	#endif
 	}
 
+	void MainInterface::toggleSlideshow() { 
+		if (this->slideshowTimer->isActive()) {
+			this->stopSlideshow();
+		} else {
+			this->slideshowDialog->show();
+		}
+	}
+
+	void MainInterface::startSlideshow(double delay, bool loop) {
+		this->slideshowAction->setText(tr("&Stop Slideshow"));
+		delay = std::abs(delay);
+		this->settings.setValue("slideDelay", delay);
+		this->settings.setValue("slideshowLoop", loop);
+		this->slideshowTimer->start(this->settings.value("slideDelay", 3000).toDouble() * 1000);
+	}
+
+	void MainInterface::stopSlideshow() {
+		this->slideshowAction->setText(tr("&Start Slideshow"));
+		this->slideshowTimer->stop();
+	}
+
 	void MainInterface::reactToshowInfoToggle(bool value) {
 		this->imageView->update();
 		this->settings.setValue("showImageInfo", value);
@@ -592,6 +641,7 @@ namespace sv {
 																						  false);
 			}
 		}
+		this->slideshowAction->setEnabled(true);
 		this->loading = false;
 	}
 

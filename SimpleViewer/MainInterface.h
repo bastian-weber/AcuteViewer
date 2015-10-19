@@ -1,7 +1,5 @@
-#ifndef CT_MAININTERFACE
-#define CT_MAININTERFACE
-
-#include "ImageView.h"
+#ifndef SV_MAININTERFACE
+#define SV_MAININTERFACE
 
 #include <iostream>
 #include <future>
@@ -12,6 +10,9 @@
 #include <opencv2/core.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/highgui.hpp>
+
+#include "ImageView.h"
+#include "SlideshowDialog.h"
 
 namespace sv {
 
@@ -33,6 +34,8 @@ namespace sv {
 	private:
 		//functions
 		cv::Mat readImage(QString path, bool emitSignals = false);
+		void loadNextImage();
+		void loadPreviousImage();
 		void clearThreads();
 		void waitForThreadToFinish(std::shared_future<cv::Mat> const& thread);
 		size_t nextFileIndex() const;
@@ -41,8 +44,6 @@ namespace sv {
 		QString getFullImagePath(size_t index) const;
 		void loadImage(QString path);
 		void displayImageIfOk();
-		void loadNextImage();
-		void loadPreviousImage();
 		void enterFullscreen();
 		void exitFullscreen();
 		void infoPaintFunction(QPainter& canvas);
@@ -67,9 +68,11 @@ namespace sv {
 
 		//widgets
 		hb::ImageView* imageView;
+		SlideshowDialog* slideshowDialog;
 		//menus
 		QMenu* fileMenu;
 		QMenu* viewMenu;
+		QMenu* slideshowMenu;
 		QMenu* applicationMenu;
 		//actions
 		QAction* quitAction;
@@ -79,12 +82,15 @@ namespace sv {
 		QAction* enlargementAction;
 		QAction* sharpeningAction;
 		QAction* menuBarAutoHideAction;
+		QAction* slideshowAction;
 		QAction* installAction;
 		QAction* uninstallAction;
 		//timer
 		QTimer* mouseHideTimer;
 		QTimer* threadCleanUpTimer;
+		QTimer* slideshowTimer;
 	private slots:
+		void nextSlide();
 		void cleanUpThreads();
 		void quit();
 		void hideMouse() const;
@@ -94,6 +100,9 @@ namespace sv {
 		void populateApplicationMenu();
 		void runInstaller();
 		void runUninstaller();
+		void toggleSlideshow();
+		void startSlideshow(double delay, bool loop);
+		void stopSlideshow();
 		void reactToshowInfoToggle(bool value);
 		void reactToReadImageCompletion(cv::Mat image);
 		void openDialog();
