@@ -35,6 +35,7 @@ namespace sv {
 		void reactToOkButtonClick();
 	signals:
 		void dialogConfirmed(double delay, bool loop);
+		void dialogClosed();
 	};
 }
 #endif

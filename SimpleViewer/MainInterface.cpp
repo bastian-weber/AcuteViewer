@@ -132,9 +132,10 @@ namespace sv {
 		this->menuBarAutoHideAction->setChecked(!this->settings.value("autoHideMenuBar", true).toBool());
 		this->reactoToAutoHideMenuBarToggle(this->menuBarAutoHideAction->isChecked());
 
-		this->slideshowDialog = new SlideshowDialog(this);
+		this->slideshowDialog = new SlideshowDialog();
 		this->slideshowDialog->setWindowModality(Qt::WindowModal);
 		QObject::connect(this->slideshowDialog, SIGNAL(dialogConfirmed(double, bool)), this, SLOT(startSlideshow(double, bool)));
+		QObject::connect(this->slideshowDialog, SIGNAL(dialogClosed()), this, SLOT(enableAutomaticMouseHide()));
 
 		if (openWithFilename != QString()) {
 			this->loadImage(openWithFilename);
@@ -247,7 +248,7 @@ namespace sv {
 	void MainInterface::mouseMoveEvent(QMouseEvent* e) {
 		if (this->isFullScreen()) {
 			this->showMouse();
-			if (!this->menuBar()->isVisible()) this->mouseHideTimer->start(this->mouseHideDelay);
+			if (!this->menuBar()->isVisible() && !this->slideshowDialog->isVisible()) this->enableAutomaticMouseHide();
 		}
 		e->ignore();
 	}
@@ -444,7 +445,7 @@ namespace sv {
 		//this->imageView->setInterfaceBackgroundColor(Qt::black);
 		this->showFullScreen();
 		this->hideMenuBar();
-		this->mouseHideTimer->start(this->mouseHideDelay);
+		this->enableAutomaticMouseHide();
 	}
 
 	void MainInterface::exitFullscreen() {
@@ -452,8 +453,7 @@ namespace sv {
 		//this->imageView->setInterfaceBackgroundColor(palette.base().color());
 		this->showNormal();
 		if (this->menuBarAutoHideAction->isChecked()) showMenuBar();
-		this->mouseHideTimer->stop();
-		this->showMouse();
+		this->disableAutomaticMouseHide();
 	}
 
 	void MainInterface::infoPaintFunction(QPainter& canvas) {
@@ -534,15 +534,24 @@ namespace sv {
 		qApp->setOverrideCursor(Qt::ArrowCursor);
 	}
 
+	void MainInterface::enableAutomaticMouseHide() { 
+		this->mouseHideTimer->start(this->mouseHideDelay);
+	}
+
+	void MainInterface::disableAutomaticMouseHide() {
+		this->mouseHideTimer->stop();
+		this->showMouse();
+	}
+
 	void MainInterface::showMenuBar() {
-		if (this->isFullScreen()) this->mouseHideTimer->stop();
+		if (this->isFullScreen()) this->disableAutomaticMouseHide();
 		this->menuBar()->setVisible(true);
 	}
 
 	void MainInterface::hideMenuBar(QAction* triggeringAction) {
 		if (!this->menuBarAutoHideAction->isChecked() || this->isFullScreen()) {
 			this->menuBar()->setVisible(false);
-			if (this->isFullScreen()) this->mouseHideTimer->start(this->mouseHideDelay);
+			if (this->isFullScreen()) this->enableAutomaticMouseHide();
 		}
 	}
 
@@ -600,6 +609,7 @@ namespace sv {
 			this->stopSlideshow();
 		} else {
 			this->slideshowDialog->show();
+			this->disableAutomaticMouseHide();
 		}
 	}
 
@@ -608,7 +618,7 @@ namespace sv {
 		delay = std::abs(delay);
 		this->settings.setValue("slideDelay", delay);
 		this->settings.setValue("slideshowLoop", loop);
-		this->slideshowTimer->start(this->settings.value("slideDelay", 3000).toDouble() * 1000);
+		this->slideshowTimer->start(this->settings.value("slideDelay", 3).toDouble() * 1000);
 	}
 
 	void MainInterface::stopSlideshow() {
