@@ -95,6 +95,8 @@ namespace sv {
 		void quit();
 		void hideMouse() const;
 		void showMouse() const;
+		void enableAutomaticMouseHide();
+		void disableAutomaticMouseHide();
 		void showMenuBar();
 		void hideMenuBar(QAction* triggeringAction = nullptr);
 		void populateApplicationMenu();

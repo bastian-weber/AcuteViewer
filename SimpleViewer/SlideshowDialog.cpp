@@ -15,7 +15,7 @@ namespace sv {
 		this->timeSpinBox->setMinimum(0);
 		this->timeSpinBox->setMaximum(1814400000);
 		this->timeSpinBox->setDecimals(3);
-		this->timeSpinBox->setValue(settings.value("slideDelay", 3000).toDouble());
+		this->timeSpinBox->setValue(settings.value("slideDelay", 3).toDouble());
 		this->timeSpinBox->setSuffix("s");
 
 		this->loopCheckbox = new QCheckBox(tr("&Loop"), this);
@@ -27,8 +27,11 @@ namespace sv {
 
 		this->okButton = new QPushButton(tr("&Ok"), this);
 		QObject::connect(this->okButton, SIGNAL(clicked()), this, SLOT(reactToOkButtonClick()));
+		QObject::connect(this->okButton, SIGNAL(clicked()), this, SIGNAL(dialogClosed()));
+
 		this->cancelButton = new QPushButton(tr("&Cancel"), this);
 		QObject::connect(this->cancelButton, SIGNAL(clicked()), this, SLOT(close()));
+		QObject::connect(this->cancelButton, SIGNAL(clicked()), this, SIGNAL(dialogClosed()));
 
 		this->buttonLayout = new QHBoxLayout();
 		this->buttonLayout->addStretch(1);
