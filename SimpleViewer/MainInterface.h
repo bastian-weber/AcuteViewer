@@ -13,6 +13,7 @@
 
 #include "ImageView.h"
 #include "SlideshowDialog.h"
+#include "SharpeningDialog.h"
 
 namespace sv {
 
@@ -65,11 +66,12 @@ namespace sv {
 		std::atomic<bool> currentImageUnreadable{ false };
 		std::atomic<bool> paintLoadingHint{ false };
 		std::map<QString, std::shared_future<cv::Mat>> threads;
-		QSettings settings;
+		std::shared_ptr<QSettings> settings;
 
 		//widgets
 		hb::ImageView* imageView;
 		SlideshowDialog* slideshowDialog;
+		SharpeningDialog* sharpeningDialog;
 		//menus
 		QMenu* fileMenu;
 		QMenu* viewMenu;
@@ -82,6 +84,7 @@ namespace sv {
 		QAction* smoothingAction;
 		QAction* enlargementAction;
 		QAction* sharpeningAction;
+		QAction* sharpeningOptionsAction;
 		QAction* menuBarAutoHideAction;
 		QAction* slideshowAction;
 		QAction* installAction;
