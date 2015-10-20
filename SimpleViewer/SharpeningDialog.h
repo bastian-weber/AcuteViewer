@@ -1,5 +1,5 @@
-#ifndef SV_SLIDESHOWDIALOG
-#define SV_SLIDESHOWDIALOG
+#ifndef SV_SHARPENINGDIALOG
+#define SV_SHARPENINGDIALOG
 
 #include <iostream>
 #include <memory>
@@ -11,11 +11,11 @@
 
 namespace sv {
 
-	class SlideshowDialog : public QDialog {
+	class SharpeningDialog : public QDialog {
 		Q_OBJECT
 	public:
-		SlideshowDialog(std::shared_ptr<QSettings> settings, QWidget *parent = 0);
-		~SlideshowDialog();
+		SharpeningDialog(std::shared_ptr<QSettings> settings, QWidget *parent = 0);
+		~SharpeningDialog();
 		//QSize sizeHint() const;
 	protected:
 
@@ -23,19 +23,18 @@ namespace sv {
 		//functions
 
 		//variables
-
+		std::shared_ptr<QSettings> settings;
 		//widgets
 		QVBoxLayout* mainLayout;
 		QFormLayout* formLayout;
 		QHBoxLayout* buttonLayout;
-		QDoubleSpinBox* timeSpinBox;
-		QCheckBox* loopCheckbox;
+		QDoubleSpinBox* strengthSpinBox;
+		QDoubleSpinBox* radiusSpinBox;
 		QPushButton* okButton;
 		QPushButton* cancelButton;
 	private slots:
 		void reactToOkButtonClick();
 	signals:
-		void dialogConfirmed(double delay, bool loop);
 		void dialogClosed();
 	};
 }

@@ -4,7 +4,7 @@ namespace sv {
 
 	MainInterface::MainInterface(QString openWithFilename, QWidget *parent)
 		: QMainWindow(parent),
-		settings(QSettings::IniFormat, QSettings::UserScope, "Simple Viewer", "Simple Viewer") {
+		settings(new QSettings(QSettings::IniFormat, QSettings::UserScope, "Simple Viewer", "Simple Viewer")) {
 
 		setAcceptDrops(true);
 		qRegisterMetaType<cv::Mat>("cv::Mat");
@@ -22,6 +22,13 @@ namespace sv {
 		this->imageView->setPostResizeSharpeningRadius(1);
 		this->imageView->setPostResizeSharpeningStrength(0.5);
 		setCentralWidget(this->imageView);
+
+		this->slideshowDialog = new SlideshowDialog(settings);
+		this->slideshowDialog->setWindowModality(Qt::ApplicationModal);
+		QObject::connect(this->slideshowDialog, SIGNAL(dialogConfirmed(double, bool)), this, SLOT(startSlideshow(double, bool)));
+		QObject::connect(this->slideshowDialog, SIGNAL(dialogClosed()), this, SLOT(enableAutomaticMouseHide()));
+
+		this->sharpeningDialog = new SharpeningDialog(settings);
 
 		QObject::connect(this->menuBar(), SIGNAL(triggered(QAction*)), this, SLOT(hideMenuBar(QAction*)));
 		this->fileMenu = this->menuBar()->addMenu(tr("&File"));
@@ -100,6 +107,15 @@ namespace sv {
 		this->viewMenu->addAction(this->menuBarAutoHideAction);
 		this->addAction(this->menuBarAutoHideAction);
 
+		this->viewMenu->addSeparator();
+
+		this->sharpeningOptionsAction = new QAction(tr("Sharpening Options"), this);
+		this->sharpeningOptionsAction->setShortcut(Qt::Key_O);
+		this->sharpeningOptionsAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->sharpeningOptionsAction, SIGNAL(triggered(bool)), this->sharpeningDialog, SLOT(show()));
+		this->viewMenu->addAction(this->sharpeningOptionsAction);
+		this->addAction(this->sharpeningOptionsAction);
+
 		this->slideshowAction = new QAction(tr("&Start Slideshow"), this);
 		this->slideshowAction->setEnabled(false);
 		this->slideshowAction->setShortcut(Qt::Key_P);
@@ -122,20 +138,15 @@ namespace sv {
 		QObject::connect(this->slideshowTimer, SIGNAL(timeout()), this, SLOT(nextSlide()));
 
 		//load settings
-		this->showInfoAction->setChecked(this->settings.value("showImageInfo", false).toBool());
-		this->enlargementAction->setChecked(this->settings.value("enlargeSmallImages", false).toBool());
+		this->showInfoAction->setChecked(this->settings->value("showImageInfo", false).toBool());
+		this->enlargementAction->setChecked(this->settings->value("enlargeSmallImages", false).toBool());
 		this->reactToEnlargementToggle(this->enlargementAction->isChecked());
-		this->smoothingAction->setChecked(this->settings.value("useSmoothEnlargmentInterpolation", false).toBool());
+		this->smoothingAction->setChecked(this->settings->value("useSmoothEnlargmentInterpolation", false).toBool());
 		this->reactToSmoothingToggle(this->smoothingAction->isChecked());
-		this->sharpeningAction->setChecked(this->settings.value("sharpenImagesAfterDownscale", false).toBool());
+		this->sharpeningAction->setChecked(this->settings->value("sharpenImagesAfterDownscale", false).toBool());
 		this->reactToSharpeningToggle(this->sharpeningAction->isChecked());
-		this->menuBarAutoHideAction->setChecked(!this->settings.value("autoHideMenuBar", true).toBool());
+		this->menuBarAutoHideAction->setChecked(!this->settings->value("autoHideMenuBar", true).toBool());
 		this->reactoToAutoHideMenuBarToggle(this->menuBarAutoHideAction->isChecked());
-
-		this->slideshowDialog = new SlideshowDialog(settings);
-		this->slideshowDialog->setWindowModality(Qt::WindowModal);
-		QObject::connect(this->slideshowDialog, SIGNAL(dialogConfirmed(double, bool)), this, SLOT(startSlideshow(double, bool)));
-		QObject::connect(this->slideshowDialog, SIGNAL(dialogClosed()), this, SLOT(enableAutomaticMouseHide()));
 
 		if (openWithFilename != QString()) {
 			this->loadImage(openWithFilename);
@@ -146,6 +157,7 @@ namespace sv {
 	MainInterface::~MainInterface() {
 		delete this->imageView;
 		delete this->slideshowDialog;
+		delete this->sharpeningDialog;
 		delete this->fileMenu;
 		delete this->viewMenu;
 		delete this->slideshowMenu;
@@ -156,6 +168,7 @@ namespace sv {
 		delete this->smoothingAction;
 		delete this->enlargementAction;
 		delete this->sharpeningAction;
+		delete this->sharpeningOptionsAction;
 		delete this->menuBarAutoHideAction;
 		delete this->slideshowAction;
 		delete this->installAction;
@@ -508,7 +521,7 @@ namespace sv {
 
 	void MainInterface::nextSlide() {
 		this->loadNextImage();
-		if (!settings.value("slideshowLoop", false).toBool() && this->currentFileIndex == (this->filesInDirectory.size() - 1)) {
+		if (!settings->value("slideshowLoop", false).toBool() && this->currentFileIndex == (this->filesInDirectory.size() - 1)) {
 			this->stopSlideshow();
 		}
 	}
@@ -623,9 +636,9 @@ namespace sv {
 	void MainInterface::startSlideshow(double delay, bool loop) {
 		this->slideshowAction->setText(tr("&Stop Slideshow"));
 		delay = std::abs(delay);
-		this->settings.setValue("slideDelay", delay);
-		this->settings.setValue("slideshowLoop", loop);
-		this->slideshowTimer->start(this->settings.value("slideDelay", 3).toDouble() * 1000);
+		this->settings->setValue("slideDelay", delay);
+		this->settings->setValue("slideshowLoop", loop);
+		this->slideshowTimer->start(this->settings->value("slideDelay", 3).toDouble() * 1000);
 	}
 
 	void MainInterface::stopSlideshow() {
@@ -635,7 +648,7 @@ namespace sv {
 
 	void MainInterface::reactToshowInfoToggle(bool value) {
 		this->imageView->update();
-		this->settings.setValue("showImageInfo", value);
+		this->settings->setValue("showImageInfo", value);
 	}
 
 	void MainInterface::reactToReadImageCompletion(cv::Mat image) {
@@ -676,21 +689,21 @@ namespace sv {
 
 	void MainInterface::reactToSmoothingToggle(bool value) {
 		this->imageView->setUseSmoothTransform(value);
-		this->settings.setValue("useSmoothEnlargmentInterpolation", value);
+		this->settings->setValue("useSmoothEnlargmentInterpolation", value);
 	}
 
 	void MainInterface::reactToEnlargementToggle(bool value) {
 		this->imageView->setPreventMagnificationInDefaultZoom(!value);
-		this->settings.setValue("enlargeSmallImages", value);
+		this->settings->setValue("enlargeSmallImages", value);
 	}
 
 	void MainInterface::reactToSharpeningToggle(bool value) { 
 		this->imageView->setEnablePostResizeSharpening(value);
-		this->settings.setValue("sharpenImagesAfterDownscale", value);
+		this->settings->setValue("sharpenImagesAfterDownscale", value);
 	}
 
 	void MainInterface::reactoToAutoHideMenuBarToggle(bool value) {
-		this->settings.setValue("autoHideMenuBar", !value);
+		this->settings->setValue("autoHideMenuBar", !value);
 		if (value) {
 			this->showMenuBar();
 		} else {
