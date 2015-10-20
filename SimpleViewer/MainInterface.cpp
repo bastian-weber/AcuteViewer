@@ -4,7 +4,7 @@ namespace sv {
 
 	MainInterface::MainInterface(QString openWithFilename, QWidget *parent)
 		: QMainWindow(parent),
-		settings(QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("SimpleViewer.ini"), QSettings::IniFormat) {
+		settings(QSettings::IniFormat, QSettings::SystemScope, "Simple Viewer", "Simple Viewer") {
 
 		setAcceptDrops(true);
 		qRegisterMetaType<cv::Mat>("cv::Mat");
