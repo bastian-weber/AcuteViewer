@@ -427,6 +427,8 @@ namespace sv {
 		this->clearThreads();
 		this->threads[filename] = std::async(std::launch::async, &MainInterface::readImage, this, path, true);
 		this->setWindowTitle(this->windowTitle() + QString(tr(" - Loading...")));
+		this->paintLoadingHint = true;
+		this->imageView->update();
 	}
 
 	void MainInterface::displayImageIfOk() {
@@ -477,6 +479,11 @@ namespace sv {
 			canvas.drawText(QPoint((canvas.device()->width() - metrics.width(this->currentFileInfo.fileName())) / 2.0, 
 								   canvas.device()->height() / 2.0 + 0.5*lineSpacing + metrics.height()), 
 							this->currentFileInfo.fileName());
+		}
+		if (this->paintLoadingHint) {
+			QString message = tr("Loading...");
+			canvas.drawText(QPoint((canvas.device()->width() - metrics.width(message)) / 2.0, canvas.device()->height() / 2.0 + 0.5*metrics.height()), 
+							message);
 		}
 		if (this->showInfoAction->isChecked() && this->imageView->imageAssigned()) {
 		//draw current filename
@@ -633,6 +640,7 @@ namespace sv {
 
 	void MainInterface::reactToReadImageCompletion(cv::Mat image) {
 		this->image = image;
+		this->paintLoadingHint = false;
 		this->displayImageIfOk();
 		if (this->filesInDirectory.size() != 0) {
 			//preload next and previous image in background
