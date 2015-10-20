@@ -13,7 +13,7 @@ namespace sv {
 	class SlideshowDialog : public QDialog {
 		Q_OBJECT
 	public:
-		SlideshowDialog(QWidget *parent = 0);
+		SlideshowDialog(QSettings const& settings, QWidget *parent = 0);
 		~SlideshowDialog();
 		//QSize sizeHint() const;
 	protected:

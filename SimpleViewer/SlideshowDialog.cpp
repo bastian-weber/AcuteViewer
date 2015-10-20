@@ -2,12 +2,10 @@
 
 namespace sv {
 
-	SlideshowDialog::SlideshowDialog(QWidget *parent)
+	SlideshowDialog::SlideshowDialog(QSettings const& settings, QWidget *parent)
 		: QDialog(parent) {
 		this->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
 		this->setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
-
-		QSettings settings(QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("SimpleViewer.ini"), QSettings::IniFormat);
 
 		this->setWindowTitle(tr("Start Slideshow"));
 
