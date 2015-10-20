@@ -78,10 +78,11 @@ namespace uninstallation{
 
 	}
 
+	//Not used at the moment. Settings are kept when the application is uninstalled.
 	void removeSettings() {
 		QString settingsPath;
 		{
-			settingsPath = QSettings(QSettings::IniFormat, QSettings::SystemScope, "Simple Viewer", "Simple Viewer").fileName();
+			settingsPath = QSettings(QSettings::IniFormat, QSettings::UserScope, "Simple Viewer", "Simple Viewer").fileName();
 		}
 		QFile::remove(settingsPath);
 		QDir settingsDir = QFileInfo(settingsPath).absoluteDir();
@@ -130,22 +131,10 @@ int init(int argc, char* argv[]) {
 				QDir installDir(QFileInfo(registry.value("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/UninstallString").toString().section('"', 1, 1)).path());
 				uninstallation::removeFiles(installDir);
 				uninstallation::clearRegistryEntries();
-				if (QMessageBox::Yes == QMessageBox::question(nullptr,
-															  QObject::tr("Remove Settings"),
-															  QObject::tr("Shall the application preferences be removed?"),
-															  QMessageBox::Yes | QMessageBox::No)) {
-					uninstallation::removeSettings();
-					QMessageBox::information(nullptr,
-											 QObject::tr("Uninstall"),
-											 QObject::tr("The application was successfully removed."),
-											 QMessageBox::Close);
-				} else {
-					QMessageBox::information(nullptr,
-											 QObject::tr("Uninstall"),
-											 QObject::tr("The application was successfully removed. The preferences have been kept."),
-											 QMessageBox::Close);
-				}
-
+				QMessageBox::information(nullptr,
+											QObject::tr("Uninstall"),
+											QObject::tr("The application was successfully removed."),
+											QMessageBox::Close);
 				uninstallation::initiateSelfRemoval(installDir);
 			}
 		} else {
