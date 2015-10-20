@@ -62,7 +62,8 @@ namespace sv {
 		QVector<QString> filesInDirectory;
 		size_t currentFileIndex;
 		QFileInfo currentFileInfo;
-		bool currentImageUnreadable = false;
+		std::atomic<bool> currentImageUnreadable{ false };
+		std::atomic<bool> paintLoadingHint{ false };
 		std::map<QString, std::shared_future<cv::Mat>> threads;
 		QSettings settings;
 
@@ -89,7 +90,7 @@ namespace sv {
 		QTimer* mouseHideTimer;
 		QTimer* threadCleanUpTimer;
 		QTimer* slideshowTimer;
-	private slots:
+		private slots:
 		void nextSlide();
 		void cleanUpThreads();
 		void quit();
