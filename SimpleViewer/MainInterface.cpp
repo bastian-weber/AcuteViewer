@@ -30,6 +30,7 @@ namespace sv {
 
 		this->sharpeningDialog = new SharpeningDialog(settings, this);
 		QObject::connect(this->sharpeningDialog, SIGNAL(sharpeningParametersChanged()), this, SLOT(updateSharpening()));
+		QObject::connect(this->sharpeningDialog, SIGNAL(dialogClosed()), this, SLOT(enableAutomaticMouseHide()));
 
 		QObject::connect(this->menuBar(), SIGNAL(triggered(QAction*)), this, SLOT(hideMenuBar(QAction*)));
 		this->fileMenu = this->menuBar()->addMenu(tr("&File"));
@@ -715,6 +716,7 @@ namespace sv {
 	}
 
 	void MainInterface::showSharpeningOptions() { 
+		this->disableAutomaticMouseHide();
 		this->sharpeningDialog->show();
 		this->sharpeningDialog->raise();
 		this->sharpeningDialog->activateWindow();

@@ -2,9 +2,9 @@
 
 namespace sv {
 
-	SharpeningDialog::SharpeningDialog(std::shared_ptr<QSettings> settings, QWidget *parent)
-		: QDialog(parent),
-		settings(settings) {
+	SharpeningDialog::SharpeningDialog(std::shared_ptr<QSettings> settings, QWidget* parent)
+		: settings(settings),
+		QDialog(parent) {
 		this->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
 		this->setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
@@ -34,9 +34,11 @@ namespace sv {
 		this->formLayout->addRow("", this->sharpeningCheckbox);
 		this->okButton = new QPushButton(tr("&Ok"), this);
 		QObject::connect(this->okButton, SIGNAL(clicked()), this, SLOT(reactToOkButtonClick()));
+		QObject::connect(this->okButton, SIGNAL(clicked()), this, SIGNAL(dialogClosed()));
 
 		this->cancelButton = new QPushButton(tr("&Cancel"), this);
 		QObject::connect(this->cancelButton, SIGNAL(clicked()), this, SLOT(reactToCancelButtonClick()));
+		QObject::connect(this->cancelButton, SIGNAL(clicked()), this, SIGNAL(dialogClosed()));
 		QObject::connect(this->cancelButton, SIGNAL(clicked()), this, SLOT(close()));
 
 		this->buttonLayout = new QHBoxLayout();

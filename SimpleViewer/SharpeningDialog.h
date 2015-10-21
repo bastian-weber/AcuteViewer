@@ -14,7 +14,7 @@ namespace sv {
 	class SharpeningDialog : public QDialog {
 		Q_OBJECT
 	public:
-		SharpeningDialog(std::shared_ptr<QSettings> settings, QWidget *parent = 0);
+		SharpeningDialog(std::shared_ptr<QSettings> settings, QWidget* parent = 0);
 		~SharpeningDialog();
 	protected:
 		void showEvent(QShowEvent* event);
@@ -24,8 +24,8 @@ namespace sv {
 		//variables
 		std::shared_ptr<QSettings> settings;
 		bool enableSharpeningOldValue;
-		bool sharpeningStrengthOldValue;
-		bool sharpeningRadiusOldValue;
+		double sharpeningStrengthOldValue;
+		double sharpeningRadiusOldValue;
 		//widgets
 		QVBoxLayout* mainLayout;
 		QFormLayout* formLayout;
@@ -42,6 +42,7 @@ namespace sv {
 		void reactToCancelButtonClick();
 	signals:
 		void sharpeningParametersChanged();
+		void dialogClosed();
 	};
 }
 #endif

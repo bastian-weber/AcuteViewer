@@ -2,7 +2,7 @@
 
 namespace sv {
 
-	SlideshowDialog::SlideshowDialog(std::shared_ptr<QSettings> settings, QWidget *parent)
+	SlideshowDialog::SlideshowDialog(std::shared_ptr<QSettings> settings, QWidget* parent)
 		: QDialog(parent) {
 		this->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
 		this->setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
