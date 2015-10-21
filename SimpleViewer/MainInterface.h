@@ -116,6 +116,8 @@ namespace sv {
 		void reactToEnlargementToggle(bool value);
 		void reactToSharpeningToggle(bool value);
 		void reactoToAutoHideMenuBarToggle(bool value);
+		void showSharpeningOptions();
+		void updateSharpening();
 	signals:
 		void readImageFinished(cv::Mat image);
 	};

@@ -19,16 +19,17 @@ namespace sv {
 		this->imageView->setInterfaceBackgroundColor(Qt::black);
 		this->imageView->setPreventMagnificationInDefaultZoom(true);
 		this->imageView->setEnablePostResizeSharpening(false);
-		this->imageView->setPostResizeSharpeningRadius(1);
-		this->imageView->setPostResizeSharpeningStrength(0.5);
+		this->imageView->setPostResizeSharpeningRadius(this->settings->value("sharpeningRadius", 0.5).toDouble());
+		this->imageView->setPostResizeSharpeningStrength(this->settings->value("sharpeningStrength", 0.5).toDouble());
 		setCentralWidget(this->imageView);
 
-		this->slideshowDialog = new SlideshowDialog(settings);
-		this->slideshowDialog->setWindowModality(Qt::ApplicationModal);
+		this->slideshowDialog = new SlideshowDialog(settings, this);
+		this->slideshowDialog->setWindowModality(Qt::WindowModal);
 		QObject::connect(this->slideshowDialog, SIGNAL(dialogConfirmed(double, bool)), this, SLOT(startSlideshow(double, bool)));
 		QObject::connect(this->slideshowDialog, SIGNAL(dialogClosed()), this, SLOT(enableAutomaticMouseHide()));
 
-		this->sharpeningDialog = new SharpeningDialog(settings);
+		this->sharpeningDialog = new SharpeningDialog(settings, this);
+		QObject::connect(this->sharpeningDialog, SIGNAL(sharpeningParametersChanged()), this, SLOT(updateSharpening()));
 
 		QObject::connect(this->menuBar(), SIGNAL(triggered(QAction*)), this, SLOT(hideMenuBar(QAction*)));
 		this->fileMenu = this->menuBar()->addMenu(tr("&File"));
@@ -112,7 +113,7 @@ namespace sv {
 		this->sharpeningOptionsAction = new QAction(tr("Sharpening Options"), this);
 		this->sharpeningOptionsAction->setShortcut(Qt::Key_O);
 		this->sharpeningOptionsAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->sharpeningOptionsAction, SIGNAL(triggered(bool)), this->sharpeningDialog, SLOT(show()));
+		QObject::connect(this->sharpeningOptionsAction, SIGNAL(triggered(bool)), this, SLOT(showSharpeningOptions()));
 		this->viewMenu->addAction(this->sharpeningOptionsAction);
 		this->addAction(this->sharpeningOptionsAction);
 
@@ -555,7 +556,9 @@ namespace sv {
 	}
 
 	void MainInterface::enableAutomaticMouseHide() { 
-		if(this->isFullScreen() && !this->menuBar()->isVisible() && !this->slideshowDialog->isVisible()) this->mouseHideTimer->start(this->mouseHideDelay);
+		if (this->isFullScreen() && !this->menuBar()->isVisible() && !this->slideshowDialog->isVisible() && !this->sharpeningDialog->isVisible()) {
+			this->mouseHideTimer->start(this->mouseHideDelay);
+		}
 	}
 
 	void MainInterface::disableAutomaticMouseHide() {
@@ -709,6 +712,19 @@ namespace sv {
 		} else {
 			this->hideMenuBar();
 		}
+	}
+
+	void MainInterface::showSharpeningOptions() { 
+		this->sharpeningDialog->show();
+		this->sharpeningDialog->raise();
+		this->sharpeningDialog->activateWindow();
+	}
+
+	void MainInterface::updateSharpening() {
+		this->sharpeningAction->setChecked(this->settings->value("sharpenImagesAfterDownscale", false).toBool());
+		this->imageView->setEnablePostResizeSharpening(this->sharpeningAction->isChecked());
+		this->imageView->setPostResizeSharpeningStrength(this->settings->value("sharpeningStrength", 0.5).toDouble());
+		this->imageView->setPostResizeSharpeningRadius(this->settings->value("sharpeningRadius", 1).toDouble());
 	}
 
 }

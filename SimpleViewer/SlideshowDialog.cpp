@@ -21,9 +21,10 @@ namespace sv {
 
 		this->formLayout = new QFormLayout();
 		this->formLayout->addRow(tr("&Delay:"), this->timeSpinBox);
-		this->formLayout->addRow(tr(""), this->loopCheckbox);
+		this->formLayout->addRow("", this->loopCheckbox);
 
 		this->okButton = new QPushButton(tr("&Ok"), this);
+		this->okButton->setDefault(true);
 		QObject::connect(this->okButton, SIGNAL(clicked()), this, SLOT(reactToOkButtonClick()));
 		QObject::connect(this->okButton, SIGNAL(clicked()), this, SIGNAL(dialogClosed()));
 
