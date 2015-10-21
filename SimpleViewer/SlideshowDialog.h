@@ -16,7 +16,6 @@ namespace sv {
 	public:
 		SlideshowDialog(std::shared_ptr<QSettings> settings, QWidget *parent = 0);
 		~SlideshowDialog();
-		//QSize sizeHint() const;
 	protected:
 
 	private:

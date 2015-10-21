@@ -16,26 +16,32 @@ namespace sv {
 	public:
 		SharpeningDialog(std::shared_ptr<QSettings> settings, QWidget *parent = 0);
 		~SharpeningDialog();
-		//QSize sizeHint() const;
 	protected:
-
+		void showEvent(QShowEvent* event);
 	private:
 		//functions
 
 		//variables
 		std::shared_ptr<QSettings> settings;
+		bool enableSharpeningOldValue;
+		bool sharpeningStrengthOldValue;
+		bool sharpeningRadiusOldValue;
 		//widgets
 		QVBoxLayout* mainLayout;
 		QFormLayout* formLayout;
 		QHBoxLayout* buttonLayout;
 		QDoubleSpinBox* strengthSpinBox;
 		QDoubleSpinBox* radiusSpinBox;
+		QCheckBox* sharpeningCheckbox;
 		QPushButton* okButton;
 		QPushButton* cancelButton;
-	private slots:
+		private slots:
 		void reactToOkButtonClick();
+	private slots:
+		void updateSharpeningSettings();
+		void reactToCancelButtonClick();
 	signals:
-		void dialogClosed();
+		void sharpeningParametersChanged();
 	};
 }
 #endif
