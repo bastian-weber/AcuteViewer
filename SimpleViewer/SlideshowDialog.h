@@ -14,7 +14,7 @@ namespace sv {
 	class SlideshowDialog : public QDialog {
 		Q_OBJECT
 	public:
-		SlideshowDialog(std::shared_ptr<QSettings> settings, QWidget *parent = 0);
+		SlideshowDialog(std::shared_ptr<QSettings> settings, QWidget* parent = 0);
 		~SlideshowDialog();
 	protected:
 
