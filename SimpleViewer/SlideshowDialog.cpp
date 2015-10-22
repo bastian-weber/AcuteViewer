@@ -42,6 +42,7 @@ namespace sv {
 		this->mainLayout->addLayout(this->buttonLayout);
 
 		this->setLayout(this->mainLayout);
+		this->layout()->setSizeConstraint(QLayout::SetFixedSize);
 	}
 
 	SlideshowDialog::~SlideshowDialog() {

@@ -87,6 +87,7 @@ namespace sv {
 		QAction* sharpeningOptionsAction;
 		QAction* menuBarAutoHideAction;
 		QAction* slideshowAction;
+		QAction* zoomLevelAction;
 		QAction* installAction;
 		QAction* uninstallAction;
 		//timer
@@ -109,7 +110,8 @@ namespace sv {
 		void toggleSlideshow();
 		void startSlideshow(double delay, bool loop);
 		void stopSlideshow();
-		void reactToshowInfoToggle(bool value);
+		void reactToShowInfoToggle(bool value);
+		void reactToShowZoomLevelToggle(bool value);
 		void reactToReadImageCompletion(cv::Mat image);
 		void openDialog();
 		void reactToSmoothingToggle(bool value);

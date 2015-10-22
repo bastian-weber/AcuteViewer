@@ -65,9 +65,18 @@ namespace sv {
 		this->showInfoAction->setChecked(false);
 		this->showInfoAction->setShortcut(Qt::Key_I);
 		this->showInfoAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->showInfoAction, SIGNAL(triggered(bool)), this, SLOT(reactToshowInfoToggle(bool)));
+		QObject::connect(this->showInfoAction, SIGNAL(triggered(bool)), this, SLOT(reactToShowInfoToggle(bool)));
 		this->viewMenu->addAction(this->showInfoAction);
 		this->addAction(this->showInfoAction);
+
+		this->zoomLevelAction = new QAction(tr("Show &Zoom Level"), this);
+		this->zoomLevelAction->setCheckable(true);
+		this->zoomLevelAction->setChecked(false);
+		this->zoomLevelAction->setShortcut(Qt::Key_Z);
+		this->zoomLevelAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->zoomLevelAction, SIGNAL(triggered(bool)), this, SLOT(reactToShowZoomLevelToggle(bool)));
+		this->viewMenu->addAction(this->zoomLevelAction);
+		this->addAction(this->zoomLevelAction);
 
 		this->enlargementAction = new QAction(tr("&Enlarge Smaller Images"), this);
 		this->enlargementAction->setCheckable(true);
@@ -96,8 +105,6 @@ namespace sv {
 		this->viewMenu->addAction(this->smoothingAction);
 		this->addAction(this->smoothingAction);
 
-		this->viewMenu->addSeparator();
-
 		this->menuBarAutoHideAction = new QAction(tr("&Always Show Menu Bar"), this);
 		this->menuBarAutoHideAction->setCheckable(true);
 		this->menuBarAutoHideAction->setChecked(false);
@@ -109,7 +116,7 @@ namespace sv {
 
 		this->viewMenu->addSeparator();
 
-		this->sharpeningOptionsAction = new QAction(tr("Sharpening Options"), this);
+		this->sharpeningOptionsAction = new QAction(tr("Sharpening Options..."), this);
 		this->sharpeningOptionsAction->setShortcut(Qt::Key_O);
 		this->sharpeningOptionsAction->setShortcutContext(Qt::ApplicationShortcut);
 		QObject::connect(this->sharpeningOptionsAction, SIGNAL(triggered(bool)), this, SLOT(showSharpeningOptions()));
@@ -139,6 +146,7 @@ namespace sv {
 
 		//load settings
 		this->showInfoAction->setChecked(this->settings->value("showImageInfo", false).toBool());
+		this->zoomLevelAction->setChecked(this->settings->value("showZoomLevel", false).toBool());
 		this->enlargementAction->setChecked(this->settings->value("enlargeSmallImages", false).toBool());
 		this->reactToEnlargementToggle(this->enlargementAction->isChecked());
 		this->smoothingAction->setChecked(this->settings->value("useSmoothEnlargmentInterpolation", false).toBool());
@@ -171,6 +179,7 @@ namespace sv {
 		delete this->sharpeningOptionsAction;
 		delete this->menuBarAutoHideAction;
 		delete this->slideshowAction;
+		delete this->zoomLevelAction;
 		delete this->installAction;
 		delete this->uninstallAction;
 		delete this->mouseHideTimer;
@@ -505,6 +514,10 @@ namespace sv {
 			canvas.drawText(QPoint(30, 30 + lineSpacing + 2 * metrics.height()), 
 							QString("%1 Mb").arg(this->currentFileInfo.size() / 1048576.0, 0, 'f', 2));
 		}
+		if (this->zoomLevelAction->isChecked() && this->imageView->imageAssigned()) {
+			QString message = QString::number(this->imageView->getCurrentPreviewScalingFactor() * 100, 'f', 1).append("%");
+			canvas.drawText(QPoint(30, canvas.device()->height() - 30), message);
+		}
 	}
 
 	bool MainInterface::applicationIsInstalled() {
@@ -648,9 +661,14 @@ namespace sv {
 		this->slideshowTimer->stop();
 	}
 
-	void MainInterface::reactToshowInfoToggle(bool value) {
+	void MainInterface::reactToShowInfoToggle(bool value) {
 		this->imageView->update();
 		this->settings->setValue("showImageInfo", value);
+	}
+
+	void MainInterface::reactToShowZoomLevelToggle(bool value) {
+		this->imageView->update();
+		this->settings->setValue("showZoomLevel", value);
 	}
 
 	void MainInterface::reactToReadImageCompletion(cv::Mat image) {
