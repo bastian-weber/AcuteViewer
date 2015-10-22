@@ -18,9 +18,7 @@ namespace sv {
 		this->imageView->setExternalPostPaintFunction(this, &MainInterface::infoPaintFunction);
 		this->imageView->setInterfaceBackgroundColor(Qt::black);
 		this->imageView->setPreventMagnificationInDefaultZoom(true);
-		this->imageView->setEnablePostResizeSharpening(false);
-		this->imageView->setPostResizeSharpeningRadius(this->settings->value("sharpeningRadius", 0.5).toDouble());
-		this->imageView->setPostResizeSharpeningStrength(this->settings->value("sharpeningStrength", 0.5).toDouble());
+		this->imageView->setPostResizeSharpening(false, this->settings->value("sharpeningStrength", 0.5).toDouble(), this->settings->value("sharpeningRadius", 0.5).toDouble());
 		setCentralWidget(this->imageView);
 
 		this->slideshowDialog = new SlideshowDialog(settings, this);
@@ -724,9 +722,9 @@ namespace sv {
 
 	void MainInterface::updateSharpening() {
 		this->sharpeningAction->setChecked(this->settings->value("sharpenImagesAfterDownscale", false).toBool());
-		this->imageView->setEnablePostResizeSharpening(this->sharpeningAction->isChecked());
-		this->imageView->setPostResizeSharpeningStrength(this->settings->value("sharpeningStrength", 0.5).toDouble());
-		this->imageView->setPostResizeSharpeningRadius(this->settings->value("sharpeningRadius", 1).toDouble());
+		this->imageView->setPostResizeSharpening(this->sharpeningAction->isChecked(),
+												 this->settings->value("sharpeningStrength", 0.5).toDouble(),
+												 this->settings->value("sharpeningRadius", 1).toDouble());
 	}
 
 }

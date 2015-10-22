@@ -278,6 +278,20 @@ namespace hb {
 		return _postResizeSharpeningRadius;
 	}
 
+	///Sets all parameters for the post resize sharpening at once.
+	/**
+	* The advantage of using this function instead of setting the three 
+	* parameters separately is that the imageView will only have to update once,
+	* resulting in better performance.
+	*/
+	void ImageView::setPostResizeSharpening(bool enable, double strength, double radius) {
+		_enablePostResizeSharpening = enable;
+		_postResizeSharpeningStrength = strength;
+		_postResizeSharpeningRadius = radius;
+		updateResizedImage();
+		update();
+	}
+
 	///Enables or disables the ability to set new points and the ability to move already set ones; if adding points is enabled, manipulation of the polyline will be disabled.
 	void ImageView::setPointEditing(bool enablePointAdding, bool enablePointManipulation) {
 		_pointEditingActive = enablePointAdding;
