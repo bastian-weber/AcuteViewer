@@ -59,6 +59,7 @@ namespace hb {
 		double postResizeSharpeningStrength();
 		void setPostResizeSharpeningRadius(double value);
 		double postResizeSharpeningRadius();
+		void setPostResizeSharpening(bool enable, double strength, double radius);
 
 		void setPointEditing(bool enablePointAdding, bool enablePointManipulation);
 		void setRenderPoints(bool value);
