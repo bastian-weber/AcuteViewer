@@ -30,6 +30,7 @@ namespace sv {
 		QVBoxLayout* mainLayout;
 		QFormLayout* formLayout;
 		QHBoxLayout* buttonLayout;
+		QLabel* descriptionLabel;
 		QDoubleSpinBox* strengthSpinBox;
 		QDoubleSpinBox* radiusSpinBox;
 		QCheckBox* sharpeningCheckbox;

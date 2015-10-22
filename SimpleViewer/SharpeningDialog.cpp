@@ -10,11 +10,22 @@ namespace sv {
 
 		this->setWindowTitle(tr("Sharpening Options"));
 
+		this->descriptionLabel = new QLabel(tr("The post-resize sharpening will be applied to the image after it has been downsampled to fit the window."
+											   "This can improve the impression of sharpness which might be decreased by the downscaling procedure. This is "
+											   "most noticable if the original image resolution was a lot higher. It will only be applied at zoom levels "
+											   "below 100%. If you don't see any changes when changing the parameters your current zoom level might be equal "
+											   "or above 100%."), this);
+		this->descriptionLabel->setWordWrap(true);
+		this->descriptionLabel->setSizePolicy(QSizePolicy(this->descriptionLabel->sizePolicy().horizontalPolicy(), QSizePolicy::Minimum));
+		this->descriptionLabel->setMaximumWidth(300);
+
 		this->strengthSpinBox = new QDoubleSpinBox(this);
 		this->strengthSpinBox->setMinimum(0);
 		this->strengthSpinBox->setMaximum(1000000);
 		this->strengthSpinBox->setDecimals(2);
 		this->strengthSpinBox->setSingleStep(0.25);
+		this->strengthSpinBox->setMaximumWidth(100);
+		this->strengthSpinBox->setMaximumWidth(this->strengthSpinBox->sizeHint().width());
 		QObject::connect(this->strengthSpinBox, SIGNAL(valueChanged(double)), this, SLOT(updateSharpeningSettings()));
 
 		this->radiusSpinBox = new QDoubleSpinBox(this);
@@ -23,15 +34,18 @@ namespace sv {
 		this->radiusSpinBox->setDecimals(1);
 		this->strengthSpinBox->setSingleStep(1);
 		this->radiusSpinBox->setSuffix("px");
+		this->radiusSpinBox->setMaximumWidth(this->strengthSpinBox->sizeHint().width());
 		QObject::connect(this->radiusSpinBox, SIGNAL(valueChanged(double)), this, SLOT(updateSharpeningSettings()));
 
 		this->sharpeningCheckbox = new QCheckBox(tr("&Enable Sharpening"), this);
+		this->sharpeningCheckbox->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, this->sharpeningCheckbox->sizePolicy().verticalPolicy()));
 		QObject::connect(this->sharpeningCheckbox, SIGNAL(stateChanged(int)), this, SLOT(updateSharpeningSettings()));
 
 		this->formLayout = new QFormLayout();
+		this->formLayout->setFormAlignment(Qt::AlignCenter);
 		this->formLayout->addRow(tr("&Strength:"), this->strengthSpinBox);
 		this->formLayout->addRow(tr("&Radius:"), this->radiusSpinBox);
-		this->formLayout->addRow("", this->sharpeningCheckbox);
+		this->formLayout->addRow(this->sharpeningCheckbox);
 		this->okButton = new QPushButton(tr("&Ok"), this);
 		QObject::connect(this->okButton, SIGNAL(clicked()), this, SLOT(reactToOkButtonClick()));
 		QObject::connect(this->okButton, SIGNAL(clicked()), this, SIGNAL(dialogClosed()));
@@ -47,16 +61,21 @@ namespace sv {
 		this->buttonLayout->addWidget(cancelButton);
 
 		this->mainLayout = new QVBoxLayout();
+		this->mainLayout->addWidget(this->descriptionLabel);
+		this->mainLayout->addSpacing(10);
 		this->mainLayout->addLayout(this->formLayout);
+		this->mainLayout->addSpacing(10);
 		this->mainLayout->addLayout(this->buttonLayout);
 
 		this->setLayout(this->mainLayout);
+		this->layout()->setSizeConstraint(QLayout::SetFixedSize);
 	}
 
 	SharpeningDialog::~SharpeningDialog() {
 		delete this->mainLayout;
 		delete this->formLayout;
 		delete this->buttonLayout;
+		delete this->descriptionLabel;
 		delete this->strengthSpinBox;
 		delete this->radiusSpinBox;
 		delete this->sharpeningCheckbox;
