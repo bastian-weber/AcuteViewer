@@ -10,14 +10,15 @@ namespace sv {
 
 		this->setWindowTitle(tr("Sharpening Options"));
 
-		this->descriptionLabel = new QLabel(tr("The post-resize sharpening will be applied to the image after it has been downsampled to fit the window."
-											   "This can improve the impression of sharpness which might be decreased by the downscaling procedure. This is "
-											   "most noticable if the original image resolution was a lot higher. It will only be applied at zoom levels "
-											   "below 100%. If you don't see any changes when changing the parameters your current zoom level might be equal "
-											   "or above 100%."), this);
+		this->descriptionLabel = new QLabel(tr("<h3>Post-Resize Sharpening</h3>"
+											   "<p>The post-resize sharpening will be applied to the image after it has been downsampled to fit the window."
+											   "This can improve the impression of sharpness that might be reduced by the downscaling procedure. This is "
+											   "most noticable if the original image resolution was much higher.</p><p>The sharpening will only be applied at zoom "
+											   "levels below 100%. If you don't see any changes when changing the parameters your current zoom level might be equal "
+											   "or above 100%.</p>"), this);
 		this->descriptionLabel->setWordWrap(true);
 		this->descriptionLabel->setSizePolicy(QSizePolicy(this->descriptionLabel->sizePolicy().horizontalPolicy(), QSizePolicy::Minimum));
-		this->descriptionLabel->setMaximumWidth(300);
+		this->descriptionLabel->setMinimumWidth(400);
 
 		this->strengthSpinBox = new QDoubleSpinBox(this);
 		this->strengthSpinBox->setMinimum(0);

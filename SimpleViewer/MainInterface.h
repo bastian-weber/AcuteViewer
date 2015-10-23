@@ -87,6 +87,7 @@ namespace sv {
 		QAction* sharpeningOptionsAction;
 		QAction* menuBarAutoHideAction;
 		QAction* slideshowAction;
+		QAction* slideshowNoDialogAction;
 		QAction* zoomLevelAction;
 		QAction* installAction;
 		QAction* uninstallAction;
@@ -108,7 +109,8 @@ namespace sv {
 		void runInstaller();
 		void runUninstaller();
 		void toggleSlideshow();
-		void startSlideshow(double delay, bool loop);
+		void toggleSlideshowNoDialog();
+		void startSlideshow();
 		void stopSlideshow();
 		void reactToShowInfoToggle(bool value);
 		void reactToShowZoomLevelToggle(bool value);

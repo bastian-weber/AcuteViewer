@@ -22,7 +22,7 @@ namespace sv {
 		//functions
 
 		//variables
-
+		std::shared_ptr<QSettings> settings;
 		//widgets
 		QVBoxLayout* mainLayout;
 		QFormLayout* formLayout;
@@ -34,7 +34,7 @@ namespace sv {
 	private slots:
 		void reactToOkButtonClick();
 	signals:
-		void dialogConfirmed(double delay, bool loop);
+		void dialogConfirmed();
 		void dialogClosed();
 	};
 }
