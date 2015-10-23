@@ -23,7 +23,7 @@ namespace sv {
 
 		this->slideshowDialog = new SlideshowDialog(settings, this);
 		this->slideshowDialog->setWindowModality(Qt::WindowModal);
-		QObject::connect(this->slideshowDialog, SIGNAL(dialogConfirmed(double, bool)), this, SLOT(startSlideshow(double, bool)));
+		QObject::connect(this->slideshowDialog, SIGNAL(dialogConfirmed()), this, SLOT(startSlideshow()));
 		QObject::connect(this->slideshowDialog, SIGNAL(dialogClosed()), this, SLOT(enableAutomaticMouseHide()));
 
 		this->sharpeningDialog = new SharpeningDialog(settings, this);
@@ -131,6 +131,13 @@ namespace sv {
 		this->slideshowMenu->addAction(this->slideshowAction);
 		this->addAction(this->slideshowAction);
 
+		this->slideshowNoDialogAction = new QAction(this);
+		this->slideshowNoDialogAction->setEnabled(false);
+		this->slideshowNoDialogAction->setShortcut(Qt::CTRL + Qt::Key_P);
+		this->slideshowNoDialogAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->slideshowNoDialogAction, SIGNAL(triggered()), this, SLOT(toggleSlideshowNoDialog()));
+		this->addAction(this->slideshowNoDialogAction);
+
 		//mouse hide timer in fullscreen
 		this->mouseHideTimer = new QTimer(this);
 		QObject::connect(this->mouseHideTimer, SIGNAL(timeout()), this, SLOT(hideMouse()));
@@ -159,7 +166,6 @@ namespace sv {
 		if (openWithFilename != QString()) {
 			this->loadImage(openWithFilename);
 		}
-
 	}
 
 	MainInterface::~MainInterface() {
@@ -179,6 +185,7 @@ namespace sv {
 		delete this->sharpeningOptionsAction;
 		delete this->menuBarAutoHideAction;
 		delete this->slideshowAction;
+		delete this->slideshowNoDialogAction;
 		delete this->zoomLevelAction;
 		delete this->installAction;
 		delete this->uninstallAction;
@@ -648,12 +655,17 @@ namespace sv {
 		}
 	}
 
-	void MainInterface::startSlideshow(double delay, bool loop) {
+	void MainInterface::toggleSlideshowNoDialog() {
+		if (this->slideshowTimer->isActive()) {
+			this->stopSlideshow();
+		} else {
+			this->startSlideshow();
+		}	
+	}
+
+	void MainInterface::startSlideshow() {
 		this->slideshowAction->setText(tr("&Stop Slideshow"));
-		delay = std::abs(delay);
-		this->settings->setValue("slideDelay", delay);
-		this->settings->setValue("slideshowLoop", loop);
-		this->slideshowTimer->start(this->settings->value("slideDelay", 3).toDouble() * 1000);
+		this->slideshowTimer->start(std::abs(this->settings->value("slideDelay", 3).toDouble()) * 1000);
 	}
 
 	void MainInterface::stopSlideshow() {
@@ -693,6 +705,7 @@ namespace sv {
 			}
 		}
 		this->slideshowAction->setEnabled(true);
+		this->slideshowNoDialogAction->setEnabled(true);
 		this->loading = false;
 	}
 

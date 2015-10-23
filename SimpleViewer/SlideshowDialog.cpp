@@ -3,7 +3,8 @@
 namespace sv {
 
 	SlideshowDialog::SlideshowDialog(std::shared_ptr<QSettings> settings, QWidget* parent)
-		: QDialog(parent) {
+		: settings(settings), 
+		QDialog(parent) {
 		this->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
 		this->setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
@@ -64,7 +65,9 @@ namespace sv {
 	//============================================================================ PRIVATE SLOTS =============================================================================\\
 
 	void SlideshowDialog::reactToOkButtonClick() {
-		emit(dialogConfirmed(this->timeSpinBox->value(), this->loopCheckbox->isChecked()));
+		settings->setValue("slideshowLoop", this->loopCheckbox->isChecked());
+		settings->setValue("slideDelay", this->timeSpinBox->value());
+		emit(dialogConfirmed());
 		this->close();
 	}
 
