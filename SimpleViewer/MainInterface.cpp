@@ -162,6 +162,9 @@ namespace sv {
 		this->reactToSharpeningToggle(this->sharpeningAction->isChecked());
 		this->menuBarAutoHideAction->setChecked(!this->settings->value("autoHideMenuBar", true).toBool());
 		this->reactoToAutoHideMenuBarToggle(this->menuBarAutoHideAction->isChecked());
+		if (this->settings->value("maximized", false).toBool()) {
+			this->showMaximized();
+		}
 
 		if (openWithFilename != QString()) {
 			this->loadImage(openWithFilename);
@@ -280,6 +283,17 @@ namespace sv {
 			this->enableAutomaticMouseHide();
 		}
 		e->ignore();
+	}
+
+	void MainInterface::changeEvent(QEvent* e) {
+		if (e->type() == QEvent::WindowStateChange) {
+			if (!this->isMinimized() && !this->isFullScreen()) {
+				this->settings->setValue("maximized", this->isMaximized());
+			} else if (this->isFullScreen()) {
+				QWindowStateChangeEvent* windowStateChangeEvent = static_cast<QWindowStateChangeEvent*>(e);
+				this->settings->setValue("maximized", bool(windowStateChangeEvent->oldState() & Qt::WindowMaximized));
+			}
+		}
 	}
 
 	//=============================================================================== PRIVATE ===============================================================================\\
@@ -468,7 +482,7 @@ namespace sv {
 			this->currentImageUnreadable = true;
 			this->imageView->resetImage();
 		}
-		this->setWindowTitle(QString("%1 - %2 - %3 of %4").arg(this->programTitle, 
+		this->setWindowTitle(QString("%1 - %2 - %3 of %4").arg(this->programTitle,
 															   this->currentFileInfo.fileName()).arg(this->currentFileIndex + 1).arg(this->filesInDirectory.size()));
 	}
 
@@ -482,7 +496,11 @@ namespace sv {
 	void MainInterface::exitFullscreen() {
 		//QPalette palette = qApp->palette();
 		//this->imageView->setInterfaceBackgroundColor(palette.base().color());
-		this->showNormal();
+		if (this->settings->value("maximized", false).toBool()) {
+			this->showMaximized();
+		} else {
+			this->showNormal();
+		}
 		if (this->menuBarAutoHideAction->isChecked()) showMenuBar();
 		this->disableAutomaticMouseHide();
 	}
@@ -503,22 +521,22 @@ namespace sv {
 		double lineSpacing = 30;
 		if (this->currentImageUnreadable) {
 			QString message = tr("This file could not be read:");
-			canvas.drawText(QPoint((canvas.device()->width() - metrics.width(message)) / 2.0, canvas.device()->height() / 2.0 - 0.5*lineSpacing), 
+			canvas.drawText(QPoint((canvas.device()->width() - metrics.width(message)) / 2.0, canvas.device()->height() / 2.0 - 0.5*lineSpacing),
 							message);
-			canvas.drawText(QPoint((canvas.device()->width() - metrics.width(this->currentFileInfo.fileName())) / 2.0, 
-								   canvas.device()->height() / 2.0 + 0.5*lineSpacing + metrics.height()), 
+			canvas.drawText(QPoint((canvas.device()->width() - metrics.width(this->currentFileInfo.fileName())) / 2.0,
+								   canvas.device()->height() / 2.0 + 0.5*lineSpacing + metrics.height()),
 							this->currentFileInfo.fileName());
 		}
 		if (this->paintLoadingHint) {
 			QString message = tr("Loading...");
-			canvas.drawText(QPoint((canvas.device()->width() - metrics.width(message)) / 2.0, canvas.device()->height() / 2.0 + 0.5*metrics.height()), 
+			canvas.drawText(QPoint((canvas.device()->width() - metrics.width(message)) / 2.0, canvas.device()->height() / 2.0 + 0.5*metrics.height()),
 							message);
 		}
 		if (this->showInfoAction->isChecked() && this->imageView->imageAssigned()) {
 		//draw current filename
-			canvas.drawText(QPoint(30, 30 + metrics.height()), 
+			canvas.drawText(QPoint(30, 30 + metrics.height()),
 							this->currentFileInfo.fileName());
-			canvas.drawText(QPoint(30, 30 + lineSpacing + 2 * metrics.height()), 
+			canvas.drawText(QPoint(30, 30 + lineSpacing + 2 * metrics.height()),
 							QString("%1 Mb").arg(this->currentFileInfo.size() / 1048576.0, 0, 'f', 2));
 		}
 		if (this->zoomLevelAction->isChecked() && this->imageView->imageAssigned()) {
@@ -574,7 +592,7 @@ namespace sv {
 		qApp->setOverrideCursor(Qt::ArrowCursor);
 	}
 
-	void MainInterface::enableAutomaticMouseHide() { 
+	void MainInterface::enableAutomaticMouseHide() {
 		if (this->isFullScreen() && !this->menuBar()->isVisible() && !this->slideshowDialog->isVisible() && !this->sharpeningDialog->isVisible()) {
 			this->mouseHideTimer->start(this->mouseHideDelay);
 		}
@@ -611,11 +629,11 @@ namespace sv {
 	void MainInterface::runInstaller() {
 		QString installerPath = QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("WinInstaller.exe");
 		if (QFileInfo(installerPath).exists()) {
-			ShellExecuteW(GetDesktopWindow(), 
-						  nullptr, 
-						  reinterpret_cast<LPCWSTR>(installerPath.utf16()), 
-						  nullptr, 
-						  reinterpret_cast<LPCWSTR>(QCoreApplication::applicationDirPath().utf16()), 
+			ShellExecuteW(GetDesktopWindow(),
+						  nullptr,
+						  reinterpret_cast<LPCWSTR>(installerPath.utf16()),
+						  nullptr,
+						  reinterpret_cast<LPCWSTR>(QCoreApplication::applicationDirPath().utf16()),
 						  SW_SHOWNORMAL);
 			QCoreApplication::quit();
 		} else {
@@ -630,11 +648,11 @@ namespace sv {
 	#ifdef Q_OS_WIN
 		QString installerPath = QDir::toNativeSeparators(QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("WinInstaller.exe"));
 		if (QFileInfo(installerPath).exists()) {
-			ShellExecuteW(GetDesktopWindow(), 
-						  nullptr, 
-						  reinterpret_cast<LPCWSTR>(installerPath.utf16()), 
-						  L"-uninstall", 
-						  reinterpret_cast<LPCWSTR>(QCoreApplication::applicationDirPath().utf16()), 
+			ShellExecuteW(GetDesktopWindow(),
+						  nullptr,
+						  reinterpret_cast<LPCWSTR>(installerPath.utf16()),
+						  L"-uninstall",
+						  reinterpret_cast<LPCWSTR>(QCoreApplication::applicationDirPath().utf16()),
 						  SW_SHOWNORMAL);
 			QCoreApplication::quit();
 		} else {
@@ -646,7 +664,7 @@ namespace sv {
 	#endif
 	}
 
-	void MainInterface::toggleSlideshow() { 
+	void MainInterface::toggleSlideshow() {
 		if (this->slideshowTimer->isActive()) {
 			this->stopSlideshow();
 		} else {
@@ -660,7 +678,7 @@ namespace sv {
 			this->stopSlideshow();
 		} else {
 			this->startSlideshow();
-		}	
+		}
 	}
 
 	void MainInterface::startSlideshow() {
@@ -691,16 +709,16 @@ namespace sv {
 			//preload next and previous image in background
 			std::lock_guard<std::mutex> lock(this->threadDeletionMutex);
 			if (this->threads.find(this->filesInDirectory[this->previousFileIndex()]) == this->threads.end()) {
-				this->threads[this->filesInDirectory[this->previousFileIndex()]] = std::async(std::launch::async, 
-																							  &MainInterface::readImage, 
-																							  this, 
-																							  this->getFullImagePath(this->previousFileIndex()), 
+				this->threads[this->filesInDirectory[this->previousFileIndex()]] = std::async(std::launch::async,
+																							  &MainInterface::readImage,
+																							  this,
+																							  this->getFullImagePath(this->previousFileIndex()),
 																							  false);
 			}
 			if (this->threads.find(this->filesInDirectory[this->nextFileIndex()]) == this->threads.end()) {
-				this->threads[this->filesInDirectory[this->nextFileIndex()]] = std::async(std::launch::async, 
-																						  &MainInterface::readImage, 
-																						  this, this->getFullImagePath(this->nextFileIndex()), 
+				this->threads[this->filesInDirectory[this->nextFileIndex()]] = std::async(std::launch::async,
+																						  &MainInterface::readImage,
+																						  this, this->getFullImagePath(this->nextFileIndex()),
 																						  false);
 			}
 		}
@@ -710,9 +728,9 @@ namespace sv {
 	}
 
 	void MainInterface::openDialog() {
-		QString path = QFileDialog::getOpenFileName(this, 
-													tr("Open Config File"), 
-													QDir::rootPath(), 
+		QString path = QFileDialog::getOpenFileName(this,
+													tr("Open Config File"),
+													QDir::rootPath(),
 													"All Files (*.*);; Image Files (*.bmp *.dib *.jpeg *.jpg *.jpe *.jpeg *.jp2 *.png *.webp *.pbm *.pgm *.ppm *.sr *.ras *.tiff *.tif);;");
 
 		if (!path.isEmpty()) {
@@ -730,7 +748,7 @@ namespace sv {
 		this->settings->setValue("enlargeSmallImages", value);
 	}
 
-	void MainInterface::reactToSharpeningToggle(bool value) { 
+	void MainInterface::reactToSharpeningToggle(bool value) {
 		this->imageView->setEnablePostResizeSharpening(value);
 		this->settings->setValue("sharpenImagesAfterDownscale", value);
 	}
@@ -744,7 +762,7 @@ namespace sv {
 		}
 	}
 
-	void MainInterface::showSharpeningOptions() { 
+	void MainInterface::showSharpeningOptions() {
 		this->disableAutomaticMouseHide();
 		this->sharpeningDialog->show();
 		this->sharpeningDialog->raise();
