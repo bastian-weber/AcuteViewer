@@ -32,6 +32,7 @@ namespace sv {
 		void mouseDoubleClickEvent(QMouseEvent* e);
 		void mouseReleaseEvent(QMouseEvent* e);
 		void mouseMoveEvent(QMouseEvent* e);
+		void changeEvent(QEvent* e);
 	private:
 		//functions
 		cv::Mat readImage(QString path, bool emitSignals = false);
