@@ -20,7 +20,6 @@ int init(int argc, char* argv[]) {
 	app.setWindowIcon(icon);
 
 	sv::MainInterface* mainInterface = new sv::MainInterface(openWithFilename);
-	mainInterface->show();
 
 	return app.exec();
 }

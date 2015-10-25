@@ -11,6 +11,9 @@ namespace sv {
 		QObject::connect(this, SIGNAL(readImageFinished(cv::Mat)), this, SLOT(reactToReadImageCompletion(cv::Mat)));
 		this->setWindowTitle(this->programTitle);
 
+		this->lastWindowSize = this->sizeHint();
+		this->secondLastWindowSize = this->sizeHint();
+
 		this->imageView = new hb::ImageView(this);
 		this->imageView->setShowInterfaceOutline(false);
 		this->imageView->setUseSmoothTransform(false);
@@ -164,6 +167,8 @@ namespace sv {
 		this->reactoToAutoHideMenuBarToggle(this->menuBarAutoHideAction->isChecked());
 		if (this->settings->value("maximized", false).toBool()) {
 			this->showMaximized();
+		} else {
+			this->showNormal();
 		}
 
 		if (openWithFilename != QString()) {
@@ -287,13 +292,28 @@ namespace sv {
 
 	void MainInterface::changeEvent(QEvent* e) {
 		if (e->type() == QEvent::WindowStateChange) {
+			QWindowStateChangeEvent* windowStateChangeEvent = static_cast<QWindowStateChangeEvent*>(e);
 			if (!this->isMinimized() && !this->isFullScreen()) {
 				this->settings->setValue("maximized", this->isMaximized());
 			} else if (this->isFullScreen()) {
-				QWindowStateChangeEvent* windowStateChangeEvent = static_cast<QWindowStateChangeEvent*>(e);
 				this->settings->setValue("maximized", bool(windowStateChangeEvent->oldState() & Qt::WindowMaximized));
 			}
+
+			if (this->isMaximized() && (windowStateChangeEvent->oldState() == Qt::WindowNoState || windowStateChangeEvent->oldState() == Qt::WindowActive)) {
+				std::cout << "savedGeometry " << this->secondLastWindowSize.width() << std::endl;
+				this->lastNormalSize = this->secondLastWindowSize;
+			}
+			if (windowStateChangeEvent->oldState() & Qt::WindowMaximized && (this->windowState() == Qt::WindowNoState || this->windowState() == Qt::WindowActive)) {
+				std::cout << "Restoring last normal size: " << this->lastNormalSize.width();
+				this->resize(this->lastNormalSize);
+			}
 		}
+	}
+
+	void MainInterface::resizeEvent(QResizeEvent * e) {
+		this->secondLastWindowSize = this->lastWindowSize;
+		this->lastWindowSize = this->size();
+		std::cout << "resize. saving: " << this->geometry().width() << "x" << this->geometry().height() << std::endl;
 	}
 
 	//=============================================================================== PRIVATE ===============================================================================\\

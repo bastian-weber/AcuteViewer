@@ -33,6 +33,7 @@ namespace sv {
 		void mouseReleaseEvent(QMouseEvent* e);
 		void mouseMoveEvent(QMouseEvent* e);
 		void changeEvent(QEvent* e);
+		void resizeEvent(QResizeEvent* e);
 	private:
 		//functions
 		cv::Mat readImage(QString path, bool emitSignals = false);
@@ -68,6 +69,9 @@ namespace sv {
 		std::atomic<bool> paintLoadingHint{ false };
 		std::map<QString, std::shared_future<cv::Mat>> threads;
 		std::shared_ptr<QSettings> settings;
+		QSize lastWindowSize;
+		QSize secondLastWindowSize;
+		QSize lastNormalSize;
 
 		//widgets
 		hb::ImageView* imageView;
