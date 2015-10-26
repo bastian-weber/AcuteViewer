@@ -33,7 +33,7 @@ namespace sv {
 		this->radiusSpinBox->setMinimum(0.1);
 		this->radiusSpinBox->setMaximum(1000000);
 		this->radiusSpinBox->setDecimals(1);
-		this->strengthSpinBox->setSingleStep(1);
+		this->radiusSpinBox->setSingleStep(1);
 		this->radiusSpinBox->setSuffix("px");
 		this->radiusSpinBox->setMaximumWidth(this->strengthSpinBox->sizeHint().width());
 		QObject::connect(this->radiusSpinBox, SIGNAL(valueChanged(double)), this, SLOT(updateSharpeningSettings()));
