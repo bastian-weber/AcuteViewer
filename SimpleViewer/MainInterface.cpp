@@ -293,6 +293,7 @@ namespace sv {
 	void MainInterface::changeEvent(QEvent* e) {
 		if (e->type() == QEvent::WindowStateChange) {
 			QWindowStateChangeEvent* windowStateChangeEvent = static_cast<QWindowStateChangeEvent*>(e);
+			std::cout << windowStateChangeEvent->oldState() << " " << this->windowState() << std::endl;
 			if (!this->isMinimized() && !this->isFullScreen()) {
 				this->settings->setValue("maximized", this->isMaximized());
 			} else if (this->isFullScreen()) {
@@ -303,9 +304,14 @@ namespace sv {
 				std::cout << "savedGeometry " << this->secondLastWindowSize.width() << std::endl;
 				this->lastNormalSize = this->secondLastWindowSize;
 			}
-			if (windowStateChangeEvent->oldState() & Qt::WindowMaximized && (this->windowState() == Qt::WindowNoState || this->windowState() == Qt::WindowActive)) {
-				std::cout << "Restoring last normal size: " << this->lastNormalSize.width();
+			//if (windowStateChangeEvent->oldState() & Qt::WindowMaximized && (this->windowState() == Qt::WindowNoState || this->windowState() == Qt::WindowActive)) {
+			//	std::cout << "Restoring last normal size: " << this->lastNormalSize.width();
+			//	this->resize(this->lastNormalSize);
+			//}
+			if (windowStateChangeEvent->oldState() == 2 && this->windowState() == 0) {
+				std::cout << "Restoring last normal size: " << this->lastNormalSize.width()<<std::endl;
 				this->resize(this->lastNormalSize);
+				this->move(20, 20);
 			}
 		}
 	}
@@ -508,6 +514,7 @@ namespace sv {
 
 	void MainInterface::enterFullscreen() {
 		//this->imageView->setInterfaceBackgroundColor(Qt::black);
+		std::cout << "going fullscreen" << std::endl;
 		this->showFullScreen();
 		this->hideMenuBar();
 		this->enableAutomaticMouseHide();
@@ -516,6 +523,7 @@ namespace sv {
 	void MainInterface::exitFullscreen() {
 		//QPalette palette = qApp->palette();
 		//this->imageView->setInterfaceBackgroundColor(palette.base().color());
+		std::cout << "leaving fullscreen" << std::endl;
 		if (this->settings->value("maximized", false).toBool()) {
 			this->showMaximized();
 		} else {
