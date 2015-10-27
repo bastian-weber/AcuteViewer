@@ -11,6 +11,8 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/highgui.hpp>
 
+#include <exiv2.hpp>
+
 #include "ImageView.h"
 #include "SlideshowDialog.h"
 #include "SharpeningDialog.h"
@@ -35,6 +37,7 @@ namespace sv {
 		void changeEvent(QEvent* e);
 	private:
 		//functions
+		static std::vector<char> readFileIntoBuffer(QString path);
 		cv::Mat readImage(QString path, bool emitSignals = false);
 		void loadNextImage();
 		void loadPreviousImage();
