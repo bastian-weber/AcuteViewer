@@ -298,43 +298,46 @@ namespace sv {
 
 	//=============================================================================== PRIVATE ===============================================================================\\
 
+	std::vector<char> MainInterface::readFileIntoBuffer(QString path) {
+		//QFile file(path);
+		//std::vector<char> buffer;
+		//buffer.resize(file.size());
+		//if (!file.open(QIODevice::ReadOnly)) {
+		//	return std::vector<char>();
+		//}
+		//file.read(buffer.data(), file.size());
+		//file.close();
+
+		std::ifstream file(path.toStdWString(), std::iostream::binary);
+		if (!file.good()) {
+			return std::vector<char>();
+		}
+		file.exceptions(std::ifstream::badbit | std::ifstream::failbit | std::ifstream::eofbit);
+		file.seekg(0, std::ios::end);
+		std::streampos length(file.tellg());
+		std::vector<char> buffer(static_cast<std::size_t>(length));
+		if (static_cast<std::size_t>(length) == 0) {
+			return std::vector<char>();
+		}
+		file.seekg(0, std::ios::beg);
+		try {
+			file.read(buffer.data(), static_cast<std::size_t>(length));
+		} catch (...) {
+			return std::vector<char>();
+		}
+		file.close();
+		return buffer;
+	}
+
 	cv::Mat MainInterface::readImage(QString path, bool emitSignals) {
 	#ifdef Q_OS_WIN
 		cv::Mat image;
 		if (!isASCII(path)) {
-			//QFile file(path);
-			//std::vector<char> buffer;
-			//buffer.resize(file.size());
-			//if (!file.open(QIODevice::ReadOnly)) {
-			//	this->loading = false;
-			//	if (emitSignals) emit(readImageFinished(cv::Mat()));
-			//	return cv::Mat();
-			//}
-			//file.read(buffer.data(), file.size());
-			//file.close();
-
-			std::ifstream file(path.toStdWString(), std::iostream::binary);
-			if (!file.good()) {
+			std::vector<char> buffer = MainInterface::readFileIntoBuffer(path);
+			if (buffer.empty()) {
 				if (emitSignals) emit(readImageFinished(cv::Mat()));
 				return cv::Mat();
 			}
-			file.exceptions(std::ifstream::badbit | std::ifstream::failbit | std::ifstream::eofbit);
-			file.seekg(0, std::ios::end);
-			std::streampos length(file.tellg());
-			std::vector<char> buffer(static_cast<std::size_t>(length));
-			if (static_cast<std::size_t>(length) == 0) {
-				if (emitSignals) emit(readImageFinished(cv::Mat()));
-				return cv::Mat();
-			}
-			file.seekg(0, std::ios::beg);
-			try {
-				file.read(buffer.data(), static_cast<std::size_t>(length));
-			} catch (...) {
-				if (emitSignals) emit(readImageFinished(cv::Mat()));
-				return cv::Mat();
-			}
-			file.close();
-
 			image = cv::imdecode(buffer, CV_LOAD_IMAGE_COLOR);
 		} else {
 			image = cv::imread(path.toStdString(), CV_LOAD_IMAGE_COLOR);
@@ -472,6 +475,22 @@ namespace sv {
 		this->setWindowTitle(this->windowTitle() + QString(tr(" - Loading...")));
 		this->paintLoadingHint = true;
 		this->imageView->update();
+
+		//Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(path.toStdString());
+		std::vector<char> buffer = MainInterface::readFileIntoBuffer(path);
+		Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(reinterpret_cast<Exiv2::byte*>(buffer.data()), buffer.size());
+		if (image.get() != 0) {
+			image->readMetadata();
+			Exiv2::ExifData &exifData = image->exifData();
+			if (!exifData.empty()) {
+				auto it = exifData.findKey(Exiv2::ExifKey("Exif.Image.Make"));
+				std::cout << it->value() << std::endl;				
+			} else {
+				std::cout << "No exif data found" << std::endl;
+			}
+		} else {
+			std::cout << "Reading image failed" << std::endl;
+		}
 	}
 
 	void MainInterface::displayImageIfOk() {
