@@ -22,7 +22,10 @@ namespace sv {
 	public:
 		ExifData(QString const& filepath);
 		ExifData(std::vector<char> const& buffer);
-		Exiv2::Exifdatum value(QString const& key) const;
+		ExifData(ExifData const& other) = delete;
+		ExifData& operator=(ExifData const& other) = delete;
+		~ExifData();
+		std::string value(QString const& key) const;
 		bool hasExif() const;
 		bool isReady() const;
 		void get();

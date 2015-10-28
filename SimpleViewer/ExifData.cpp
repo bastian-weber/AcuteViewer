@@ -11,17 +11,25 @@ namespace sv {
 		this->readExifFromImage(image);
 	}
 
-	Exiv2::Exifdatum ExifData::value(QString const& key) const {
-		if (!exifData.empty()) {
-			Exiv2::ExifData::const_iterator it = exifData.findKey(Exiv2::ExifKey(key.toStdString()));
-			return *it;
+	ExifData::~ExifData() {
+		this->get();
+	}
+
+	std::string ExifData::value(QString const& key) const {
+		if (!this->exifData.empty()) {
+			Exiv2::ExifData::const_iterator it = this->exifData.findKey(Exiv2::ExifKey(key.toStdString()));
+			if (it != this->exifData.end()) {
+				return it->value().toString();
+			} else {
+				return "";
+			}
 		} else {
-			return Exiv2::Exifdatum(Exiv2::ExifKey("NULL"));
+			return "";
 		}
 	}
 
 	bool ExifData::hasExif() const {
-		return !exifData.empty();
+		return !this->exifData.empty();
 	}
 
 	bool ExifData::isReady() const {
@@ -45,7 +53,6 @@ namespace sv {
 			std::vector<char> buffer = utility::readFileIntoBuffer(filepath);
 			Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(reinterpret_cast<Exiv2::byte const*>(buffer.data()), buffer.size());
 			this->readExifFromImage(image);
-
 		}
 #endif
 	}
@@ -54,14 +61,15 @@ namespace sv {
 		if (image.get() != 0) {
 			image->readMetadata();
 			this->exifData = image->exifData();
-			{
-				std::lock_guard<std::mutex> lock(this->mutex);
-				ready = true;
-			}
 		} else {
 			std::cout << "Reading image failed" << std::endl;
 		}
+		{
+			std::lock_guard<std::mutex> lock(this->mutex);
+			this->ready = true;
+		}
 		this->conditionVariable.notify_all();
+
 		emit(loadingFinished());
 	}
 
