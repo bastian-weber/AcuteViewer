@@ -436,12 +436,6 @@ namespace sv {
 		this->setWindowTitle(this->windowTitle() + QString(tr(" - Loading...")));
 		this->paintLoadingHint = true;
 		this->imageView->update();
-		ExifData exifData(path);
-		if (exifData.hasExif()) {
-			std::cout<<exifData.value("Exif.Image.Model")<<std::endl;
-		} else {
-			std::cout << "no exif contained" << std::endl;
-		}
 	}
 
 	void MainInterface::displayImageIfOk() {
