@@ -40,7 +40,7 @@ namespace sv {
 		std::mutex mutex;
 		std::condition_variable conditionVariable;
 	signals:
-		void loadingFinished();
+		void loadingFinished(ExifData* sender);
 	};
 
 }

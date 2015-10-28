@@ -61,16 +61,13 @@ namespace sv {
 		if (image.get() != 0) {
 			image->readMetadata();
 			this->exifData = image->exifData();
-		} else {
-			std::cout << "Reading image failed" << std::endl;
 		}
 		{
 			std::lock_guard<std::mutex> lock(this->mutex);
 			this->ready = true;
 		}
 		this->conditionVariable.notify_all();
-
-		emit(loadingFinished());
+		emit(loadingFinished(this));
 	}
 
 }
