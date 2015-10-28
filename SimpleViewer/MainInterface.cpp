@@ -34,14 +34,14 @@ namespace sv {
 		this->fileMenu = this->menuBar()->addMenu(tr("&File"));
 		this->viewMenu = this->menuBar()->addMenu(tr("&View"));
 		this->slideshowMenu = this->menuBar()->addMenu(tr("&Slideshow"));
-	#ifdef Q_OS_WIN
+#ifdef Q_OS_WIN
 		this->applicationMenu = this->menuBar()->addMenu(tr("&Application"));
 		QObject::connect(this->applicationMenu, SIGNAL(aboutToShow()), this, SLOT(populateApplicationMenu()));
 		this->installAction = new QAction(tr("&Install"), this);
 		QObject::connect(this->installAction, SIGNAL(triggered()), this, SLOT(runInstaller()));
 		this->uninstallAction = new QAction(tr("&Uninstall"), this);
 		QObject::connect(this->uninstallAction, SIGNAL(triggered()), this, SLOT(runUninstaller()));
-	#endif
+#endif
 
 		this->openAction = new QAction(tr("&Open File"), this);
 		this->openAction->setShortcut(QKeySequence::Open);
@@ -298,53 +298,22 @@ namespace sv {
 
 	//=============================================================================== PRIVATE ===============================================================================\\
 
-	std::vector<char> MainInterface::readFileIntoBuffer(QString path) {
-		//QFile file(path);
-		//std::vector<char> buffer;
-		//buffer.resize(file.size());
-		//if (!file.open(QIODevice::ReadOnly)) {
-		//	return std::vector<char>();
-		//}
-		//file.read(buffer.data(), file.size());
-		//file.close();
-
-		std::ifstream file(path.toStdWString(), std::iostream::binary);
-		if (!file.good()) {
-			return std::vector<char>();
-		}
-		file.exceptions(std::ifstream::badbit | std::ifstream::failbit | std::ifstream::eofbit);
-		file.seekg(0, std::ios::end);
-		std::streampos length(file.tellg());
-		std::vector<char> buffer(static_cast<std::size_t>(length));
-		if (static_cast<std::size_t>(length) == 0) {
-			return std::vector<char>();
-		}
-		file.seekg(0, std::ios::beg);
-		try {
-			file.read(buffer.data(), static_cast<std::size_t>(length));
-		} catch (...) {
-			return std::vector<char>();
-		}
-		file.close();
-		return buffer;
-	}
-
 	cv::Mat MainInterface::readImage(QString path, bool emitSignals) {
-	#ifdef Q_OS_WIN
 		cv::Mat image;
-		if (!isASCII(path)) {
-			std::vector<char> buffer = MainInterface::readFileIntoBuffer(path);
+#ifdef Q_OS_WIN
+		if (!utility::isASCII(path)) {
+			std::vector<char> buffer = utility::readFileIntoBuffer(path);
 			if (buffer.empty()) {
 				if (emitSignals) emit(readImageFinished(cv::Mat()));
 				return cv::Mat();
 			}
 			image = cv::imdecode(buffer, CV_LOAD_IMAGE_COLOR);
 		} else {
+#endif
 			image = cv::imread(path.toStdString(), CV_LOAD_IMAGE_COLOR);
+#ifdef Q_OS_WIN
 		}
-	#else
-		cv::Mat image = cv::imread(path.toStdString(), CV_LOAD_IMAGE_COLOR);
-	#endif
+#endif
 		if (image.data) cv::cvtColor(image, image, CV_BGR2RGB);
 		if (emitSignals) emit(readImageFinished(image));
 		return image;
@@ -408,14 +377,6 @@ namespace sv {
 		this->cleanUpThreads();
 	}
 
-	bool MainInterface::isASCII(QString const& string) {
-		bool isASCII = true;
-		for (QString::ConstIterator i = string.begin(); i != string.end(); ++i) {
-			isASCII = isASCII && (i->unicode() < 128);
-		}
-		return isASCII;
-	}
-
 	void MainInterface::clearThreads() {
 		for (std::map<QString, std::shared_future<cv::Mat>>::iterator it = this->threads.begin(); it != this->threads.end(); ++it) {
 			this->waitForThreadToFinish(it->second);
@@ -475,21 +436,11 @@ namespace sv {
 		this->setWindowTitle(this->windowTitle() + QString(tr(" - Loading...")));
 		this->paintLoadingHint = true;
 		this->imageView->update();
-
-		//Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(path.toStdString());
-		std::vector<char> buffer = MainInterface::readFileIntoBuffer(path);
-		Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(reinterpret_cast<Exiv2::byte*>(buffer.data()), buffer.size());
-		if (image.get() != 0) {
-			image->readMetadata();
-			Exiv2::ExifData &exifData = image->exifData();
-			if (!exifData.empty()) {
-				auto it = exifData.findKey(Exiv2::ExifKey("Exif.Image.Make"));
-				std::cout << it->value() << std::endl;				
-			} else {
-				std::cout << "No exif data found" << std::endl;
-			}
+		ExifData exifData(path);
+		if (exifData.hasExif()) {
+			std::cout<<exifData.value("Exif.Image.Model")<<std::endl;
 		} else {
-			std::cout << "Reading image failed" << std::endl;
+			std::cout << "no exif contained" << std::endl;
 		}
 	}
 
@@ -565,12 +516,12 @@ namespace sv {
 	}
 
 	bool MainInterface::applicationIsInstalled() {
-	#ifdef Q_OS_WIN
+#ifdef Q_OS_WIN
 		QSettings registry("HKEY_LOCAL_MACHINE\\SOFTWARE", QSettings::NativeFormat);
 		return registry.contains("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/UninstallString");
-	#else
+#else
 		return false;
-	#endif
+#endif
 
 	}
 
@@ -664,7 +615,7 @@ namespace sv {
 	}
 
 	void MainInterface::runUninstaller() {
-	#ifdef Q_OS_WIN
+#ifdef Q_OS_WIN
 		QString installerPath = QDir::toNativeSeparators(QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("WinInstaller.exe"));
 		if (QFileInfo(installerPath).exists()) {
 			ShellExecuteW(GetDesktopWindow(),
@@ -680,7 +631,7 @@ namespace sv {
 								  tr("The installer executable (WinInstaller.exe) could not be found. Make sure it is located in the same directory as SimpleViewer.exe."),
 								  QMessageBox::Close);
 		}
-	#endif
+#endif
 	}
 
 	void MainInterface::toggleSlideshow() {
