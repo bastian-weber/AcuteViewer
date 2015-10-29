@@ -28,7 +28,7 @@ namespace sv {
 		std::string value(QString const& key) const;
 		bool hasExif() const;
 		bool isReady() const;
-		void get();
+		void join();
 	private:
 		//functions
 		void load(QString filepath);
@@ -36,9 +36,8 @@ namespace sv {
 
 		//variables
 		Exiv2::ExifData exifData;
+		std::thread thread;
 		std::atomic<bool> ready = false;
-		std::mutex mutex;
-		std::condition_variable conditionVariable;
 	signals:
 		void loadingFinished(ExifData* sender);
 	};
