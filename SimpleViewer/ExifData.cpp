@@ -2,9 +2,7 @@
 
 namespace sv {
 
-	ExifData::ExifData(QString const& filepath) {
-		std::thread(&ExifData::load, this, filepath).detach();
-	}
+	ExifData::ExifData(QString const& filepath) : thread(&ExifData::load, this, filepath) { }
 
 	ExifData::ExifData(std::vector<char> const& buffer) {
 		Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(reinterpret_cast<Exiv2::byte const*>(buffer.data()), buffer.size());
@@ -12,7 +10,7 @@ namespace sv {
 	}
 
 	ExifData::~ExifData() {
-		this->get();
+		this->join();
 	}
 
 	std::string ExifData::value(QString const& key) const {
@@ -29,17 +27,15 @@ namespace sv {
 	}
 
 	bool ExifData::hasExif() const {
-		return !this->exifData.empty();
+		return this->ready && !this->exifData.empty();
 	}
 
 	bool ExifData::isReady() const {
 		return this->ready;
 	}
 
-	void ExifData::get() {
-		std::unique_lock<std::mutex> lock(this->mutex);
-		if (this->ready) return;
-		this->conditionVariable.wait(lock, [this] () { return this->isReady(); });
+	void ExifData::join() {
+		if(this->thread.joinable()) this->thread.join();
 	}
 
 	void ExifData::load(QString filepath) {
@@ -62,11 +58,7 @@ namespace sv {
 			image->readMetadata();
 			this->exifData = image->exifData();
 		}
-		{
-			std::lock_guard<std::mutex> lock(this->mutex);
-			this->ready = true;
-		}
-		this->conditionVariable.notify_all();
+		this->ready = true;
 		emit(loadingFinished(this));
 	}
 
