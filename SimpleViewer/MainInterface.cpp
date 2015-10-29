@@ -2,13 +2,31 @@
 
 namespace sv {
 
+	Image::Image() { }
+
+	Image::Image(cv::Mat mat, std::shared_ptr<ExifData> exifData) : matrix(mat), exifData(exifData), valid(true) { }
+
+	cv::Mat Image::mat() const {
+		return this->matrix;
+	}
+
+	std::shared_ptr<ExifData> Image::exif() const {
+		return this->exifData;
+	}
+
+	bool Image::isValid() const {
+		return valid;
+	}
+
+	//============================================================================ MAIN INTERFACE ============================================================================\\
+
 	MainInterface::MainInterface(QString openWithFilename, QWidget *parent)
 		: QMainWindow(parent),
 		settings(new QSettings(QSettings::IniFormat, QSettings::UserScope, "Simple Viewer", "Simple Viewer")) {
 
 		setAcceptDrops(true);
-		qRegisterMetaType<cv::Mat>("cv::Mat");
-		QObject::connect(this, SIGNAL(readImageFinished(cv::Mat)), this, SLOT(reactToReadImageCompletion(cv::Mat)));
+		qRegisterMetaType<Image>("Image");
+		QObject::connect(this, SIGNAL(readImageFinished(Image)), this, SLOT(reactToReadImageCompletion(Image)));
 		this->setWindowTitle(this->programTitle);
 
 		this->imageView = new hb::ImageView(this);
@@ -298,25 +316,32 @@ namespace sv {
 
 	//=============================================================================== PRIVATE ===============================================================================\\
 
-	cv::Mat MainInterface::readImage(QString path, bool emitSignals) {
+	Image MainInterface::readImage(QString path, bool emitSignals) {
 		cv::Mat image;
+		std::shared_ptr<ExifData> exifData;
 #ifdef Q_OS_WIN
 		if (!utility::isASCII(path)) {
 			std::vector<char> buffer = utility::readFileIntoBuffer(path);
 			if (buffer.empty()) {
-				if (emitSignals) emit(readImageFinished(cv::Mat()));
-				return cv::Mat();
+				if (emitSignals) emit(readImageFinished(Image()));
+				return Image();
 			}
 			image = cv::imdecode(buffer, CV_LOAD_IMAGE_COLOR);
+			exifData = std::shared_ptr<ExifData>(new ExifData(buffer));
 		} else {
 #endif
 			image = cv::imread(path.toStdString(), CV_LOAD_IMAGE_COLOR);
+			exifData = std::shared_ptr<ExifData>(new ExifData(path));
 #ifdef Q_OS_WIN
 		}
 #endif
-		if (image.data) cv::cvtColor(image, image, CV_BGR2RGB);
-		if (emitSignals) emit(readImageFinished(image));
-		return image;
+		Image result;
+		if (image.data) {
+			cv::cvtColor(image, image, CV_BGR2RGB);
+			result = Image(image, exifData);
+		}
+		if (emitSignals) emit(readImageFinished(result));
+		return result;
 	}
 
 	void MainInterface::loadNextImage() {
@@ -378,13 +403,13 @@ namespace sv {
 	}
 
 	void MainInterface::clearThreads() {
-		for (std::map<QString, std::shared_future<cv::Mat>>::iterator it = this->threads.begin(); it != this->threads.end(); ++it) {
+		for (std::map<QString, std::shared_future<Image>>::iterator it = this->threads.begin(); it != this->threads.end(); ++it) {
 			this->waitForThreadToFinish(it->second);
 		}
 		this->threads.clear();
 	}
 
-	void MainInterface::waitForThreadToFinish(std::shared_future<cv::Mat> const& thread) {
+	void MainInterface::waitForThreadToFinish(std::shared_future<Image> const& thread) {
 		if (!thread.valid()) return;
 		if (thread.wait_for(std::chrono::milliseconds(0)) != std::future_status::ready) {
 			this->setWindowTitle(this->windowTitle() + QString(tr(" - Loading...")));
@@ -439,9 +464,9 @@ namespace sv {
 	}
 
 	void MainInterface::displayImageIfOk() {
-		if (this->image.data) {
+		if (this->image.isValid()) {
 			this->currentImageUnreadable = false;
-			this->imageView->setImage(this->image);
+			this->imageView->setImage(this->image.mat());
 		} else {
 			this->currentImageUnreadable = true;
 			this->imageView->resetImage();
@@ -529,12 +554,25 @@ namespace sv {
 	}
 
 	void MainInterface::cleanUpThreads() {
-		std::lock_guard<std::mutex> lock(this->threadDeletionMutex);
+		try {
+			std::unique_lock<std::mutex> lock(this->threadDeletionMutex);
+		} catch (...) {
+			//Couldn't lock the mutex, probably because this thread already owns it. 
+			if (this->threads.size() > 3) this->threadCleanUpTimer->start(this->threadCleanUpInterval);
+			return;
+		}
 		size_t previousIndex = this->previousFileIndex();
 		size_t nextIndex = this->nextFileIndex();
-		for (std::map<QString, std::shared_future<cv::Mat>>::iterator it = this->threads.begin(); it != this->threads.end();) {
+		for (std::map<QString, std::shared_future<Image>>::iterator it = this->threads.begin(); it != this->threads.end();) {
 			int index = this->filesInDirectory.indexOf(it->first);
-			if (index != -1 && index != this->currentFileIndex && index != previousIndex && index != nextIndex && it->second.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
+			//see if the thread has finished loading
+			//also the exif should have finished loading to prevent blocking, check if it's valid first to not derefence an invalid pointer
+			if (index != -1 
+				&& index != this->currentFileIndex
+				&& index != previousIndex
+				&& index != nextIndex
+				&& it->second.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready
+				&& (!it->second.get().isValid() || it->second.get().exif()->isReady())) {
 				it = this->threads.erase(it);
 			} else {
 				++it;
@@ -665,7 +703,7 @@ namespace sv {
 		this->settings->setValue("showZoomLevel", value);
 	}
 
-	void MainInterface::reactToReadImageCompletion(cv::Mat image) {
+	void MainInterface::reactToReadImageCompletion(Image image) {
 		this->image = image;
 		this->paintLoadingHint = false;
 		this->displayImageIfOk();
