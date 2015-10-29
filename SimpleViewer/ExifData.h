@@ -37,7 +37,7 @@ namespace sv {
 		//variables
 		Exiv2::ExifData exifData;
 		std::thread thread;
-		std::atomic<bool> ready = false;
+		std::atomic<bool> ready = true;
 	signals:
 		void loadingFinished(ExifData* sender);
 	};

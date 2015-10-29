@@ -2,11 +2,25 @@
 
 namespace sv {
 
-	ExifData::ExifData(QString const& filepath) : thread(&ExifData::load, this, filepath) { }
+	ExifData::ExifData(QString const& filepath) {
+		try {
+			ready = false;
+			this->thread = std::thread(&ExifData::load, this, filepath);
+		} catch (...) {
+			ready = true;
+			emit(loadingFinished(this));
+		}
+	}
 
 	ExifData::ExifData(std::vector<char> const& buffer) {
-		Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(reinterpret_cast<Exiv2::byte const*>(buffer.data()), buffer.size());
-		this->readExifFromImage(image);
+		try {
+			ready = false;
+			Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(reinterpret_cast<Exiv2::byte const*>(buffer.data()), buffer.size());
+			this->readExifFromImage(image);
+		} catch (...) {
+			ready = true;
+			emit(loadingFinished(this));
+		}
 	}
 
 	ExifData::~ExifData() {
@@ -38,28 +52,40 @@ namespace sv {
 		if(this->thread.joinable()) this->thread.join();
 	}
 
+	//=============================================================================== PRIVATE ===============================================================================\\
+
 	void ExifData::load(QString filepath) {
+		try {
 #ifdef Q_OS_WIN
-		if (utility::isASCII(filepath)) {
+			if (utility::isASCII(filepath)) {
 #endif
-			Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(filepath.toStdString());
-			this->readExifFromImage(image);
+				Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(filepath.toStdString());
+				this->readExifFromImage(image);
 #ifdef Q_OS_WIN
-		} else {
-			std::vector<char> buffer = utility::readFileIntoBuffer(filepath);
-			Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(reinterpret_cast<Exiv2::byte const*>(buffer.data()), buffer.size());
-			this->readExifFromImage(image);
+			} else {
+				std::vector<char> buffer = utility::readFileIntoBuffer(filepath);
+				Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(reinterpret_cast<Exiv2::byte const*>(buffer.data()), buffer.size());
+				this->readExifFromImage(image);
+			}
+#endif
+		} catch (...) {
+			this->ready = true;
+			emit(loadingFinished(this));
 		}
-#endif
 	}
 
 	void ExifData::readExifFromImage(Exiv2::Image::AutoPtr const image) {
-		if (image.get() != 0) {
-			image->readMetadata();
-			this->exifData = image->exifData();
+		try {
+			if (image.get() != 0) {
+				image->readMetadata();
+				this->exifData = image->exifData();
+			}
+			this->ready = true;
+			emit(loadingFinished(this));
+		} catch(...){
+			this->ready = true;
+			emit(loadingFinished(this));
 		}
-		this->ready = true;
-		emit(loadingFinished(this));
 	}
 
 }

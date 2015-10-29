@@ -4,6 +4,7 @@
 #include <iostream>
 #include <future>
 #include <chrono>
+#include <memory>
 
 //OpenCV
 #include <opencv2/core.hpp>
@@ -17,6 +18,19 @@
 #include "SharpeningDialog.h"
 
 namespace sv {
+
+	class Image {
+	public:
+		Image();
+		Image(cv::Mat mat, std::shared_ptr<ExifData> exifData);
+		cv::Mat mat() const;
+		std::shared_ptr<ExifData> exif() const;
+		bool isValid() const;
+	private:
+		bool valid = false;
+		cv::Mat matrix;
+		std::shared_ptr<ExifData> exifData;
+	};
 
 	class MainInterface : public QMainWindow {
 		Q_OBJECT
@@ -36,11 +50,11 @@ namespace sv {
 		void changeEvent(QEvent* e);
 	private:
 		//functions
-		cv::Mat readImage(QString path, bool emitSignals = false);
+		Image readImage(QString path, bool emitSignals = false);
 		void loadNextImage();
 		void loadPreviousImage();
 		void clearThreads();
-		void waitForThreadToFinish(std::shared_future<cv::Mat> const& thread);
+		void waitForThreadToFinish(std::shared_future<Image> const& thread);
 		size_t nextFileIndex() const;
 		size_t previousFileIndex() const;
 		QString getFullImagePath(size_t index) const;
@@ -56,7 +70,7 @@ namespace sv {
 		const int mouseHideDelay = 1000;
 		const int threadCleanUpInterval = 500;
 		const int eventProcessIntervalDuringWait = 16;
-		cv::Mat image;
+		Image image;
 		std::atomic<bool> loading{ false };
 		std::mutex threadDeletionMutex;
 		QDir currentDirectory;
@@ -66,7 +80,7 @@ namespace sv {
 		QFileInfo currentFileInfo;
 		std::atomic<bool> currentImageUnreadable{ false };
 		std::atomic<bool> paintLoadingHint{ false };
-		std::map<QString, std::shared_future<cv::Mat>> threads;
+		std::map<QString, std::shared_future<Image>> threads;
 		std::shared_ptr<QSettings> settings;
 
 		//widgets
@@ -115,7 +129,7 @@ namespace sv {
 		void stopSlideshow();
 		void reactToShowInfoToggle(bool value);
 		void reactToShowZoomLevelToggle(bool value);
-		void reactToReadImageCompletion(cv::Mat image);
+		void reactToReadImageCompletion(Image image);
 		void openDialog();
 		void reactToSmoothingToggle(bool value);
 		void reactToEnlargementToggle(bool value);
@@ -124,7 +138,7 @@ namespace sv {
 		void showSharpeningOptions();
 		void updateSharpening();
 	signals:
-		void readImageFinished(cv::Mat image);
+		void readImageFinished(Image image);
 	};
 }
 #endif
