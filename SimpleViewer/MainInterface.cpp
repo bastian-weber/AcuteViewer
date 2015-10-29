@@ -542,7 +542,7 @@ namespace sv {
 						if (this->image.exif()->hasValue("Exif.Photo.ExposureTime")) {
 							Exiv2::Rational speedValue = this->image.exif()->value("Exif.Photo.ExposureTime")->toRational();
 							if (speedValue.first < speedValue.second) {
-								speed = QString("%1/%2").arg(speedValue.first).arg(speedValue.second);
+								speed = QString("%1/%2").arg(speedValue.first/speedValue.first).arg(speedValue.second/speedValue.first);
 							} else {
 								speed = QString::number(double(speedValue.first) / double(speedValue.second));
 							}
