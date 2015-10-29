@@ -531,21 +531,65 @@ namespace sv {
 			if (this->image.isValid()) {
 				if (this->image.exif()->isReady()) {
 					if (this->image.exif()->hasExif()) {
-						QString cameraModel = QString::fromStdString(this->image.exif()->value("Exif.Image.Model")).trimmed();
-						if (!cameraModel.isEmpty()) canvas.drawText(QPoint(30, 30 + 2 * lineSpacing + 3 * metrics.height()),
+						//get camera model, speed, aperture and ISO
+						QString cameraModel = QString::fromStdString(this->image.exif()->value("Exif.Image.Model")->toString()).trimmed();
+						QString aperture = "";
+						if (this->image.exif()->hasValue("Exif.Photo.ApertureValue")) {
+							Exiv2::Rational apertureValue = this->image.exif()->value("Exif.Photo.ApertureValue")->toRational();
+							aperture = QString::number(std::sqrt(std::pow(2, double(apertureValue.first) / double(apertureValue.second))));
+						}
+						QString speed = "";
+						if (this->image.exif()->hasValue("Exif.Photo.ShutterSpeedValue")) {
+							Exiv2::Rational speedValue = this->image.exif()->value("Exif.Photo.ShutterSpeedValue")->toRational();
+							double speedDecimal = std::pow(2, double(speedValue.first) / double(speedValue.second));
+							if (1 / speedDecimal >= 1) {
+								//everything above 1s exposure
+								speed = QString::number(1 / speedDecimal);
+							} else {
+								//everything below 1s exposure
+								speed = QString("1/%1").arg(QString::number(speedDecimal));
+							}
+						}
+						QString iso = "";
+						if (this->image.exif()->hasValue("Exif.Photo.ISOSpeed")) {
+							long isoValue = this->image.exif()->value("Exif.Photo.ISOSpeed")->toLong();
+							iso = QString::number(isoValue);
+						}
+						//calculate the v coordinates for the lines
+						int isoTopOffset = 30 + 4 * lineSpacing + 5 * metrics.height();
+						int cameraModelTopOffset = 30 + 2 * lineSpacing + 3 * metrics.height();
+						int apertureAndSpeedTopOffset = 30 + 3 * lineSpacing + 4 * metrics.height();
+						if (cameraModel.isEmpty()) apertureAndSpeedTopOffset -= lineSpacing + metrics.height();
+						if (cameraModel.isEmpty()) isoTopOffset -= lineSpacing + metrics.height();
+						if (aperture.isEmpty() && speed.isEmpty()) apertureAndSpeedTopOffset -= lineSpacing + metrics.height();
+						//draw the EXIF text
+						if (!cameraModel.isEmpty()) canvas.drawText(QPoint(30, cameraModelTopOffset),
 																	cameraModel);
+						if (!aperture.isEmpty() && !speed.isEmpty()) {
+							QString apertureAndSpeed = QString("%1s @ f%2").arg(speed).arg(aperture);
+							canvas.drawText(QPoint(30, apertureAndSpeedTopOffset),
+											apertureAndSpeed);
+						} else if (!aperture.isEmpty()) {
+							canvas.drawText(QPoint(30, apertureAndSpeedTopOffset),
+											QString("f%2").arg(aperture));
+						} else if (!speed.isEmpty()) {
+							canvas.drawText(QPoint(30, apertureAndSpeedTopOffset),
+											QString("%1s").arg(speed));
+						}
+						if (!iso.isEmpty()) canvas.drawText(QPoint(30, isoTopOffset),
+															iso);
 					}
 				} else {
 					canvas.drawText(QPoint(30, 30 + 2 * lineSpacing + 3 * metrics.height()),
 									tr("Loading EXIF..."));
 				}
+				}
 			}
-		}
 		if (this->zoomLevelAction->isChecked() && this->imageView->imageAssigned()) {
 			QString message = QString::number(this->imageView->getCurrentPreviewScalingFactor() * 100, 'f', 1).append("%");
 			canvas.drawText(QPoint(30, canvas.device()->height() - 30), message);
 		}
-	}
+		}
 
 	bool MainInterface::applicationIsInstalled() {
 #ifdef Q_OS_WIN
@@ -800,4 +844,4 @@ namespace sv {
 												 this->settings->value("sharpeningRadius", 1).toDouble());
 	}
 
-}
+	}

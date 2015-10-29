@@ -25,7 +25,8 @@ namespace sv {
 		ExifData(ExifData const& other) = delete;
 		ExifData& operator=(ExifData const& other) = delete;
 		~ExifData();
-		std::string value(QString const& key) const;
+		bool hasValue(QString const& key) const;
+		Exiv2::Value::AutoPtr value(QString const& key) const;
 		bool hasExif() const;
 		bool isReady() const;
 		void join();
