@@ -338,6 +338,7 @@ namespace sv {
 		Image result;
 		if (image.data) {
 			cv::cvtColor(image, image, CV_BGR2RGB);
+			QObject::connect(exifData.get(), SIGNAL(loadingFinished(ExifData*)), this, SLOT(reactToExifLoadingCompletion(ExifData*)));
 			result = Image(image, exifData);
 		}
 		if (emitSignals) emit(readImageFinished(result));
@@ -507,7 +508,7 @@ namespace sv {
 		canvas.setBackground(base);
 		canvas.setBackgroundMode(Qt::OpaqueMode);
 		QFontMetrics metrics(font);
-		double lineSpacing = 30;
+		double const lineSpacing = 15;
 		if (this->currentImageUnreadable) {
 			QString message = tr("This file could not be read:");
 			canvas.drawText(QPoint((canvas.device()->width() - metrics.width(message)) / 2.0, canvas.device()->height() / 2.0 - 0.5*lineSpacing),
@@ -527,6 +528,18 @@ namespace sv {
 							this->currentFileInfo.fileName());
 			canvas.drawText(QPoint(30, 30 + lineSpacing + 2 * metrics.height()),
 							QString("%1 Mb").arg(this->currentFileInfo.size() / 1048576.0, 0, 'f', 2));
+			if (this->image.isValid()) {
+				if (this->image.exif()->isReady()) {
+					if (this->image.exif()->hasExif()) {
+						QString cameraModel = QString::fromStdString(this->image.exif()->value("Exif.Image.Model")).trimmed();
+						if (!cameraModel.isEmpty()) canvas.drawText(QPoint(30, 30 + 2 * lineSpacing + 3 * metrics.height()),
+																	cameraModel);
+					}
+				} else {
+					canvas.drawText(QPoint(30, 30 + 2 * lineSpacing + 3 * metrics.height()),
+									tr("Loading EXIF..."));
+				}
+			}
 		}
 		if (this->zoomLevelAction->isChecked() && this->imageView->imageAssigned()) {
 			QString message = QString::number(this->imageView->getCurrentPreviewScalingFactor() * 100, 'f', 1).append("%");
@@ -567,7 +580,7 @@ namespace sv {
 			int index = this->filesInDirectory.indexOf(it->first);
 			//see if the thread has finished loading
 			//also the exif should have finished loading to prevent blocking, check if it's valid first to not derefence an invalid pointer
-			if (index != -1 
+			if (index != -1
 				&& index != this->currentFileIndex
 				&& index != previousIndex
 				&& index != nextIndex
@@ -727,6 +740,15 @@ namespace sv {
 		this->slideshowAction->setEnabled(true);
 		this->slideshowNoDialogAction->setEnabled(true);
 		this->loading = false;
+	}
+
+	void MainInterface::reactToExifLoadingCompletion(ExifData* sender) {
+		if (this->showInfoAction->isChecked()) {
+		//if the sender is the currently displayed image
+			if (this->threads[this->filesInDirectory[this->currentFileIndex]].get().exif().get() == sender) {
+				this->update();
+			}
+		}
 	}
 
 	void MainInterface::openDialog() {
