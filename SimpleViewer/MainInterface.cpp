@@ -532,34 +532,11 @@ namespace sv {
 				if (this->image.exif()->isReady()) {
 					if (this->image.exif()->hasExif()) {
 						//get camera model, speed, aperture and ISO
-						QString cameraModel = QString::fromStdString(this->image.exif()->value("Exif.Image.Model")->toString()).trimmed();
-						QString aperture = "";
-						if (this->image.exif()->hasValue("Exif.Photo.FNumber")) {
-							Exiv2::Rational apertureValue = this->image.exif()->value("Exif.Photo.FNumber")->toRational();
-							aperture = QString::number(double(apertureValue.first) / double(apertureValue.second));
-						}
-						QString speed = "";
-						if (this->image.exif()->hasValue("Exif.Photo.ExposureTime")) {
-							Exiv2::Rational speedValue = this->image.exif()->value("Exif.Photo.ExposureTime")->toRational();
-							if (speedValue.first < speedValue.second) {
-								speed = QString("%1/%2").arg(speedValue.first/speedValue.first).arg(speedValue.second/speedValue.first);
-							} else {
-								speed = QString::number(double(speedValue.first) / double(speedValue.second));
-							}
-						}
-						QString iso = "";
-						if (this->image.exif()->hasValue("Exif.Photo.ISOSpeedRatings")) {
-							long isoValue = this->image.exif()->value("Exif.Photo.ISOSpeedRatings")->toLong();
-							iso = QString::number(isoValue);
-						}
-						QString captureDate = "";
-						if (this->image.exif()->hasValue("Exif.Photo.DateTimeOriginal")) {
-							captureDate = QString::fromStdString(this->image.exif()->value("Exif.Photo.DateTimeOriginal")->toString());
-							QString date = captureDate.section(' ', 0, 0);
-							QString time = captureDate.section(' ', 1, 1);
-							date.replace(':', '-');
-							captureDate = QString("%1 %2").arg(date).arg(time);
-						}
+						QString cameraModel = this->image.exif()->cameraModel();
+						QString aperture = this->image.exif()->fNumber();
+						QString speed = this->image.exif()->exposureTime();
+						QString iso = this->image.exif()->iso();
+						QString captureDate = this->image.exif()->captureDate();
 						//calculate the v coordinates for the lines
 						int cameraModelTopOffset = 30 + 2 * lineSpacing + 3 * metrics.height();
 						int apertureAndSpeedTopOffset = 30 + 3 * lineSpacing + 4 * metrics.height();
