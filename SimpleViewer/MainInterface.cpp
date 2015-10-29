@@ -534,25 +534,22 @@ namespace sv {
 						//get camera model, speed, aperture and ISO
 						QString cameraModel = QString::fromStdString(this->image.exif()->value("Exif.Image.Model")->toString()).trimmed();
 						QString aperture = "";
-						if (this->image.exif()->hasValue("Exif.Photo.ApertureValue")) {
-							Exiv2::Rational apertureValue = this->image.exif()->value("Exif.Photo.ApertureValue")->toRational();
-							aperture = QString::number(std::sqrt(std::pow(2, double(apertureValue.first) / double(apertureValue.second))));
+						if (this->image.exif()->hasValue("Exif.Photo.FNumber")) {
+							Exiv2::Rational apertureValue = this->image.exif()->value("Exif.Photo.FNumber")->toRational();
+							aperture = QString::number(double(apertureValue.first) / double(apertureValue.second));
 						}
 						QString speed = "";
-						if (this->image.exif()->hasValue("Exif.Photo.ShutterSpeedValue")) {
-							Exiv2::Rational speedValue = this->image.exif()->value("Exif.Photo.ShutterSpeedValue")->toRational();
-							double speedDecimal = std::pow(2, double(speedValue.first) / double(speedValue.second));
-							if (1 / speedDecimal >= 1) {
-								//everything above 1s exposure
-								speed = QString::number(1 / speedDecimal);
+						if (this->image.exif()->hasValue("Exif.Photo.ExposureTime")) {
+							Exiv2::Rational speedValue = this->image.exif()->value("Exif.Photo.ExposureTime")->toRational();
+							if (speedValue.first < speedValue.second) {
+								speed = QString("%1/%2").arg(speedValue.first).arg(speedValue.second);
 							} else {
-								//everything below 1s exposure
-								speed = QString("1/%1").arg(QString::number(speedDecimal));
+								speed = QString::number(double(speedValue.first) / double(speedValue.second));
 							}
 						}
 						QString iso = "";
-						if (this->image.exif()->hasValue("Exif.Photo.ISOSpeed")) {
-							long isoValue = this->image.exif()->value("Exif.Photo.ISOSpeed")->toLong();
+						if (this->image.exif()->hasValue("Exif.Photo.ISOSpeedRatings")) {
+							long isoValue = this->image.exif()->value("Exif.Photo.ISOSpeedRatings")->toLong();
 							iso = QString::number(isoValue);
 						}
 						//calculate the v coordinates for the lines
@@ -577,19 +574,19 @@ namespace sv {
 											QString("%1s").arg(speed));
 						}
 						if (!iso.isEmpty()) canvas.drawText(QPoint(30, isoTopOffset),
-															iso);
+															QString("ISO%1").arg(iso));
 					}
 				} else {
 					canvas.drawText(QPoint(30, 30 + 2 * lineSpacing + 3 * metrics.height()),
 									tr("Loading EXIF..."));
 				}
-				}
 			}
+		}
 		if (this->zoomLevelAction->isChecked() && this->imageView->imageAssigned()) {
 			QString message = QString::number(this->imageView->getCurrentPreviewScalingFactor() * 100, 'f', 1).append("%");
 			canvas.drawText(QPoint(30, canvas.device()->height() - 30), message);
 		}
-		}
+	}
 
 	bool MainInterface::applicationIsInstalled() {
 #ifdef Q_OS_WIN
@@ -599,9 +596,9 @@ namespace sv {
 		return false;
 #endif
 
-	}
+}
 
-	//============================================================================ PRIVATE SLOTS =============================================================================\\
+//============================================================================ PRIVATE SLOTS =============================================================================\\
 
 	void MainInterface::nextSlide() {
 		this->loadNextImage();
