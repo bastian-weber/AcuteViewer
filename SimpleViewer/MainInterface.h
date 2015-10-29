@@ -130,6 +130,7 @@ namespace sv {
 		void reactToShowInfoToggle(bool value);
 		void reactToShowZoomLevelToggle(bool value);
 		void reactToReadImageCompletion(Image image);
+		void reactToExifLoadingCompletion(ExifData* sender);
 		void openDialog();
 		void reactToSmoothingToggle(bool value);
 		void reactToEnlargementToggle(bool value);
