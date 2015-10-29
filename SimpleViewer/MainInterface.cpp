@@ -508,7 +508,7 @@ namespace sv {
 		canvas.setBackground(base);
 		canvas.setBackgroundMode(Qt::OpaqueMode);
 		QFontMetrics metrics(font);
-		double const lineSpacing = 15;
+		double const lineSpacing = 10;
 		if (this->currentImageUnreadable) {
 			QString message = tr("This file could not be read:");
 			canvas.drawText(QPoint((canvas.device()->width() - metrics.width(message)) / 2.0, canvas.device()->height() / 2.0 - 0.5*lineSpacing),
@@ -552,13 +552,29 @@ namespace sv {
 							long isoValue = this->image.exif()->value("Exif.Photo.ISOSpeedRatings")->toLong();
 							iso = QString::number(isoValue);
 						}
+						QString captureDate = "";
+						if (this->image.exif()->hasValue("Exif.Photo.DateTimeOriginal")) {
+							captureDate = QString::fromStdString(this->image.exif()->value("Exif.Photo.DateTimeOriginal")->toString());
+							QString date = captureDate.section(' ', 0, 0);
+							QString time = captureDate.section(' ', 1, 1);
+							date.replace(':', '-');
+							captureDate = QString("%1 %2").arg(date).arg(time);
+						}
 						//calculate the v coordinates for the lines
-						int isoTopOffset = 30 + 4 * lineSpacing + 5 * metrics.height();
 						int cameraModelTopOffset = 30 + 2 * lineSpacing + 3 * metrics.height();
 						int apertureAndSpeedTopOffset = 30 + 3 * lineSpacing + 4 * metrics.height();
-						if (cameraModel.isEmpty()) apertureAndSpeedTopOffset -= lineSpacing + metrics.height();
-						if (cameraModel.isEmpty()) isoTopOffset -= lineSpacing + metrics.height();
-						if (aperture.isEmpty() && speed.isEmpty()) apertureAndSpeedTopOffset -= lineSpacing + metrics.height();
+						int isoTopOffset = 30 + 4 * lineSpacing + 5 * metrics.height();
+						int dateTopOffset = 30 + 5 * lineSpacing + 6 * metrics.height();
+						if (cameraModel.isEmpty()) {
+							apertureAndSpeedTopOffset -= lineSpacing + metrics.height();
+							isoTopOffset -= lineSpacing + metrics.height();
+							dateTopOffset -= lineSpacing + metrics.height();
+						}
+						if (aperture.isEmpty() && speed.isEmpty()) {
+							apertureAndSpeedTopOffset -= lineSpacing + metrics.height();
+							dateTopOffset -= lineSpacing + metrics.height();
+						}
+						if (iso.isEmpty()) dateTopOffset -= lineSpacing + metrics.height();
 						//draw the EXIF text
 						if (!cameraModel.isEmpty()) canvas.drawText(QPoint(30, cameraModelTopOffset),
 																	cameraModel);
@@ -575,6 +591,8 @@ namespace sv {
 						}
 						if (!iso.isEmpty()) canvas.drawText(QPoint(30, isoTopOffset),
 															QString("ISO%1").arg(iso));
+						if (!captureDate.isEmpty()) canvas.drawText(QPoint(30, dateTopOffset),
+																	QString("%1").arg(captureDate));
 					}
 				} else {
 					canvas.drawText(QPoint(30, 30 + 2 * lineSpacing + 3 * metrics.height()),
@@ -841,4 +859,4 @@ namespace sv {
 												 this->settings->value("sharpeningRadius", 1).toDouble());
 	}
 
-	}
+}
