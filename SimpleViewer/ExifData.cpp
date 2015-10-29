@@ -12,11 +12,10 @@ namespace sv {
 		}
 	}
 
-	ExifData::ExifData(std::vector<char> const& buffer) {
+	ExifData::ExifData(std::shared_ptr<std::vector<char>> buffer) {
 		try {
 			ready = false;
-			Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(reinterpret_cast<Exiv2::byte const*>(buffer.data()), buffer.size());
-			this->readExifFromImage(image);
+			this->thread = std::thread(&ExifData::loadFromBuffer, this, buffer);
 		} catch (...) {
 			ready = true;
 			emit(loadingFinished(this));
@@ -104,7 +103,7 @@ namespace sv {
 	}
 
 	void ExifData::join() {
-		if(this->thread.joinable()) this->thread.join();
+		if (this->thread.joinable()) this->thread.join();
 	}
 
 	//=============================================================================== PRIVATE ===============================================================================\\
@@ -118,13 +117,22 @@ namespace sv {
 				this->readExifFromImage(image);
 #ifdef Q_OS_WIN
 			} else {
-				std::vector<char> buffer = utility::readFileIntoBuffer(filepath);
-				Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(reinterpret_cast<Exiv2::byte const*>(buffer.data()), buffer.size());
-				this->readExifFromImage(image);
+				std::shared_ptr<std::vector<char>> buffer = utility::readFileIntoBuffer(filepath);
+				this->loadFromBuffer(buffer);
 			}
 #endif
 		} catch (...) {
 			this->ready = true;
+			emit(loadingFinished(this));
+		}
+	}
+
+	void ExifData::loadFromBuffer(std::shared_ptr<std::vector<char>> buffer) {
+		try {
+			Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(reinterpret_cast<Exiv2::byte const*>(buffer->data()), buffer->size());
+			this->readExifFromImage(image);
+		} catch (...) {
+			ready = true;
 			emit(loadingFinished(this));
 		}
 	}
@@ -137,7 +145,7 @@ namespace sv {
 			}
 			this->ready = true;
 			emit(loadingFinished(this));
-		} catch(...){
+		} catch (...) {
 			this->ready = true;
 			emit(loadingFinished(this));
 		}
