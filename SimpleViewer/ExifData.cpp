@@ -44,6 +44,57 @@ namespace sv {
 		}
 	}
 
+	QString ExifData::cameraModel() const {
+		QString cameraModel = "";
+		if (this->hasValue("Exif.Image.Model")) {
+			QString cameraModel = QString::fromStdString(this->value("Exif.Image.Model")->toString()).trimmed();
+		}
+		return cameraModel;
+	}
+
+	QString ExifData::exposureTime() const {
+		QString speed = "";
+		if (this->hasValue("Exif.Photo.ExposureTime")) {
+			Exiv2::Rational speedValue = this->value("Exif.Photo.ExposureTime")->toRational();
+			if (speedValue.first < speedValue.second) {
+				speed = QString("%1/%2").arg(speedValue.first / speedValue.first).arg(speedValue.second / speedValue.first);
+			} else {
+				speed = QString::number(double(speedValue.first) / double(speedValue.second));
+			}
+		}
+		return speed;
+	}
+
+	QString ExifData::fNumber() const {
+		QString aperture = "";
+		if (this->hasValue("Exif.Photo.FNumber")) {
+			Exiv2::Rational apertureValue = this->value("Exif.Photo.FNumber")->toRational();
+			aperture = QString::number(double(apertureValue.first) / double(apertureValue.second));
+		}
+		return aperture;
+	}
+
+	QString ExifData::iso() const {
+		QString iso = "";
+		if (this->hasValue("Exif.Photo.ISOSpeedRatings")) {
+			long isoValue = this->value("Exif.Photo.ISOSpeedRatings")->toLong();
+			iso = QString::number(isoValue);
+		}
+		return iso;
+	}
+
+	QString ExifData::captureDate() const {
+		QString captureDate = "";
+		if (this->hasValue("Exif.Photo.DateTimeOriginal")) {
+			captureDate = QString::fromStdString(this->value("Exif.Photo.DateTimeOriginal")->toString());
+			QString date = captureDate.section(' ', 0, 0);
+			QString time = captureDate.section(' ', 1, 1);
+			date.replace(':', '-');
+			captureDate = QString("%1 %2").arg(date).arg(time);
+		}
+		return captureDate;
+	}
+
 	bool ExifData::hasExif() const {
 		return this->ready && !this->exifData.empty();
 	}
