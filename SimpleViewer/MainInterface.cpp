@@ -571,7 +571,7 @@ namespace sv {
 							dateTopOffset -= lineSpacing + metrics.height();
 						}
 						if (aperture.isEmpty() && speed.isEmpty()) {
-							apertureAndSpeedTopOffset -= lineSpacing + metrics.height();
+							isoTopOffset -= lineSpacing + metrics.height();
 							dateTopOffset -= lineSpacing + metrics.height();
 						}
 						if (iso.isEmpty()) dateTopOffset -= lineSpacing + metrics.height();
