@@ -21,7 +21,7 @@ namespace sv {
 		Q_OBJECT
 	public:
 		ExifData(QString const& filepath);
-		ExifData(std::vector<char> const& buffer);
+		ExifData(std::shared_ptr<std::vector<char>> buffer);
 		ExifData(ExifData const& other) = delete;
 		ExifData& operator=(ExifData const& other) = delete;
 		~ExifData();
@@ -38,6 +38,7 @@ namespace sv {
 	private:
 		//functions
 		void load(QString filepath);
+		void loadFromBuffer(std::shared_ptr<std::vector<char>> buffer);
 		void readExifFromImage(Exiv2::Image::AutoPtr const image);
 
 		//variables

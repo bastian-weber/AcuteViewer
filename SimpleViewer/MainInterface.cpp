@@ -321,12 +321,12 @@ namespace sv {
 		std::shared_ptr<ExifData> exifData;
 #ifdef Q_OS_WIN
 		if (!utility::isASCII(path)) {
-			std::vector<char> buffer = utility::readFileIntoBuffer(path);
-			if (buffer.empty()) {
+			std::shared_ptr<std::vector<char>> buffer = utility::readFileIntoBuffer(path);
+			if (buffer->empty()) {
 				if (emitSignals) emit(readImageFinished(Image()));
 				return Image();
 			}
-			image = cv::imdecode(buffer, CV_LOAD_IMAGE_COLOR);
+			image = cv::imdecode(*buffer, CV_LOAD_IMAGE_COLOR);
 			exifData = std::shared_ptr<ExifData>(new ExifData(buffer));
 		} else {
 #endif

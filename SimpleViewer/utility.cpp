@@ -2,7 +2,8 @@
 
 namespace utility {
 
-	std::vector<char> readFileIntoBuffer(QString const& path) {
+	std::shared_ptr<std::vector<char>> readFileIntoBuffer(QString const& path) {
+		////some Qt code that also does the trick
 		//QFile file(path);
 		//std::vector<char> buffer;
 		//buffer.resize(file.size());
@@ -14,20 +15,20 @@ namespace utility {
 
 		std::ifstream file(path.toStdWString(), std::iostream::binary);
 		if (!file.good()) {
-			return std::vector<char>();
+			return std::shared_ptr<std::vector<char>>(new std::vector<char>());
 		}
 		file.exceptions(std::ifstream::badbit | std::ifstream::failbit | std::ifstream::eofbit);
 		file.seekg(0, std::ios::end);
 		std::streampos length(file.tellg());
-		std::vector<char> buffer(static_cast<std::size_t>(length));
+		std::shared_ptr<std::vector<char>> buffer(new std::vector<char>(static_cast<std::size_t>(length)));
 		if (static_cast<std::size_t>(length) == 0) {
-			return std::vector<char>();
+			return std::shared_ptr<std::vector<char>>(new std::vector<char>());
 		}
 		file.seekg(0, std::ios::beg);
 		try {
-			file.read(buffer.data(), static_cast<std::size_t>(length));
+			file.read(buffer->data(), static_cast<std::size_t>(length));
 		} catch (...) {
-			return std::vector<char>();
+			return std::shared_ptr<std::vector<char>>(new std::vector<char>());
 		}
 		file.close();
 		return buffer;
