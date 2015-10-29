@@ -27,16 +27,20 @@ namespace sv {
 		this->join();
 	}
 
-	std::string ExifData::value(QString const& key) const {
+	bool ExifData::hasValue(QString const & key) const {
+		return (this->exifData.findKey(Exiv2::ExifKey(key.toStdString())) != this->exifData.end());
+	}
+
+	Exiv2::Value::AutoPtr ExifData::value(QString const& key) const {
 		if (!this->exifData.empty()) {
 			Exiv2::ExifData::const_iterator it = this->exifData.findKey(Exiv2::ExifKey(key.toStdString()));
 			if (it != this->exifData.end()) {
-				return it->value().toString();
+				return it->getValue();
 			} else {
-				return "";
+				return Exiv2::Value::AutoPtr(Exiv2::Value::create(Exiv2::asciiString));
 			}
 		} else {
-			return "";
+			return Exiv2::Value::AutoPtr(Exiv2::Value::create(Exiv2::asciiString));
 		}
 	}
 
