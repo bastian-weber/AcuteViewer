@@ -2,28 +2,32 @@
 
 namespace sv {
 
-	ExifData::ExifData(QString const& filepath) {
-		try {
-			ready = false;
-			this->thread = std::thread(&ExifData::load, this, filepath);
-		} catch (...) {
-			ready = true;
-			emit(loadingFinished(this));
+	ExifData::ExifData(QString const& filepath, bool launchDeferred) {
+		if (launchDeferred) {
+			this->cachedFilepath = filepath;
+		} else {
+			this->launchThreadFromPath(filepath);
 		}
 	}
 
 	ExifData::ExifData(std::shared_ptr<std::vector<char>> buffer) {
 		try {
-			ready = false;
+			this->deferred = false;
 			this->thread = std::thread(&ExifData::loadFromBuffer, this, buffer);
 		} catch (...) {
-			ready = true;
+			this->ready = true;
 			emit(loadingFinished(this));
 		}
 	}
 
 	ExifData::~ExifData() {
 		this->join();
+	}
+
+	void ExifData::startLoading() {
+		if(this->deferred) {
+			this->launchThreadFromPath(this->cachedFilepath);
+		}
 	}
 
 	bool ExifData::hasValue(QString const & key) const {
@@ -102,11 +106,28 @@ namespace sv {
 		return this->ready;
 	}
 
+	bool ExifData::isDeferred() const {
+		return this->deferred;
+	}
+
 	void ExifData::join() {
+		if (this->deferred) {
+			this->startLoading();
+		}
 		if (this->thread.joinable()) this->thread.join();
 	}
 
 	//=============================================================================== PRIVATE ===============================================================================\\
+
+	void ExifData::launchThreadFromPath(QString const& filepath) {
+		try {
+			this->deferred = false;
+			this->thread = std::thread(&ExifData::load, this, filepath);
+		} catch (...) {
+			this->ready = true;
+			emit(loadingFinished(this));
+		}
+	}
 
 	void ExifData::load(QString filepath) {
 		try {
@@ -132,7 +153,7 @@ namespace sv {
 			Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(reinterpret_cast<Exiv2::byte const*>(buffer->data()), buffer->size());
 			this->readExifFromImage(image);
 		} catch (...) {
-			ready = true;
+			this->ready = true;
 			emit(loadingFinished(this));
 		}
 	}
