@@ -61,10 +61,13 @@ namespace uninstallation {
 							"data/icon_installer.ico",
 							"platforms/qminimal.dll",
 							"platforms/qminimald.dll",
+							"platforms/qminimald.pdb",
 							"platforms/qoffscreen.dll",
 							"platforms/qoffscreend.dll",
+							"platforms/qoffscreend.pdb",
 							"platforms/qwindows.dll",
-							"platforms/qwindowsd.dll" });
+							"platforms/qwindowsd.dll",
+							"platforms/qwindowsd.pdb", });
 		for (QString const& entry : files) {
 			QString path = installDir.absoluteFilePath(entry);
 			QFile::remove(path);
