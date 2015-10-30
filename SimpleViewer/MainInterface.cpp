@@ -2,13 +2,31 @@
 
 namespace sv {
 
+	Image::Image() { }
+
+	Image::Image(cv::Mat mat, std::shared_ptr<ExifData> exifData) : matrix(mat), exifData(exifData), valid(true) { }
+
+	cv::Mat Image::mat() const {
+		return this->matrix;
+	}
+
+	std::shared_ptr<ExifData> Image::exif() const {
+		return this->exifData;
+	}
+
+	bool Image::isValid() const {
+		return valid;
+	}
+
+	//============================================================================ MAIN INTERFACE ============================================================================\\
+
 	MainInterface::MainInterface(QString openWithFilename, QWidget *parent)
 		: QMainWindow(parent),
 		settings(new QSettings(QSettings::IniFormat, QSettings::UserScope, "Simple Viewer", "Simple Viewer")) {
 
 		setAcceptDrops(true);
-		qRegisterMetaType<cv::Mat>("cv::Mat");
-		QObject::connect(this, SIGNAL(readImageFinished(cv::Mat)), this, SLOT(reactToReadImageCompletion(cv::Mat)));
+		qRegisterMetaType<Image>("Image");
+		QObject::connect(this, SIGNAL(readImageFinished(Image)), this, SLOT(reactToReadImageCompletion(Image)));
 		this->setWindowTitle(this->programTitle);
 
 		this->imageView = new hb::ImageView(this);
@@ -34,14 +52,14 @@ namespace sv {
 		this->fileMenu = this->menuBar()->addMenu(tr("&File"));
 		this->viewMenu = this->menuBar()->addMenu(tr("&View"));
 		this->slideshowMenu = this->menuBar()->addMenu(tr("&Slideshow"));
-	#ifdef Q_OS_WIN
+#ifdef Q_OS_WIN
 		this->applicationMenu = this->menuBar()->addMenu(tr("&Application"));
 		QObject::connect(this->applicationMenu, SIGNAL(aboutToShow()), this, SLOT(populateApplicationMenu()));
 		this->installAction = new QAction(tr("&Install"), this);
 		QObject::connect(this->installAction, SIGNAL(triggered()), this, SLOT(runInstaller()));
 		this->uninstallAction = new QAction(tr("&Uninstall"), this);
 		QObject::connect(this->uninstallAction, SIGNAL(triggered()), this, SLOT(runUninstaller()));
-	#endif
+#endif
 
 		this->openAction = new QAction(tr("&Open File"), this);
 		this->openAction->setShortcut(QKeySequence::Open);
@@ -298,53 +316,41 @@ namespace sv {
 
 	//=============================================================================== PRIVATE ===============================================================================\\
 
-	cv::Mat MainInterface::readImage(QString path, bool emitSignals) {
-	#ifdef Q_OS_WIN
+	std::shared_future<Image>& MainInterface::currentThread() {
+		return this->threads[this->filesInDirectory[this->currentFileIndex]];
+	}
+
+	bool MainInterface::exifIsRequired() const {
+		return this->showInfoAction->isChecked();
+	}
+
+	Image MainInterface::readImage(QString path, bool emitSignals) {
 		cv::Mat image;
-		if (!isASCII(path)) {
-			//QFile file(path);
-			//std::vector<char> buffer;
-			//buffer.resize(file.size());
-			//if (!file.open(QIODevice::ReadOnly)) {
-			//	this->loading = false;
-			//	if (emitSignals) emit(readImageFinished(cv::Mat()));
-			//	return cv::Mat();
-			//}
-			//file.read(buffer.data(), file.size());
-			//file.close();
-
-			std::ifstream file(path.toStdWString(), std::iostream::binary);
-			if (!file.good()) {
-				if (emitSignals) emit(readImageFinished(cv::Mat()));
-				return cv::Mat();
+		std::shared_ptr<ExifData> exifData;
+#ifdef Q_OS_WIN
+		if (!utility::isASCII(path)) {
+			std::shared_ptr<std::vector<char>> buffer = utility::readFileIntoBuffer(path);
+			if (buffer->empty()) {
+				if (emitSignals) emit(readImageFinished(Image()));
+				return Image();
 			}
-			file.exceptions(std::ifstream::badbit | std::ifstream::failbit | std::ifstream::eofbit);
-			file.seekg(0, std::ios::end);
-			std::streampos length(file.tellg());
-			std::vector<char> buffer(static_cast<std::size_t>(length));
-			if (static_cast<std::size_t>(length) == 0) {
-				if (emitSignals) emit(readImageFinished(cv::Mat()));
-				return cv::Mat();
-			}
-			file.seekg(0, std::ios::beg);
-			try {
-				file.read(buffer.data(), static_cast<std::size_t>(length));
-			} catch (...) {
-				if (emitSignals) emit(readImageFinished(cv::Mat()));
-				return cv::Mat();
-			}
-			file.close();
-
-			image = cv::imdecode(buffer, CV_LOAD_IMAGE_COLOR);
+			image = cv::imdecode(*buffer, CV_LOAD_IMAGE_COLOR);
+			exifData = std::shared_ptr<ExifData>(new ExifData(buffer));
 		} else {
+#endif
 			image = cv::imread(path.toStdString(), CV_LOAD_IMAGE_COLOR);
+			exifData = std::shared_ptr<ExifData>(new ExifData(path, !this->exifIsRequired()));
+#ifdef Q_OS_WIN
 		}
-	#else
-		cv::Mat image = cv::imread(path.toStdString(), CV_LOAD_IMAGE_COLOR);
-	#endif
-		if (image.data) cv::cvtColor(image, image, CV_BGR2RGB);
-		if (emitSignals) emit(readImageFinished(image));
-		return image;
+#endif
+		Image result;
+		if (image.data) {
+			cv::cvtColor(image, image, CV_BGR2RGB);
+			QObject::connect(exifData.get(), SIGNAL(loadingFinished(ExifData*)), this, SLOT(reactToExifLoadingCompletion(ExifData*)));
+			result = Image(image, exifData);
+		}
+		if (emitSignals) emit(readImageFinished(result));
+		return result;
 	}
 
 	void MainInterface::loadNextImage() {
@@ -358,8 +364,10 @@ namespace sv {
 				this->loading = false;
 				return;
 			}
-			this->waitForThreadToFinish(this->threads[this->filesInDirectory[this->currentFileIndex]]);
-			this->image = this->threads[this->filesInDirectory[this->currentFileIndex]].get();
+			this->waitForThreadToFinish(this->currentThread());
+			//calling this function although the exif might not be set to deferred loading is no problem (it checks internally)
+			if(this->exifIsRequired()) this->currentThread().get().exif()->startLoading();
+			this->image = this->currentThread().get();
 
 			this->currentFileInfo = QFileInfo(this->getFullImagePath(this->currentFileIndex));
 			//start loading next image
@@ -387,8 +395,10 @@ namespace sv {
 				this->loading = false;
 				return;
 			}
-			this->waitForThreadToFinish(this->threads[this->filesInDirectory[this->currentFileIndex]]);
-			this->image = this->threads[this->filesInDirectory[this->currentFileIndex]].get();
+			this->waitForThreadToFinish(this->currentThread());
+			//calling this function although the exif might not be set to deferred loading is no problem (it checks internally)
+			if (this->exifIsRequired()) this->currentThread().get().exif()->startLoading();
+			this->image = this->currentThread().get();
 			this->currentFileInfo = QFileInfo(this->getFullImagePath(this->currentFileIndex));
 			//start loading previous image
 			if (this->threads.find(this->filesInDirectory[this->previousFileIndex()]) == this->threads.end()) {
@@ -405,22 +415,14 @@ namespace sv {
 		this->cleanUpThreads();
 	}
 
-	bool MainInterface::isASCII(QString const& string) {
-		bool isASCII = true;
-		for (QString::ConstIterator i = string.begin(); i != string.end(); ++i) {
-			isASCII = isASCII && (i->unicode() < 128);
-		}
-		return isASCII;
-	}
-
 	void MainInterface::clearThreads() {
-		for (std::map<QString, std::shared_future<cv::Mat>>::iterator it = this->threads.begin(); it != this->threads.end(); ++it) {
+		for (std::map<QString, std::shared_future<Image>>::iterator it = this->threads.begin(); it != this->threads.end(); ++it) {
 			this->waitForThreadToFinish(it->second);
 		}
 		this->threads.clear();
 	}
 
-	void MainInterface::waitForThreadToFinish(std::shared_future<cv::Mat> const& thread) {
+	void MainInterface::waitForThreadToFinish(std::shared_future<Image> const& thread) {
 		if (!thread.valid()) return;
 		if (thread.wait_for(std::chrono::milliseconds(0)) != std::future_status::ready) {
 			this->setWindowTitle(this->windowTitle() + QString(tr(" - Loading...")));
@@ -475,15 +477,15 @@ namespace sv {
 	}
 
 	void MainInterface::displayImageIfOk() {
-		if (this->image.data) {
+		if (this->image.isValid()) {
 			this->currentImageUnreadable = false;
-			this->imageView->setImage(this->image);
+			this->imageView->setImage(this->image.mat());
 		} else {
 			this->currentImageUnreadable = true;
 			this->imageView->resetImage();
 		}
-		this->setWindowTitle(QString("%1 - %2 - %3 of %4").arg(this->programTitle,
-															   this->currentFileInfo.fileName()).arg(this->currentFileIndex + 1).arg(this->filesInDirectory.size()));
+		this->setWindowTitle(QString("%1 - %2 - %3 of %4").arg(this->currentFileInfo.fileName(),
+															   this->programTitle).arg(this->currentFileIndex + 1).arg(this->filesInDirectory.size()));
 	}
 
 	void MainInterface::enterFullscreen() {
@@ -518,8 +520,8 @@ namespace sv {
 		canvas.setBackground(base);
 		canvas.setBackgroundMode(Qt::OpaqueMode);
 		QFontMetrics metrics(font);
-		double lineSpacing = 30;
-		if (this->currentImageUnreadable) {
+		double const lineSpacing = 10;
+		if (this->currentImageUnreadable && !this->paintLoadingHint) {
 			QString message = tr("This file could not be read:");
 			canvas.drawText(QPoint((canvas.device()->width() - metrics.width(message)) / 2.0, canvas.device()->height() / 2.0 - 0.5*lineSpacing),
 							message);
@@ -538,6 +540,54 @@ namespace sv {
 							this->currentFileInfo.fileName());
 			canvas.drawText(QPoint(30, 30 + lineSpacing + 2 * metrics.height()),
 							QString("%1 Mb").arg(this->currentFileInfo.size() / 1048576.0, 0, 'f', 2));
+			if (this->image.isValid()) {
+				if (this->image.exif()->isReady()) {
+					if (this->image.exif()->hasExif()) {
+						//get camera model, speed, aperture and ISO
+						QString cameraModel = this->image.exif()->cameraModel();
+						QString aperture = this->image.exif()->fNumber();
+						QString speed = this->image.exif()->exposureTime();
+						QString iso = this->image.exif()->iso();
+						QString captureDate = this->image.exif()->captureDate();
+						//calculate the v coordinates for the lines
+						int cameraModelTopOffset = 30 + 2 * lineSpacing + 3 * metrics.height();
+						int apertureAndSpeedTopOffset = 30 + 3 * lineSpacing + 4 * metrics.height();
+						int isoTopOffset = 30 + 4 * lineSpacing + 5 * metrics.height();
+						int dateTopOffset = 30 + 5 * lineSpacing + 6 * metrics.height();
+						if (cameraModel.isEmpty()) {
+							apertureAndSpeedTopOffset -= lineSpacing + metrics.height();
+							isoTopOffset -= lineSpacing + metrics.height();
+							dateTopOffset -= lineSpacing + metrics.height();
+						}
+						if (aperture.isEmpty() && speed.isEmpty()) {
+							isoTopOffset -= lineSpacing + metrics.height();
+							dateTopOffset -= lineSpacing + metrics.height();
+						}
+						if (iso.isEmpty()) dateTopOffset -= lineSpacing + metrics.height();
+						//draw the EXIF text
+						if (!cameraModel.isEmpty()) canvas.drawText(QPoint(30, cameraModelTopOffset),
+																	cameraModel);
+						if (!aperture.isEmpty() && !speed.isEmpty()) {
+							QString apertureAndSpeed = QString("%1s @ f%2").arg(speed).arg(aperture);
+							canvas.drawText(QPoint(30, apertureAndSpeedTopOffset),
+											apertureAndSpeed);
+						} else if (!aperture.isEmpty()) {
+							canvas.drawText(QPoint(30, apertureAndSpeedTopOffset),
+											QString("f%2").arg(aperture));
+						} else if (!speed.isEmpty()) {
+							canvas.drawText(QPoint(30, apertureAndSpeedTopOffset),
+											QString("%1s").arg(speed));
+						}
+						if (!iso.isEmpty()) canvas.drawText(QPoint(30, isoTopOffset),
+															QString("ISO%1").arg(iso));
+						if (!captureDate.isEmpty()) canvas.drawText(QPoint(30, dateTopOffset),
+																	QString("%1").arg(captureDate));
+					}
+				} else {
+					canvas.drawText(QPoint(30, 30 + 2 * lineSpacing + 3 * metrics.height()),
+									tr("Loading EXIF..."));
+				}
+			}
 		}
 		if (this->zoomLevelAction->isChecked() && this->imageView->imageAssigned()) {
 			QString message = QString::number(this->imageView->getCurrentPreviewScalingFactor() * 100, 'f', 1).append("%");
@@ -546,16 +596,16 @@ namespace sv {
 	}
 
 	bool MainInterface::applicationIsInstalled() {
-	#ifdef Q_OS_WIN
+#ifdef Q_OS_WIN
 		QSettings registry("HKEY_LOCAL_MACHINE\\SOFTWARE", QSettings::NativeFormat);
 		return registry.contains("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/UninstallString");
-	#else
+#else
 		return false;
-	#endif
+#endif
 
-	}
+}
 
-	//============================================================================ PRIVATE SLOTS =============================================================================\\
+//============================================================================ PRIVATE SLOTS =============================================================================\\
 
 	void MainInterface::nextSlide() {
 		this->loadNextImage();
@@ -565,18 +615,30 @@ namespace sv {
 	}
 
 	void MainInterface::cleanUpThreads() {
-		std::lock_guard<std::mutex> lock(this->threadDeletionMutex);
-		size_t previousIndex = this->previousFileIndex();
-		size_t nextIndex = this->nextFileIndex();
-		for (std::map<QString, std::shared_future<cv::Mat>>::iterator it = this->threads.begin(); it != this->threads.end();) {
-			int index = this->filesInDirectory.indexOf(it->first);
-			if (index != -1 && index != this->currentFileIndex && index != previousIndex && index != nextIndex && it->second.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
-				it = this->threads.erase(it);
-			} else {
-				++it;
+		try {
+			std::lock_guard<std::mutex> lock(this->threadDeletionMutex);
+			size_t previousIndex = this->previousFileIndex();
+			size_t nextIndex = this->nextFileIndex();
+			for (std::map<QString, std::shared_future<Image>>::iterator it = this->threads.begin(); it != this->threads.end();) {
+				int index = this->filesInDirectory.indexOf(it->first);
+				//see if the thread has finished loading
+				//also the exif should have finished loading to prevent blocking, check if it's valid first to not derefence an invalid pointer
+				if (index != -1
+					&& index != this->currentFileIndex
+					&& index != previousIndex
+					&& index != nextIndex
+					&& it->second.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready
+					&& (!it->second.get().isValid() || it->second.get().exif()->isReady() || it->second.get().exif()->isDeferred())) {
+					it = this->threads.erase(it);
+				} else {
+					++it;
+				}
 			}
+			if (this->threads.size() > 3) this->threadCleanUpTimer->start(this->threadCleanUpInterval);
+		} catch (...) {
+			//Probably couldn't lock the mutex (thread already owns it?)
+			if (this->threads.size() > 3) this->threadCleanUpTimer->start(this->threadCleanUpInterval);
 		}
-		if (this->threads.size() > 3) this->threadCleanUpTimer->start(this->threadCleanUpInterval);
 	}
 
 	void MainInterface::quit() {
@@ -645,7 +707,7 @@ namespace sv {
 	}
 
 	void MainInterface::runUninstaller() {
-	#ifdef Q_OS_WIN
+#ifdef Q_OS_WIN
 		QString installerPath = QDir::toNativeSeparators(QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("WinInstaller.exe"));
 		if (QFileInfo(installerPath).exists()) {
 			ShellExecuteW(GetDesktopWindow(),
@@ -661,7 +723,7 @@ namespace sv {
 								  tr("The installer executable (WinInstaller.exe) could not be found. Make sure it is located in the same directory as SimpleViewer.exe."),
 								  QMessageBox::Close);
 		}
-	#endif
+#endif
 	}
 
 	void MainInterface::toggleSlideshow() {
@@ -692,6 +754,11 @@ namespace sv {
 	}
 
 	void MainInterface::reactToShowInfoToggle(bool value) {
+		//if the thread of the currently displayed image is ready, start loading exif
+		if (this->currentThread().valid()
+			&& this->currentThread().wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
+			this->currentThread().get().exif()->startLoading();
+		}
 		this->imageView->update();
 		this->settings->setValue("showImageInfo", value);
 	}
@@ -701,8 +768,10 @@ namespace sv {
 		this->settings->setValue("showZoomLevel", value);
 	}
 
-	void MainInterface::reactToReadImageCompletion(cv::Mat image) {
+	void MainInterface::reactToReadImageCompletion(Image image) {
 		this->image = image;
+		//calling this function although the exif might not be set to deferred loading is no problem (it checks internally)
+		if (this->exifIsRequired()) this->currentThread().get().exif()->startLoading();
 		this->paintLoadingHint = false;
 		this->displayImageIfOk();
 		if (this->filesInDirectory.size() != 0) {
@@ -725,6 +794,15 @@ namespace sv {
 		this->slideshowAction->setEnabled(true);
 		this->slideshowNoDialogAction->setEnabled(true);
 		this->loading = false;
+	}
+
+	void MainInterface::reactToExifLoadingCompletion(ExifData* sender) {
+		if (this->showInfoAction->isChecked()) {
+		//if the sender is the currently displayed image
+			if (this->currentThread().get().exif().get() == sender) {
+				this->update();
+			}
+		}
 	}
 
 	void MainInterface::openDialog() {

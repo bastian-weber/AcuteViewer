@@ -8,7 +8,7 @@
 
 #include "InstallerInterface.h"
 
-namespace uninstallation{
+namespace uninstallation {
 
 	void clearRegistryEntries() {
 		QSettings registry("HKEY_LOCAL_MACHINE\\SOFTWARE", QSettings::NativeFormat);
@@ -33,6 +33,9 @@ namespace uninstallation{
 		QStringList files({ "icudt54.dll",
 							"icuin54.dll",
 							"icuuc54.dll",
+							"libexiv2.dll",
+							"libexpat.dll",
+							"zlib1.dll",
 							"opencv_world300.dll",
 							"SimpleViewer.exe",
 							"SimpleViewer.ini",
@@ -58,10 +61,13 @@ namespace uninstallation{
 							"data/icon_installer.ico",
 							"platforms/qminimal.dll",
 							"platforms/qminimald.dll",
+							"platforms/qminimald.pdb",
 							"platforms/qoffscreen.dll",
 							"platforms/qoffscreend.dll",
+							"platforms/qoffscreend.pdb",
 							"platforms/qwindows.dll",
-							"platforms/qwindowsd.dll" });
+							"platforms/qwindowsd.dll",
+							"platforms/qwindowsd.pdb", });
 		for (QString const& entry : files) {
 			QString path = installDir.absoluteFilePath(entry);
 			QFile::remove(path);
@@ -132,9 +138,9 @@ int init(int argc, char* argv[]) {
 				uninstallation::removeFiles(installDir);
 				uninstallation::clearRegistryEntries();
 				QMessageBox::information(nullptr,
-											QObject::tr("Uninstall"),
-											QObject::tr("The application was successfully removed."),
-											QMessageBox::Close);
+										 QObject::tr("Uninstall"),
+										 QObject::tr("The application was successfully removed."),
+										 QMessageBox::Close);
 				uninstallation::initiateSelfRemoval(installDir);
 			}
 		} else {
