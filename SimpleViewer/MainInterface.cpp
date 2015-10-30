@@ -509,7 +509,7 @@ namespace sv {
 		canvas.setBackgroundMode(Qt::OpaqueMode);
 		QFontMetrics metrics(font);
 		double const lineSpacing = 10;
-		if (this->currentImageUnreadable) {
+		if (this->currentImageUnreadable && !this->paintLoadingHint) {
 			QString message = tr("This file could not be read:");
 			canvas.drawText(QPoint((canvas.device()->width() - metrics.width(message)) / 2.0, canvas.device()->height() / 2.0 - 0.5*lineSpacing),
 							message);
@@ -605,29 +605,28 @@ namespace sv {
 	void MainInterface::cleanUpThreads() {
 		try {
 			std::unique_lock<std::mutex> lock(this->threadDeletionMutex);
-		} catch (...) {
-			//Couldn't lock the mutex, probably because this thread already owns it. 
-			if (this->threads.size() > 3) this->threadCleanUpTimer->start(this->threadCleanUpInterval);
-			return;
-		}
-		size_t previousIndex = this->previousFileIndex();
-		size_t nextIndex = this->nextFileIndex();
-		for (std::map<QString, std::shared_future<Image>>::iterator it = this->threads.begin(); it != this->threads.end();) {
-			int index = this->filesInDirectory.indexOf(it->first);
-			//see if the thread has finished loading
-			//also the exif should have finished loading to prevent blocking, check if it's valid first to not derefence an invalid pointer
-			if (index != -1
-				&& index != this->currentFileIndex
-				&& index != previousIndex
-				&& index != nextIndex
-				&& it->second.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready
-				&& (!it->second.get().isValid() || it->second.get().exif()->isReady())) {
-				it = this->threads.erase(it);
-			} else {
-				++it;
+			size_t previousIndex = this->previousFileIndex();
+			size_t nextIndex = this->nextFileIndex();
+			for (std::map<QString, std::shared_future<Image>>::iterator it = this->threads.begin(); it != this->threads.end();) {
+				int index = this->filesInDirectory.indexOf(it->first);
+				//see if the thread has finished loading
+				//also the exif should have finished loading to prevent blocking, check if it's valid first to not derefence an invalid pointer
+				if (index != -1
+					&& index != this->currentFileIndex
+					&& index != previousIndex
+					&& index != nextIndex
+					&& it->second.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready
+					&& (!it->second.get().isValid() || it->second.get().exif()->isReady())) {
+					it = this->threads.erase(it);
+				} else {
+					++it;
+				}
 			}
+			if (this->threads.size() > 3) this->threadCleanUpTimer->start(this->threadCleanUpInterval);
+		} catch (...) {
+			//Probably couldn't lock the mutex (thread already owns it?)
+			if (this->threads.size() > 3) this->threadCleanUpTimer->start(this->threadCleanUpInterval);
 		}
-		if (this->threads.size() > 3) this->threadCleanUpTimer->start(this->threadCleanUpInterval);
 	}
 
 	void MainInterface::quit() {
