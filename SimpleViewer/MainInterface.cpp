@@ -635,7 +635,6 @@ namespace sv {
 				}
 			}
 			if (this->threads.size() > 3) this->threadCleanUpTimer->start(this->threadCleanUpInterval);
-			std::cout << "Threads left: " << this->threads.size() << std::endl;
 		} catch (...) {
 			//Probably couldn't lock the mutex (thread already owns it?)
 			if (this->threads.size() > 3) this->threadCleanUpTimer->start(this->threadCleanUpInterval);
