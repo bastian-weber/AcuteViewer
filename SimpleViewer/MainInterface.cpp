@@ -484,8 +484,8 @@ namespace sv {
 			this->currentImageUnreadable = true;
 			this->imageView->resetImage();
 		}
-		this->setWindowTitle(QString("%1 - %2 - %3 of %4").arg(this->programTitle,
-															   this->currentFileInfo.fileName()).arg(this->currentFileIndex + 1).arg(this->filesInDirectory.size()));
+		this->setWindowTitle(QString("%1 - %2 - %3 of %4").arg(this->currentFileInfo.fileName(),
+															   this->programTitle).arg(this->currentFileIndex + 1).arg(this->filesInDirectory.size()));
 	}
 
 	void MainInterface::enterFullscreen() {
