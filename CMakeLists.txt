@@ -66,6 +66,15 @@ if(QT_ROOT_FOUND)
 	endforeach(module ${QT_MODULES_ALL})
 endif(QT_ROOT_FOUND)
 
+#Exiv2
+set(EXIV_FILES "/include/exiv2.hpp" "/bin/vc12/x64/Release/libexiv2.dll")
+set(EXIV_PATH_HINTS "." ".." "../../../..")
+ask_for_path("Exiv" "" "/usr/local/lib" EXIV_FILES EXIV_PATH_HINTS)
+if(EXIV_ROOT_FOUND)
+	set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}" "${PATH_EXIV_ROOT}" "${PATH_EXIV_ROOT}/include" "${PATH_EXIV_ROOT}/bin/vc12/x64")
+	find_package(Exiv2 REQUIRED)
+endif()
+
 #enable openmp
 find_package(OpenMP)
 if (OPENMP_FOUND)
@@ -140,6 +149,17 @@ IF(DEFINED QT_ROOT_FOUND)
 
 ENDIF(DEFINED QT_ROOT_FOUND)
 
-IF(OPENCV_ROOT_FOUND AND QT_ROOT_FOUND)
+########################################## Exvi2 Libs ##########################################
+
+if(DEFINED EXIV_ROOT_FOUND)
+	target_link_libraries(${EXECUTABLE_NAME_1} "exiv2")
+
+	if(MSVC)
+		set(EXIV2_MODULES "exiv2")
+		copydlls(EXIV2_MODULES)
+	endif(MSVC)
+endif()
+
+IF(OPENCV_ROOT_FOUND AND QT_ROOT_FOUND AND EXIV_ROOT_FOUND)
 	message("Everything fine, ready to generate.")
 ENDIF()

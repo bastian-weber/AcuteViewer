@@ -802,6 +802,11 @@ namespace hb {
 	}
 
 	void ImageView::resizeEvent(QResizeEvent* e) {
+		//maintain 100% view if in 100% view
+		if (_magnificationIsHundredPercent) {
+			QPointF center(width() / 2.0, height() / 2.0);
+			zoomToHundredPercent(center);
+		}
 		updateResizedImage();
 	}
 
@@ -1170,7 +1175,7 @@ namespace hb {
 	void ImageView::zoomBy(double delta, QPointF const& center, Qt::KeyboardModifiers modifier) {
 		if (_imageAssigned) {
 			QPointF mousePositionCoordinateBefore = getTransform().inverted().map(center);
-			if (modifier & Qt::AltModifier) {
+			if (modifier & Qt::ControlModifier) {
 				_zoomExponent += delta / 600;
 			} else if (!modifier) {
 				_zoomExponent += delta / 120;
