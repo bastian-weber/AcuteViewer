@@ -50,6 +50,8 @@ namespace sv {
 		void changeEvent(QEvent* e);
 	private:
 		//functions
+		std::shared_future<Image>& currentThread();
+		bool exifIsRequired() const;
 		Image readImage(QString path, bool emitSignals = false);
 		void loadNextImage();
 		void loadPreviousImage();
