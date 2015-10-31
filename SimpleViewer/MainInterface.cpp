@@ -366,7 +366,7 @@ namespace sv {
 			}
 			this->waitForThreadToFinish(this->currentThread());
 			//calling this function although the exif might not be set to deferred loading is no problem (it checks internally)
-			if(this->exifIsRequired()) this->currentThread().get().exif()->startLoading();
+			if (this->exifIsRequired()) this->currentThread().get().exif()->startLoading();
 			this->image = this->currentThread().get();
 
 			this->currentFileInfo = QFileInfo(this->getFullImagePath(this->currentFileIndex));
@@ -545,16 +545,26 @@ namespace sv {
 					if (this->image.exif()->hasExif()) {
 						//get camera model, speed, aperture and ISO
 						QString cameraModel = this->image.exif()->cameraModel();
+						QString lensModel = this->image.exif()->lensModel();
 						QString aperture = this->image.exif()->fNumber();
 						QString speed = this->image.exif()->exposureTime();
+						QString focalLength = this->image.exif()->focalLength();
+						QString exposureBias = this->image.exif()->exposureBias();
 						QString iso = this->image.exif()->iso();
 						QString captureDate = this->image.exif()->captureDate();
 						//calculate the v coordinates for the lines
 						int cameraModelTopOffset = 30 + 2 * lineSpacing + 3 * metrics.height();
-						int apertureAndSpeedTopOffset = 30 + 3 * lineSpacing + 4 * metrics.height();
-						int isoTopOffset = 30 + 4 * lineSpacing + 5 * metrics.height();
-						int dateTopOffset = 30 + 5 * lineSpacing + 6 * metrics.height();
+						int lensAndFocalLengthTopOffset = 30 + 3 * lineSpacing + 4 * metrics.height();
+						int apertureAndSpeedTopOffset = 30 + 4 * lineSpacing + 5 * metrics.height();
+						int isoTopOffset = 30 + 5 * lineSpacing + 6 * metrics.height();
+						int dateTopOffset = 30 + 6 * lineSpacing + 7 * metrics.height();
 						if (cameraModel.isEmpty()) {
+							lensAndFocalLengthTopOffset -= lineSpacing + metrics.height();
+							apertureAndSpeedTopOffset -= lineSpacing + metrics.height();
+							isoTopOffset -= lineSpacing + metrics.height();
+							dateTopOffset -= lineSpacing + metrics.height();
+						}
+						if (lensModel.isEmpty() && focalLength.isEmpty()) {
 							apertureAndSpeedTopOffset -= lineSpacing + metrics.height();
 							isoTopOffset -= lineSpacing + metrics.height();
 							dateTopOffset -= lineSpacing + metrics.height();
@@ -563,23 +573,40 @@ namespace sv {
 							isoTopOffset -= lineSpacing + metrics.height();
 							dateTopOffset -= lineSpacing + metrics.height();
 						}
-						if (iso.isEmpty()) dateTopOffset -= lineSpacing + metrics.height();
+						if (iso.isEmpty() && exposureBias.isEmpty()) dateTopOffset -= lineSpacing + metrics.height();
 						//draw the EXIF text
 						if (!cameraModel.isEmpty()) canvas.drawText(QPoint(30, cameraModelTopOffset),
 																	cameraModel);
-						if (!aperture.isEmpty() && !speed.isEmpty()) {
-							QString apertureAndSpeed = QString("%1s @ f%2").arg(speed).arg(aperture);
+						if (!lensModel.isEmpty() && !focalLength.isEmpty()) {
+							canvas.drawText(QPoint(30, lensAndFocalLengthTopOffset),
+											QString("%1 @ %2mm").arg(lensModel).arg(focalLength));
+						} else if (!lensModel.isEmpty()) {
+							canvas.drawText(QPoint(30, lensAndFocalLengthTopOffset),
+											lensModel);
+						} else if (!focalLength.isEmpty()) {
+							canvas.drawText(QPoint(30, lensAndFocalLengthTopOffset),
+											QString("%1mm").arg(focalLength));
+						}
+						if (!speed.isEmpty() && !aperture.isEmpty()) {
 							canvas.drawText(QPoint(30, apertureAndSpeedTopOffset),
-											apertureAndSpeed);
-						} else if (!aperture.isEmpty()) {
-							canvas.drawText(QPoint(30, apertureAndSpeedTopOffset),
-											QString("f%2").arg(aperture));
+											QString("%1s @ f/%2").arg(speed).arg(aperture));
 						} else if (!speed.isEmpty()) {
 							canvas.drawText(QPoint(30, apertureAndSpeedTopOffset),
 											QString("%1s").arg(speed));
+						} else if (!aperture.isEmpty()) {
+							canvas.drawText(QPoint(30, apertureAndSpeedTopOffset),
+											QString("f/%1").arg(aperture));
 						}
-						if (!iso.isEmpty()) canvas.drawText(QPoint(30, isoTopOffset),
-															QString("ISO%1").arg(iso));
+						if (!iso.isEmpty() && !exposureBias.isEmpty()) {
+							canvas.drawText(QPoint(30, isoTopOffset),
+											QString("ISO %1, %2 EV").arg(iso).arg(exposureBias));
+						} else if (!iso.isEmpty()) {
+							canvas.drawText(QPoint(30, isoTopOffset),
+											QString("ISO %1").arg(iso));
+						} else if (!exposureBias.isEmpty()) {
+							canvas.drawText(QPoint(30, isoTopOffset),
+											QString("%1 EV").arg(exposureBias));
+						}
 						if (!captureDate.isEmpty()) canvas.drawText(QPoint(30, dateTopOffset),
 																	QString("%1").arg(captureDate));
 					}
@@ -603,9 +630,9 @@ namespace sv {
 		return false;
 #endif
 
-}
+	}
 
-//============================================================================ PRIVATE SLOTS =============================================================================\\
+	//============================================================================ PRIVATE SLOTS =============================================================================\\
 
 	void MainInterface::nextSlide() {
 		this->loadNextImage();

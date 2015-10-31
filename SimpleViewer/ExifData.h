@@ -29,9 +29,12 @@ namespace sv {
 		bool hasValue(QString const& key) const;
 		Exiv2::Value::AutoPtr value(QString const& key) const;
 		QString cameraModel() const;
+		QString lensModel() const;
 		QString exposureTime() const;
 		QString fNumber() const;
 		QString iso() const;
+		QString exposureBias() const;
+		QString focalLength() const;
 		QString captureDate() const;
 		bool hasExif() const;
 		bool isReady() const;
