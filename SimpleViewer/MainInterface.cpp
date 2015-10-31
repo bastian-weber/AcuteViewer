@@ -78,7 +78,7 @@ namespace sv {
 		//so shortcuts also work when menu bar is not visible
 		this->addAction(this->quitAction);
 
-		this->showInfoAction = new QAction(tr("Show Image &Info"), this);
+		this->showInfoAction = new QAction(tr("Show &Info Overlay"), this);
 		this->showInfoAction->setCheckable(true);
 		this->showInfoAction->setChecked(false);
 		this->showInfoAction->setShortcut(Qt::Key_I);
@@ -87,7 +87,7 @@ namespace sv {
 		this->viewMenu->addAction(this->showInfoAction);
 		this->addAction(this->showInfoAction);
 
-		this->zoomLevelAction = new QAction(tr("Show &Zoom Level"), this);
+		this->zoomLevelAction = new QAction(tr("Show &Zoom Level Overlay"), this);
 		this->zoomLevelAction->setCheckable(true);
 		this->zoomLevelAction->setChecked(false);
 		this->zoomLevelAction->setShortcut(Qt::Key_Z);
@@ -96,7 +96,9 @@ namespace sv {
 		this->viewMenu->addAction(this->zoomLevelAction);
 		this->addAction(this->zoomLevelAction);
 
-		this->enlargementAction = new QAction(tr("&Enlarge Smaller Images"), this);
+		this->viewMenu->addSeparator();
+
+		this->enlargementAction = new QAction(tr("&Enlarge Smaller Images to Fit Window"), this);
 		this->enlargementAction->setCheckable(true);
 		this->enlargementAction->setChecked(false);
 		this->enlargementAction->setShortcut(Qt::Key_U);
@@ -104,15 +106,6 @@ namespace sv {
 		QObject::connect(this->enlargementAction, SIGNAL(triggered(bool)), this, SLOT(reactToEnlargementToggle(bool)));
 		this->viewMenu->addAction(this->enlargementAction);
 		this->addAction(this->enlargementAction);
-
-		this->sharpeningAction = new QAction(tr("Sharpen Images After &Downsampling"), this);
-		this->sharpeningAction->setCheckable(true);
-		this->sharpeningAction->setChecked(false);
-		this->sharpeningAction->setShortcut(Qt::Key_E);
-		this->sharpeningAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->sharpeningAction, SIGNAL(triggered(bool)), this, SLOT(reactToSharpeningToggle(bool)));
-		this->viewMenu->addAction(this->sharpeningAction);
-		this->addAction(this->sharpeningAction);
 
 		this->smoothingAction = new QAction(tr("Use &Smooth Interpolation when Enlarging"), this);
 		this->smoothingAction->setCheckable(true);
@@ -123,6 +116,24 @@ namespace sv {
 		this->viewMenu->addAction(this->smoothingAction);
 		this->addAction(this->smoothingAction);
 
+		this->sharpeningAction = new QAction(tr("Sharpen Images After &Downsampling"), this);
+		this->sharpeningAction->setCheckable(true);
+		this->sharpeningAction->setChecked(false);
+		this->sharpeningAction->setShortcut(Qt::Key_E);
+		this->sharpeningAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->sharpeningAction, SIGNAL(triggered(bool)), this, SLOT(reactToSharpeningToggle(bool)));
+		this->viewMenu->addAction(this->sharpeningAction);
+		this->addAction(this->sharpeningAction);
+
+		this->sharpeningOptionsAction = new QAction(tr("Sharpening Options..."), this);
+		this->sharpeningOptionsAction->setShortcut(Qt::Key_O);
+		this->sharpeningOptionsAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->sharpeningOptionsAction, SIGNAL(triggered(bool)), this, SLOT(showSharpeningOptions()));
+		this->viewMenu->addAction(this->sharpeningOptionsAction);
+		this->addAction(this->sharpeningOptionsAction);
+
+		this->viewMenu->addSeparator();
+
 		this->menuBarAutoHideAction = new QAction(tr("&Always Show Menu Bar"), this);
 		this->menuBarAutoHideAction->setCheckable(true);
 		this->menuBarAutoHideAction->setChecked(false);
@@ -131,15 +142,6 @@ namespace sv {
 		QObject::connect(this->menuBarAutoHideAction, SIGNAL(triggered(bool)), this, SLOT(reactoToAutoHideMenuBarToggle(bool)));
 		this->viewMenu->addAction(this->menuBarAutoHideAction);
 		this->addAction(this->menuBarAutoHideAction);
-
-		this->viewMenu->addSeparator();
-
-		this->sharpeningOptionsAction = new QAction(tr("Sharpening Options..."), this);
-		this->sharpeningOptionsAction->setShortcut(Qt::Key_O);
-		this->sharpeningOptionsAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->sharpeningOptionsAction, SIGNAL(triggered(bool)), this, SLOT(showSharpeningOptions()));
-		this->viewMenu->addAction(this->sharpeningOptionsAction);
-		this->addAction(this->sharpeningOptionsAction);
 
 		this->slideshowAction = new QAction(tr("&Start Slideshow"), this);
 		this->slideshowAction->setEnabled(false);
