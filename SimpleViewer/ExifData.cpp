@@ -30,8 +30,13 @@ namespace sv {
 		}
 	}
 
-	bool ExifData::hasValue(QString const & key) const {
-		return (this->exifData.findKey(Exiv2::ExifKey(key.toStdString())) != this->exifData.end());
+	bool ExifData::hasValue(QString const& key) const {
+		try {
+			if (this->exifData.empty()) return false;
+			return (this->exifData.findKey(Exiv2::ExifKey(key.toStdString())) != this->exifData.end());
+		} catch (...) {
+			return false;
+		}
 	}
 
 	Exiv2::Value::AutoPtr ExifData::value(QString const& key) const {
@@ -50,9 +55,17 @@ namespace sv {
 	QString ExifData::cameraModel() const {
 		QString cameraModel = "";
 		if (this->hasValue("Exif.Image.Model")) {
-			QString cameraModel = QString::fromStdString(this->value("Exif.Image.Model")->toString()).trimmed();
+			cameraModel = QString::fromStdString(this->value("Exif.Image.Model")->toString()).trimmed();
 		}
 		return cameraModel;
+	}
+
+	QString ExifData::lensModel() const {
+		QString lensModel = "";
+		if (this->hasValue("Exif.Photo.LensModel")) {
+			lensModel = QString::fromStdString(this->value("Exif.Photo.LensModel")->toString()).trimmed();
+		}
+		return lensModel;
 	}
 
 	QString ExifData::exposureTime() const {
@@ -84,6 +97,30 @@ namespace sv {
 			iso = QString::number(isoValue);
 		}
 		return iso;
+	}
+
+	QString ExifData::exposureBias() const {
+		QString exposureBias = "";
+		if (this->hasValue("Exif.Photo.ExposureBiasValue")) {
+			Exiv2::Rational exposureBiasValue = this->value("Exif.Photo.ExposureBiasValue")->toRational();
+			double decimal = double(exposureBiasValue.first) / double(exposureBiasValue.second);
+			exposureBias = QString::number(decimal);
+			if (decimal == 0) {
+				exposureBias = QString::fromWCharArray(L"\u00B1%1").arg(exposureBias);
+			} else if (decimal > 0) {
+				exposureBias = QString("+%1").arg(exposureBias);
+			}
+		}
+		return exposureBias;
+	}
+
+	QString ExifData::focalLength() const {
+		QString focalLength = "";
+		if (this->hasValue("Exif.Photo.FocalLength")) {
+			Exiv2::Rational focalLengthValue = this->value("Exif.Photo.FocalLength")->toRational();
+			focalLength = QString::number(double(focalLengthValue.first) / double(focalLengthValue.second));
+		}
+		return focalLength;
 	}
 
 	QString ExifData::captureDate() const {
