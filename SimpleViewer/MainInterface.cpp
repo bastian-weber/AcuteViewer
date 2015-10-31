@@ -574,38 +574,38 @@ namespace sv {
 							dateTopOffset -= lineSpacing + metrics.height();
 						}
 						if (iso.isEmpty() && exposureBias.isEmpty()) dateTopOffset -= lineSpacing + metrics.height();
-						//draw the EXIF text
+						//draw the EXIF text (note \u2005 is a sixth of a quad)
 						if (!cameraModel.isEmpty()) canvas.drawText(QPoint(30, cameraModelTopOffset),
 																	cameraModel);
 						if (!lensModel.isEmpty() && !focalLength.isEmpty()) {
 							canvas.drawText(QPoint(30, lensAndFocalLengthTopOffset),
-											QString("%1 @ %2mm").arg(lensModel).arg(focalLength));
+											QString::fromWCharArray(L"%1 @ %2\u2006mm").arg(lensModel).arg(focalLength));
 						} else if (!lensModel.isEmpty()) {
 							canvas.drawText(QPoint(30, lensAndFocalLengthTopOffset),
 											lensModel);
 						} else if (!focalLength.isEmpty()) {
 							canvas.drawText(QPoint(30, lensAndFocalLengthTopOffset),
-											QString("%1mm").arg(focalLength));
+											QString::fromWCharArray(L"%1\u2006mm").arg(focalLength));
 						}
 						if (!speed.isEmpty() && !aperture.isEmpty()) {
 							canvas.drawText(QPoint(30, apertureAndSpeedTopOffset),
-											QString("%1s @ f/%2").arg(speed).arg(aperture));
+											QString::fromWCharArray(L"%1\u2006s @ f/%2").arg(speed).arg(aperture));
 						} else if (!speed.isEmpty()) {
 							canvas.drawText(QPoint(30, apertureAndSpeedTopOffset),
-											QString("%1s").arg(speed));
+											QString::fromWCharArray(L"%1\u2006s").arg(speed));
 						} else if (!aperture.isEmpty()) {
 							canvas.drawText(QPoint(30, apertureAndSpeedTopOffset),
 											QString("f/%1").arg(aperture));
 						}
 						if (!iso.isEmpty() && !exposureBias.isEmpty()) {
 							canvas.drawText(QPoint(30, isoTopOffset),
-											QString("ISO %1, %2 EV").arg(iso).arg(exposureBias));
+											QString::fromWCharArray(L"ISO\u2006%1, %2\u2006EV").arg(iso).arg(exposureBias));
 						} else if (!iso.isEmpty()) {
 							canvas.drawText(QPoint(30, isoTopOffset),
-											QString("ISO %1").arg(iso));
+											QString::fromWCharArray(L"ISO\u2006%1").arg(iso));
 						} else if (!exposureBias.isEmpty()) {
 							canvas.drawText(QPoint(30, isoTopOffset),
-											QString("%1 EV").arg(exposureBias));
+											QString::fromWCharArray(L"%1\u2006EV").arg(exposureBias));
 						}
 						if (!captureDate.isEmpty()) canvas.drawText(QPoint(30, dateTopOffset),
 																	QString("%1").arg(captureDate));
