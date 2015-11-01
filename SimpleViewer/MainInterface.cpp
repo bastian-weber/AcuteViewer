@@ -515,7 +515,7 @@ namespace sv {
 		canvas.setPen(textPen);
 		canvas.setBrush(Qt::NoBrush);
 		QFont font;
-		font.setPointSize(15);
+		font.setPointSize(14);
 		canvas.setFont(font);
 		QColor base = Qt::white;
 		base.setAlpha(200);
@@ -551,22 +551,31 @@ namespace sv {
 						QString aperture = this->image.exif()->fNumber();
 						QString speed = this->image.exif()->exposureTime();
 						QString focalLength = this->image.exif()->focalLength();
+						QString equivalentFocalLength = this->image.exif()->focalLength35mmEquivalent();
 						QString exposureBias = this->image.exif()->exposureBias();
 						QString iso = this->image.exif()->iso();
 						QString captureDate = this->image.exif()->captureDate();
 						//calculate the v coordinates for the lines
 						int cameraModelTopOffset = 30 + 2 * lineSpacing + 3 * metrics.height();
-						int lensAndFocalLengthTopOffset = 30 + 3 * lineSpacing + 4 * metrics.height();
-						int apertureAndSpeedTopOffset = 30 + 4 * lineSpacing + 5 * metrics.height();
-						int isoTopOffset = 30 + 5 * lineSpacing + 6 * metrics.height();
-						int dateTopOffset = 30 + 6 * lineSpacing + 7 * metrics.height();
+						int lensTopOffset = 30 + 3 * lineSpacing + 4 * metrics.height();
+						int focalLengthTopOffset = 30 + 4 * lineSpacing + 5 * metrics.height();
+						int apertureAndSpeedTopOffset = 30 + 5 * lineSpacing + 6 * metrics.height();
+						int isoTopOffset = 30 + 6 * lineSpacing + 7 * metrics.height();
+						int dateTopOffset = 30 + 7 * lineSpacing + 8 * metrics.height();
 						if (cameraModel.isEmpty()) {
-							lensAndFocalLengthTopOffset -= lineSpacing + metrics.height();
+							lensTopOffset -= lineSpacing + metrics.height();
+							focalLengthTopOffset -= lineSpacing + metrics.height();
 							apertureAndSpeedTopOffset -= lineSpacing + metrics.height();
 							isoTopOffset -= lineSpacing + metrics.height();
 							dateTopOffset -= lineSpacing + metrics.height();
 						}
-						if (lensModel.isEmpty() && focalLength.isEmpty()) {
+						if (lensModel.isEmpty()) {
+							focalLengthTopOffset -= lineSpacing + metrics.height();
+							apertureAndSpeedTopOffset -= lineSpacing + metrics.height();
+							isoTopOffset -= lineSpacing + metrics.height();
+							dateTopOffset -= lineSpacing + metrics.height();
+						}
+						if (focalLength.isEmpty() && equivalentFocalLength.isEmpty()) {
 							apertureAndSpeedTopOffset -= lineSpacing + metrics.height();
 							isoTopOffset -= lineSpacing + metrics.height();
 							dateTopOffset -= lineSpacing + metrics.height();
@@ -579,15 +588,17 @@ namespace sv {
 						//draw the EXIF text (note \u2005 is a sixth of a quad)
 						if (!cameraModel.isEmpty()) canvas.drawText(QPoint(30, cameraModelTopOffset),
 																	cameraModel);
-						if (!lensModel.isEmpty() && !focalLength.isEmpty()) {
-							canvas.drawText(QPoint(30, lensAndFocalLengthTopOffset),
-											QString::fromWCharArray(L"%1 @ %2\u2006mm").arg(lensModel).arg(focalLength));
-						} else if (!lensModel.isEmpty()) {
-							canvas.drawText(QPoint(30, lensAndFocalLengthTopOffset),
-											lensModel);
+						if (!lensModel.isEmpty()) canvas.drawText(QPoint(30, lensTopOffset),
+																  lensModel);
+						if (!focalLength.isEmpty() && !equivalentFocalLength.isEmpty()) {
+							canvas.drawText(QPoint(30, focalLengthTopOffset),
+											QString::fromWCharArray(L"%1\u2006mm (\u2261 %2\u2006mm)").arg(focalLength).arg(equivalentFocalLength));
 						} else if (!focalLength.isEmpty()) {
-							canvas.drawText(QPoint(30, lensAndFocalLengthTopOffset),
+							canvas.drawText(QPoint(30, focalLengthTopOffset),
 											QString::fromWCharArray(L"%1\u2006mm").arg(focalLength));
+						} else if (!equivalentFocalLength.isEmpty()) {
+							canvas.drawText(QPoint(30, focalLengthTopOffset),
+											QString::fromWCharArray(L"%1\u2006mm (35\u2006mm equivalent)").arg(equivalentFocalLength));
 						}
 						if (!speed.isEmpty() && !aperture.isEmpty()) {
 							canvas.drawText(QPoint(30, apertureAndSpeedTopOffset),

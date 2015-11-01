@@ -123,6 +123,17 @@ namespace sv {
 		return focalLength;
 	}
 
+
+
+	QString ExifData::focalLength35mmEquivalent() const {
+		QString focalLength = "";
+		if (this->hasValue("Exif.Photo.FocalLengthIn35mmFilm")) {
+			Exiv2::Rational focalLengthValue = this->value("Exif.Photo.FocalLengthIn35mmFilm")->toRational();
+			focalLength = QString::number(double(focalLengthValue.first) / double(focalLengthValue.second));
+		}
+		return focalLength;
+	}
+
 	QString ExifData::captureDate() const {
 		QString captureDate = "";
 		if (this->hasValue("Exif.Photo.DateTimeOriginal")) {
