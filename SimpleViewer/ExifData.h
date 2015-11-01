@@ -35,6 +35,7 @@ namespace sv {
 		QString iso() const;
 		QString exposureBias() const;
 		QString focalLength() const;
+		QString focalLength35mmEquivalent() const;
 		QString captureDate() const;
 		bool hasExif() const;
 		bool isReady() const;
