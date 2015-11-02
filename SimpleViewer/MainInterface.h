@@ -66,6 +66,9 @@ namespace sv {
 		void exitFullscreen();
 		void infoPaintFunction(QPainter& canvas);
 		bool applicationIsInstalled();
+		void changeFontSizeBy(int value);
+		void changeLineSpacingBy(int value);
+		void loadSettings();
 
 		//variables
 		const QString programTitle = "Simple Viewer";
@@ -84,6 +87,8 @@ namespace sv {
 		std::atomic<bool> paintLoadingHint{ false };
 		std::map<QString, std::shared_future<Image>> threads;
 		std::shared_ptr<QSettings> settings;
+		unsigned int fontSize;
+		unsigned int lineSpacing;
 
 		//widgets
 		hb::ImageView* imageView;
@@ -97,6 +102,7 @@ namespace sv {
 		//actions
 		QAction* quitAction;
 		QAction* openAction;
+		QAction* resetSettingsAction;
 		QAction* showInfoAction;
 		QAction* smoothingAction;
 		QAction* enlargementAction;
@@ -125,6 +131,7 @@ namespace sv {
 		void populateApplicationMenu();
 		void runInstaller();
 		void runUninstaller();
+		void resetSettings();
 		void toggleSlideshow();
 		void toggleSlideshowNoDialog();
 		void startSlideshow();
