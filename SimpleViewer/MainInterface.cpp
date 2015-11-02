@@ -70,6 +70,12 @@ namespace sv {
 
 		this->fileMenu->addSeparator();
 
+		this->resetSettingsAction = new QAction(tr("&Reset All Settings to Default"), this);
+		QObject::connect(this->resetSettingsAction, SIGNAL(triggered()), this, SLOT(resetSettings()));
+		this->fileMenu->addAction(this->resetSettingsAction);
+
+		this->fileMenu->addSeparator();
+
 		this->quitAction = new QAction(tr("&Quit"), this);
 		this->quitAction->setShortcut(Qt::CTRL + Qt::Key_Q);
 		this->quitAction->setShortcutContext(Qt::ApplicationShortcut);
@@ -172,16 +178,7 @@ namespace sv {
 		QObject::connect(this->slideshowTimer, SIGNAL(timeout()), this, SLOT(nextSlide()));
 
 		//load settings
-		this->showInfoAction->setChecked(this->settings->value("showImageInfo", false).toBool());
-		this->zoomLevelAction->setChecked(this->settings->value("showZoomLevel", false).toBool());
-		this->enlargementAction->setChecked(this->settings->value("enlargeSmallImages", false).toBool());
-		this->reactToEnlargementToggle(this->enlargementAction->isChecked());
-		this->smoothingAction->setChecked(this->settings->value("useSmoothEnlargmentInterpolation", false).toBool());
-		this->reactToSmoothingToggle(this->smoothingAction->isChecked());
-		this->sharpeningAction->setChecked(this->settings->value("sharpenImagesAfterDownscale", false).toBool());
-		this->reactToSharpeningToggle(this->sharpeningAction->isChecked());
-		this->menuBarAutoHideAction->setChecked(!this->settings->value("autoHideMenuBar", true).toBool());
-		this->reactoToAutoHideMenuBarToggle(this->menuBarAutoHideAction->isChecked());
+		this->loadSettings();
 		if (this->settings->value("maximized", false).toBool()) {
 			this->showMaximized();
 		}
@@ -201,6 +198,7 @@ namespace sv {
 		delete this->applicationMenu;
 		delete this->quitAction;
 		delete this->openAction;
+		delete this->resetSettingsAction;
 		delete this->showInfoAction;
 		delete this->smoothingAction;
 		delete this->enlargementAction;
@@ -254,7 +252,17 @@ namespace sv {
 	}
 
 	void MainInterface::keyPressEvent(QKeyEvent* e) {
-		if (e->key() == Qt::Key_Right || e->key() == Qt::Key_Down) {
+		if (e->modifiers() == Qt::ControlModifier | Qt::ShiftModifier) {
+			if (e->key() == Qt::Key_Right) {
+				this->changeFontSizeBy(1);
+			} else if (e->key() == Qt::Key_Left) {
+				this->changeFontSizeBy(-1);
+			} else if (e->key() == Qt::Key_Up) {
+				this->changeLineSpacingBy(1);
+			} else if (e->key() == Qt::Key_Down) {
+				this->changeLineSpacingBy(-1);
+			}
+		} else if (e->key() == Qt::Key_Right || e->key() == Qt::Key_Down) {
 			loadNextImage();
 			e->accept();
 		} else if (e->key() == Qt::Key_Left || e->key() == Qt::Key_Up) {
@@ -515,20 +523,19 @@ namespace sv {
 		canvas.setPen(textPen);
 		canvas.setBrush(Qt::NoBrush);
 		QFont font;
-		font.setPointSize(14);
+		font.setPointSize(this->fontSize);
 		canvas.setFont(font);
 		QColor base = Qt::white;
 		base.setAlpha(200);
 		canvas.setBackground(base);
 		canvas.setBackgroundMode(Qt::OpaqueMode);
 		QFontMetrics metrics(font);
-		double const lineSpacing = 10;
 		if (this->currentImageUnreadable && !this->paintLoadingHint) {
 			QString message = tr("This file could not be read:");
-			canvas.drawText(QPoint((canvas.device()->width() - metrics.width(message)) / 2.0, canvas.device()->height() / 2.0 - 0.5*lineSpacing),
+			canvas.drawText(QPoint((canvas.device()->width() - metrics.width(message)) / 2.0, canvas.device()->height() / 2.0 - 0.5*this->lineSpacing),
 							message);
 			canvas.drawText(QPoint((canvas.device()->width() - metrics.width(this->currentFileInfo.fileName())) / 2.0,
-								   canvas.device()->height() / 2.0 + 0.5*lineSpacing + metrics.height()),
+								   canvas.device()->height() / 2.0 + 0.5*this->lineSpacing + metrics.height()),
 							this->currentFileInfo.fileName());
 		}
 		if (this->paintLoadingHint) {
@@ -540,7 +547,7 @@ namespace sv {
 		//draw current filename
 			canvas.drawText(QPoint(30, 30 + metrics.height()),
 							this->currentFileInfo.fileName());
-			canvas.drawText(QPoint(30, 30 + lineSpacing + 2 * metrics.height()),
+			canvas.drawText(QPoint(30, 30 + this->lineSpacing + 2 * metrics.height()),
 							QString("%1 Mb").arg(this->currentFileInfo.size() / 1048576.0, 0, 'f', 2));
 			if (this->image.isValid()) {
 				if (this->image.exif()->isReady()) {
@@ -556,35 +563,36 @@ namespace sv {
 						QString iso = this->image.exif()->iso();
 						QString captureDate = this->image.exif()->captureDate();
 						//calculate the v coordinates for the lines
-						int cameraModelTopOffset = 30 + 2 * lineSpacing + 3 * metrics.height();
-						int lensTopOffset = 30 + 3 * lineSpacing + 4 * metrics.height();
-						int focalLengthTopOffset = 30 + 4 * lineSpacing + 5 * metrics.height();
-						int apertureAndSpeedTopOffset = 30 + 5 * lineSpacing + 6 * metrics.height();
-						int isoTopOffset = 30 + 6 * lineSpacing + 7 * metrics.height();
-						int dateTopOffset = 30 + 7 * lineSpacing + 8 * metrics.height();
+						int cameraModelTopOffset = 30 + 2 * this->lineSpacing + 3 * metrics.height();
+						int lensTopOffset = 30 + 3 * this->lineSpacing + 4 * metrics.height();
+						int focalLengthTopOffset = 30 + 4 * this->lineSpacing + 5 * metrics.height();
+						int apertureAndSpeedTopOffset = 30 + 5 * this->lineSpacing + 6 * metrics.height();
+						int isoTopOffset = 30 + 6 * this->lineSpacing + 7 * metrics.height();
+						int dateTopOffset = 30 + 7 * this->lineSpacing + 8 * metrics.height();
+						int heightOfOneLine = this->lineSpacing + metrics.height();
 						if (cameraModel.isEmpty()) {
-							lensTopOffset -= lineSpacing + metrics.height();
-							focalLengthTopOffset -= lineSpacing + metrics.height();
-							apertureAndSpeedTopOffset -= lineSpacing + metrics.height();
-							isoTopOffset -= lineSpacing + metrics.height();
-							dateTopOffset -= lineSpacing + metrics.height();
+							lensTopOffset -= heightOfOneLine;
+							focalLengthTopOffset -= heightOfOneLine;
+							apertureAndSpeedTopOffset -= heightOfOneLine;
+							isoTopOffset -= heightOfOneLine;
+							dateTopOffset -= heightOfOneLine;
 						}
 						if (lensModel.isEmpty()) {
-							focalLengthTopOffset -= lineSpacing + metrics.height();
-							apertureAndSpeedTopOffset -= lineSpacing + metrics.height();
-							isoTopOffset -= lineSpacing + metrics.height();
-							dateTopOffset -= lineSpacing + metrics.height();
+							focalLengthTopOffset -= heightOfOneLine;
+							apertureAndSpeedTopOffset -= heightOfOneLine;
+							isoTopOffset -= heightOfOneLine;
+							dateTopOffset -= heightOfOneLine;
 						}
 						if (focalLength.isEmpty() && equivalentFocalLength.isEmpty()) {
-							apertureAndSpeedTopOffset -= lineSpacing + metrics.height();
-							isoTopOffset -= lineSpacing + metrics.height();
-							dateTopOffset -= lineSpacing + metrics.height();
+							apertureAndSpeedTopOffset -= heightOfOneLine;
+							isoTopOffset -= heightOfOneLine;
+							dateTopOffset -= heightOfOneLine;
 						}
 						if (aperture.isEmpty() && speed.isEmpty()) {
-							isoTopOffset -= lineSpacing + metrics.height();
-							dateTopOffset -= lineSpacing + metrics.height();
+							isoTopOffset -= heightOfOneLine;
+							dateTopOffset -= heightOfOneLine;
 						}
-						if (iso.isEmpty() && exposureBias.isEmpty()) dateTopOffset -= lineSpacing + metrics.height();
+						if (iso.isEmpty() && exposureBias.isEmpty()) dateTopOffset -= heightOfOneLine;
 						//draw the EXIF text (note \u2005 is a sixth of a quad)
 						if (!cameraModel.isEmpty()) canvas.drawText(QPoint(30, cameraModelTopOffset),
 																	cameraModel);
@@ -624,7 +632,7 @@ namespace sv {
 																	QString("%1").arg(captureDate));
 					}
 				} else {
-					canvas.drawText(QPoint(30, 30 + 2 * lineSpacing + 3 * metrics.height()),
+					canvas.drawText(QPoint(30, 30 + 2 * this->lineSpacing + 3 * metrics.height()),
 									tr("Loading EXIF..."));
 				}
 			}
@@ -643,6 +651,42 @@ namespace sv {
 		return false;
 #endif
 
+	}
+
+	void MainInterface::changeFontSizeBy(int value) {
+		if (this->showInfoAction->isChecked() || this->zoomLevelAction->isChecked()) {
+			if (this->fontSize + value >= 1) {
+				this->fontSize += value;
+				this->settings->setValue("fontSize", this->fontSize);
+				this->imageView->update();
+			}
+		}
+	}
+
+	void MainInterface::changeLineSpacingBy(int value) {
+		if (this->showInfoAction->isChecked()) {
+			if (int(this->lineSpacing) + value >= 0) {
+				this->lineSpacing += value;
+				this->settings->setValue("fontSize", this->lineSpacing);
+				this->imageView->update();
+			}
+		}
+	}
+
+	void MainInterface::loadSettings() {
+		this->fontSize = this->settings->value("fontSize", 14).toUInt();
+		if (this->fontSize < 1) this->fontSize == 1;
+		this->lineSpacing = this->settings->value("lineSpacing", 10).toUInt();
+		this->showInfoAction->setChecked(this->settings->value("showImageInfo", false).toBool());
+		this->zoomLevelAction->setChecked(this->settings->value("showZoomLevel", false).toBool());
+		this->enlargementAction->setChecked(this->settings->value("enlargeSmallImages", false).toBool());
+		this->reactToEnlargementToggle(this->enlargementAction->isChecked());
+		this->smoothingAction->setChecked(this->settings->value("useSmoothEnlargmentInterpolation", false).toBool());
+		this->reactToSmoothingToggle(this->smoothingAction->isChecked());
+		this->sharpeningAction->setChecked(this->settings->value("sharpenImagesAfterDownscale", false).toBool());
+		this->reactToSharpeningToggle(this->sharpeningAction->isChecked());
+		this->menuBarAutoHideAction->setChecked(!this->settings->value("autoHideMenuBar", true).toBool());
+		this->reactoToAutoHideMenuBarToggle(this->menuBarAutoHideAction->isChecked());
 	}
 
 	//============================================================================ PRIVATE SLOTS =============================================================================\\
@@ -764,6 +808,21 @@ namespace sv {
 								  QMessageBox::Close);
 		}
 #endif
+	}
+
+	void MainInterface::resetSettings() {
+		if (QMessageBox::Yes == QMessageBox::question(this,
+													  tr("Reset Application Settings"),
+													  tr("Are you sure you want to reset all application settings to the default values?"),
+													  QMessageBox::Yes | QMessageBox::No)) {
+			this->settings->clear();
+			this->loadSettings();
+			this->imageView->update();
+			QMessageBox::information(this,
+									 tr("Reset Successfull"),
+									 tr("The application settings have been reset to the default values."),
+									 QMessageBox::Close);
+		}
 	}
 
 	void MainInterface::toggleSlideshow() {
