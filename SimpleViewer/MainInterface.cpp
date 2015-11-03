@@ -601,6 +601,9 @@ namespace sv {
 						if (!resolution.isEmpty()) {
 							canvas.drawText(QPoint(30, sizeAndResolutionTopOffset),
 											QString::fromWCharArray(L"%1, %2\u2006Mb").arg(resolution).arg(this->currentFileInfo.size() / 1048576.0, 0, 'f', 2));
+						} else {
+							canvas.drawText(QPoint(30, sizeAndResolutionTopOffset),
+											QString::fromWCharArray(L"%1\u2006Mb").arg(this->currentFileInfo.size() / 1048576.0, 0, 'f', 2));
 						}
 						if (!cameraModel.isEmpty()) canvas.drawText(QPoint(30, cameraModelTopOffset),
 																	cameraModel);
@@ -640,12 +643,11 @@ namespace sv {
 																	QString("%1").arg(captureDate));
 					}
 				} else {
+					canvas.drawText(QPoint(30, sizeAndResolutionTopOffset),
+									QString::fromWCharArray(L"%1\u2006Mb").arg(this->currentFileInfo.size() / 1048576.0, 0, 'f', 2));
 					canvas.drawText(QPoint(30, 30 + 2 * this->lineSpacing + 3 * metrics.height()),
 									tr("Loading EXIF..."));
 				}
-			} else {
-				canvas.drawText(QPoint(30, sizeAndResolutionTopOffset),
-								QString::fromWCharArray(L"%1\u2006Mb").arg(this->currentFileInfo.size() / 1048576.0, 0, 'f', 2));
 			}
 		}
 		if (this->zoomLevelAction->isChecked() && this->imageView->imageAssigned()) {
