@@ -146,6 +146,16 @@ namespace sv {
 		return captureDate;
 	}
 
+	QString ExifData::resolution() const {
+		QString resolution = "";
+		if (this->hasValue("Exif.Photo.PixelXDimension") && this->hasValue("Exif.Photo.PixelYDimension")) {
+			long xRes = this->value("Exif.Photo.PixelXDimension")->toLong();
+			long yRes = this->value("Exif.Photo.PixelYDimension")->toLong();
+			resolution = QString::fromWCharArray(L"%1\u2006x\u2006%2").arg(xRes).arg(yRes);
+		}
+		return resolution;
+	}
+
 	bool ExifData::hasExif() const {
 		return this->ready && !this->exifData.empty();
 	}
