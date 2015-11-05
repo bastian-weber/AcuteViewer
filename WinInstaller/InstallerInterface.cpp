@@ -138,7 +138,7 @@ namespace wi {
 		registryHklm.setValue("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/DisplayName", "Simple Viewer");
 		registryHklm.setValue("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/UninstallString", QString("\"%1\" %2").arg(QDir::toNativeSeparators(QDir(installPath).absoluteFilePath("WinInstaller.exe"))).arg("-uninstall"));
 		registryHklm.setValue("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/DisplayIcon", QString("\"%1\"").arg(QDir::toNativeSeparators(QDir(installPath).absoluteFilePath("data/icon.ico"))));
-		registryHklm.setValue("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/EstimatedSize", 84787);
+		registryHklm.setValue("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/EstimatedSize", 89173);
 		registryHklm.setValue("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/Publisher", "Bastian Weber");
 		registryHklm.setValue("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/DisplayVersion", "1.0 Beta 1");
 		registryHklm.setValue("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/NoModify", "1");
