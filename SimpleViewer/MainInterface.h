@@ -56,7 +56,7 @@ namespace sv {
 		void loadNextImage();
 		void loadPreviousImage();
 		void clearThreads();
-		void waitForThreadToFinish(std::shared_future<Image> const& thread);
+		template <typename T> void waitForThreadToFinish(std::shared_future<T> const& thread);
 		size_t nextFileIndex() const;
 		size_t previousFileIndex() const;
 		QString getFullImagePath(size_t index) const;
@@ -150,5 +150,20 @@ namespace sv {
 	signals:
 		void readImageFinished(Image image);
 	};
+
+	//================================= Implementation of Template Functions =================================\\
+
+	template <typename T> void MainInterface::waitForThreadToFinish(std::shared_future<T> const& thread) {
+		if (!thread.valid()) return;
+		if (thread.wait_for(std::chrono::milliseconds(0)) != std::future_status::ready) {
+			this->setWindowTitle(this->windowTitle() + QString(tr(" - Loading...")));
+		}
+
+		while (thread.wait_for(std::chrono::milliseconds(this->eventProcessIntervalDuringWait)) != std::future_status::ready) {
+			qApp->processEvents();
+		}
+	}
+
 }
+
 #endif

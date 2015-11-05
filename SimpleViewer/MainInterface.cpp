@@ -436,17 +436,6 @@ namespace sv {
 		this->threads.clear();
 	}
 
-	void MainInterface::waitForThreadToFinish(std::shared_future<Image> const& thread) {
-		if (!thread.valid()) return;
-		if (thread.wait_for(std::chrono::milliseconds(0)) != std::future_status::ready) {
-			this->setWindowTitle(this->windowTitle() + QString(tr(" - Loading...")));
-		}
-
-		while (thread.wait_for(std::chrono::milliseconds(this->eventProcessIntervalDuringWait)) != std::future_status::ready) {
-			qApp->processEvents();
-		}
-	}
-
 	size_t MainInterface::nextFileIndex() const {
 		return (this->currentFileIndex + 1) % this->filesInDirectory.size();
 	}
