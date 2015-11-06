@@ -148,7 +148,11 @@ namespace sv {
 
 	QString ExifData::resolution() const {
 		QString resolution = "";
-		if (this->hasValue("Exif.Image.ImageWidth") && this->hasValue("Exif.Image.ImageLength")) {
+		if (this->hasValue("Exif.Photo.PixelXDimension") && this->hasValue("Exif.Photo.PixelYDimension")) {
+			long xRes = this->value("Exif.Photo.PixelXDimension")->toLong();
+			long yRes = this->value("Exif.Photo.PixelYDimension")->toLong();
+			resolution = QString::fromWCharArray(L"%1\u2006x\u2006%2").arg(xRes).arg(yRes);
+		}else if (this->hasValue("Exif.Image.ImageWidth") && this->hasValue("Exif.Image.ImageLength")) {
 			long xRes = this->value("Exif.Image.ImageWidth")->toLong();
 			long yRes = this->value("Exif.Image.ImageLength")->toLong();
 			resolution = QString::fromWCharArray(L"%1\u2006x\u2006%2").arg(xRes).arg(yRes);
