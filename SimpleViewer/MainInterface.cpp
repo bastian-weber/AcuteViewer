@@ -338,7 +338,7 @@ namespace sv {
 	//=============================================================================== PRIVATE ===============================================================================\\
 
 	std::shared_future<Image>& MainInterface::currentThread() {
-		return this->threads[this->filesInDirectory[this->currentFileIndex]];
+		return this->threads[this->currentThreadName];
 	}
 
 	bool MainInterface::exifIsRequired() const {
@@ -356,11 +356,11 @@ namespace sv {
 				return Image();
 			}
 			image = cv::imdecode(*buffer, CV_LOAD_IMAGE_COLOR);
-			exifData = std::shared_ptr<ExifData>(new ExifData(buffer));
+			if(image.data) exifData = std::shared_ptr<ExifData>(new ExifData(buffer));
 		} else {
 #endif
 			image = cv::imread(path.toStdString(), CV_LOAD_IMAGE_COLOR);
-			exifData = std::shared_ptr<ExifData>(new ExifData(path, !this->exifIsRequired()));
+			if(image.data) exifData = std::shared_ptr<ExifData>(new ExifData(path, !this->exifIsRequired()));
 #ifdef Q_OS_WIN
 		}
 #endif
@@ -381,13 +381,14 @@ namespace sv {
 
 		if (this->filesInDirectory.size() != 0) {
 			this->currentFileIndex = this->nextFileIndex();
+			this->currentThreadName = this->filesInDirectory[this->currentFileIndex];
 			if (this->threads.find(this->filesInDirectory[this->currentFileIndex]) == this->threads.end()) {
 				this->loading = false;
 				return;
 			}
 			this->waitForThreadToFinish(this->currentThread());
 			//calling this function although the exif might not be set to deferred loading is no problem (it checks internally)
-			if (this->exifIsRequired()) this->currentThread().get().exif()->startLoading();
+			if (this->exifIsRequired() && this->currentThread().get().isValid()) this->currentThread().get().exif()->startLoading();
 			this->image = this->currentThread().get();
 
 			this->currentFileInfo = QFileInfo(this->getFullImagePath(this->currentFileIndex));
@@ -412,13 +413,14 @@ namespace sv {
 		this->loading = true;
 		if (this->filesInDirectory.size() != 0) {
 			this->currentFileIndex = this->previousFileIndex();
+			this->currentThreadName = this->filesInDirectory[this->currentFileIndex];
 			if (this->threads.find(this->filesInDirectory[this->currentFileIndex]) == this->threads.end()) {
 				this->loading = false;
 				return;
 			}
 			this->waitForThreadToFinish(this->currentThread());
 			//calling this function although the exif might not be set to deferred loading is no problem (it checks internally)
-			if (this->exifIsRequired()) this->currentThread().get().exif()->startLoading();
+			if (this->exifIsRequired() && this->currentThread().get().isValid()) this->currentThread().get().exif()->startLoading();
 			this->image = this->currentThread().get();
 			this->currentFileInfo = QFileInfo(this->getFullImagePath(this->currentFileIndex));
 			//start loading previous image
@@ -448,7 +450,7 @@ namespace sv {
 	}
 
 	size_t MainInterface::previousFileIndex() const {
-		if (this->currentFileIndex == 0) return this->filesInDirectory.size() - 1;
+		if (this->currentFileIndex <= 0) return this->filesInDirectory.size() - 1;
 		return (this->currentFileIndex - 1) % this->filesInDirectory.size();
 	}
 
@@ -475,9 +477,10 @@ namespace sv {
 			std::sort(contents.begin(), contents.end(), collator);
 			this->filesInDirectory = contents.toVector();
 		}
-		if (this->filesInDirectory.size() == 0 || this->currentFileIndex <= 0 || this->currentFileIndex >= this->filesInDirectory.size() || this->filesInDirectory.at(this->currentFileIndex) != filename) {
+		if (this->filesInDirectory.size() == 0 || this->currentFileIndex < 0 || this->currentFileIndex >= this->filesInDirectory.size() || this->filesInDirectory.at(this->currentFileIndex) != filename) {
 			this->currentFileIndex = this->filesInDirectory.indexOf(filename);
 		}
+		this->currentThreadName = filename;
 		this->currentFileInfo = fileInfo;
 		this->clearThreads();
 		this->threads[filename] = std::async(std::launch::async, &MainInterface::readImage, this, path, true);
@@ -503,6 +506,7 @@ namespace sv {
 		this->showFullScreen();
 		this->hideMenuBar();
 		this->enableAutomaticMouseHide();
+		this->fullscreenAction->setChecked(true);
 	}
 
 	void MainInterface::exitFullscreen() {
@@ -515,6 +519,7 @@ namespace sv {
 		}
 		if (this->menuBarAutoHideAction->isChecked()) showMenuBar();
 		this->disableAutomaticMouseHide();
+		this->fullscreenAction->setChecked(false);
 	}
 
 	void MainInterface::infoPaintFunction(QPainter& canvas) {
@@ -872,7 +877,8 @@ namespace sv {
 	void MainInterface::reactToShowInfoToggle(bool value) {
 		//if the thread of the currently displayed image is ready, start loading exif
 		if (this->currentThread().valid()
-			&& this->currentThread().wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
+			&& this->currentThread().wait_for(std::chrono::milliseconds(0)) == std::future_status::ready
+			&& this->currentThread().get().isValid()) {
 			this->currentThread().get().exif()->startLoading();
 		}
 		this->imageView->update();
@@ -887,7 +893,7 @@ namespace sv {
 	void MainInterface::reactToReadImageCompletion(Image image) {
 		this->image = image;
 		//calling this function although the exif might not be set to deferred loading is no problem (it checks internally)
-		if (this->exifIsRequired()) this->currentThread().get().exif()->startLoading();
+		if (this->exifIsRequired() && this->currentThread().get().isValid()) this->currentThread().get().exif()->startLoading();
 		this->paintLoadingHint = false;
 		this->displayImageIfOk();
 		if (this->filesInDirectory.size() != 0) {
@@ -915,7 +921,7 @@ namespace sv {
 	void MainInterface::reactToExifLoadingCompletion(ExifData* sender) {
 		if (this->showInfoAction->isChecked()) {
 		//if the sender is the currently displayed image
-			if (this->currentThread().get().exif().get() == sender) {
+			if (this->image.exif().get() == sender) {
 				this->update();
 			}
 		}
