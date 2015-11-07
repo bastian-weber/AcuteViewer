@@ -30,6 +30,7 @@ View Navigation
 												smaller steps
 	+ and - Keys: 								Same as scroll wheel
 	Left Mouse button: 							Double click to toggle full-screen mode
+	F Key 										Toggle full-screen mode
 
 Browsing Images & Slideshow
 
