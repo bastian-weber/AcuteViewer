@@ -81,7 +81,8 @@ namespace sv {
 		QDir currentDirectory;
 		bool noCurrentDir = true;
 		QVector<QString> filesInDirectory;
-		size_t currentFileIndex;
+		long currentFileIndex = -1;
+		QString currentThreadName;
 		QFileInfo currentFileInfo;
 		std::atomic<bool> currentImageUnreadable{ false };
 		std::atomic<bool> paintLoadingHint{ false };
