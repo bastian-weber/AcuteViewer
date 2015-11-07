@@ -149,6 +149,17 @@ namespace sv {
 		this->viewMenu->addAction(this->menuBarAutoHideAction);
 		this->addAction(this->menuBarAutoHideAction);
 
+		this->viewMenu->addSeparator();
+
+		this->fullscreenAction = new QAction(tr("&Fullscreen"), this);
+		this->fullscreenAction->setCheckable(true);
+		this->fullscreenAction->setChecked(false);
+		this->fullscreenAction->setShortcut(Qt::Key_F);
+		this->fullscreenAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->fullscreenAction, SIGNAL(triggered(bool)), this, SLOT(toggleFullscreen()));
+		this->viewMenu->addAction(this->fullscreenAction);
+		this->addAction(this->fullscreenAction);
+
 		this->slideshowAction = new QAction(tr("&Start Slideshow"), this);
 		this->slideshowAction->setEnabled(false);
 		this->slideshowAction->setShortcut(Qt::Key_P);
@@ -294,11 +305,7 @@ namespace sv {
 
 	void MainInterface::mouseDoubleClickEvent(QMouseEvent* e) {
 		if (e->button() == Qt::LeftButton) {
-			if (this->isFullScreen()) {
-				this->exitFullscreen();
-			} else {
-				this->enterFullscreen();
-			}
+			this->toggleFullscreen();
 			e->accept();
 		}
 	}
@@ -852,6 +859,14 @@ namespace sv {
 	void MainInterface::stopSlideshow() {
 		this->slideshowAction->setText(tr("&Start Slideshow"));
 		this->slideshowTimer->stop();
+	}
+
+	void MainInterface::toggleFullscreen() {
+		if (this->isFullScreen()) {
+			this->exitFullscreen();
+		} else {
+			this->enterFullscreen();
+		}
 	}
 
 	void MainInterface::reactToShowInfoToggle(bool value) {
