@@ -109,6 +109,7 @@ namespace sv {
 		QAction* sharpeningAction;
 		QAction* sharpeningOptionsAction;
 		QAction* menuBarAutoHideAction;
+		QAction* fullscreenAction;
 		QAction* slideshowAction;
 		QAction* slideshowNoDialogAction;
 		QAction* zoomLevelAction;
@@ -136,6 +137,7 @@ namespace sv {
 		void toggleSlideshowNoDialog();
 		void startSlideshow();
 		void stopSlideshow();
+		void toggleFullscreen();
 		void reactToShowInfoToggle(bool value);
 		void reactToShowZoomLevelToggle(bool value);
 		void reactToReadImageCompletion(Image image);
