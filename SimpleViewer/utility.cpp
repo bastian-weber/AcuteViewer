@@ -13,7 +13,7 @@ namespace utility {
 		//file.read(buffer.data(), file.size());
 		//file.close();
 
-		std::ifstream file(path.toStdWString(), std::iostream::binary);
+		std::ifstream file(path.toStdWString().c_str(), std::iostream::binary);
 		if (!file.good()) {
 			return std::shared_ptr<std::vector<char>>(new std::vector<char>());
 		}
