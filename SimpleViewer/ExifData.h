@@ -53,8 +53,8 @@ namespace sv {
 		Exiv2::ExifData exifData;
 		std::thread thread;
 		QString cachedFilepath;
-		std::atomic<bool> ready = false;
-		std::atomic<bool> deferred = true;
+		std::atomic<bool> ready{ false };
+		std::atomic<bool> deferred{ true };
 	signals:
 		void loadingFinished(ExifData* sender);
 	};
