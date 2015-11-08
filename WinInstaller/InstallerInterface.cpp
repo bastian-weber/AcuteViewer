@@ -148,7 +148,8 @@ namespace wi {
 		registryHkcr.setValue("SimpleViewer.exe/shell/open/FriendlyAppName", "Simple Viewer");
 	}
 
-	void InstallerInterface::copyAllFilesInDirectory(QDir const& sourceDir, QDir const& destinationDir) {
+	bool InstallerInterface::copyAllFilesInDirectory(QDir const& sourceDir, QDir const& destinationDir) {
+		bool allSuccessful = true;
 		if (sourceDir != destinationDir) {
 			QStringList filesInFolder = sourceDir.entryList(QDir::NoDotAndDotDot | QDir::Files);
 			for (QString const& entry : filesInFolder) {
@@ -157,27 +158,30 @@ namespace wi {
 				if (QFile::exists(newPath)) {
 					QFile::remove(newPath);
 				}
-				QFile::copy(oldPath, newPath);
+				allSuccessful = QFile::copy(oldPath, newPath) && allSuccessful;
 				QCoreApplication::processEvents();
 			}
 		}
+		return allSuccessful;
 	}
 
-	void InstallerInterface::installFiles(QDir installPath) {
+	bool InstallerInterface::installFiles(QDir installPath) {
+		bool allSuccessful = true;
 		QDir currentPath(QCoreApplication::applicationDirPath());
 		if (currentPath != installPath) {
 			if (!installPath.exists()) installPath.mkpath(installPath.absolutePath());
 			installPath.mkpath(QDir::cleanPath(installPath.absolutePath() + QString("/data")));
 			installPath.mkpath(QDir::cleanPath(installPath.absolutePath() + QString("/platforms")));
-			InstallerInterface::copyAllFilesInDirectory(currentPath, installPath);
+			allSuccessful = InstallerInterface::copyAllFilesInDirectory(currentPath, installPath) && allSuccessful;
 			currentPath.cd("data");
 			installPath.cd("data");
-			InstallerInterface::copyAllFilesInDirectory(currentPath, installPath);
+			allSuccessful = InstallerInterface::copyAllFilesInDirectory(currentPath, installPath);
 			currentPath.cd("../platforms");
 			installPath.cd("../platforms");
 			QStringList filesInPlatformsFolder = currentPath.entryList();
-			InstallerInterface::copyAllFilesInDirectory(currentPath, installPath);
+			allSuccessful = InstallerInterface::copyAllFilesInDirectory(currentPath, installPath);
 		}
+		return allSuccessful;
 	}
 
 	bool InstallerInterface::createStartMenuEntry(QString targetPath) {
@@ -230,13 +234,20 @@ namespace wi {
 		this->disableControls();
 		this->setWindowTitle(this->windowTitle() + QString("- Installing..."));
 		QCoreApplication::processEvents();
-		InstallerInterface::installFiles(this->currentlySelectedPath);
+		bool allFilesCopied = InstallerInterface::installFiles(this->currentlySelectedPath);
 		InstallerInterface::registerProgramInRegistry(this->currentlySelectedPath);
 		if (this->startMenuCheckbox->isChecked()) this->createStartMenuEntry(this->currentlySelectedPath.absoluteFilePath("SimpleViewer.exe"));
-		QMessageBox::information(this,
-								 tr("Installation Successful"),
-								 tr("The installation was successful. The installer will now quit."),
-								 QMessageBox::Close);
+		if (allFilesCopied) {
+			QMessageBox::information(this,
+									 tr("Installation Successful"),
+									 tr("The installation was successful. The installer will now quit."),
+									 QMessageBox::Close);
+		} else {
+			QMessageBox::information(this,
+									 tr("Installation Completed"),
+									 tr("The installation completed, but not all files could be copied. If you are trying to overwrite an older Simple Viewer installation, make sure it's not running and try again. The installer will now quit."),
+									 QMessageBox::Close);
+		}
 		QCoreApplication::quit();
 	}
 

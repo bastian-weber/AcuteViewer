@@ -22,8 +22,8 @@ namespace wi {
 	private:
 		//functions
 		static void registerProgramInRegistry(QDir installPath);
-		static void copyAllFilesInDirectory(QDir const& sourceDir, QDir const& destinationDir);
-		static void installFiles(QDir installPath);
+		static bool copyAllFilesInDirectory(QDir const& sourceDir, QDir const& destinationDir);
+		static bool installFiles(QDir installPath);
 		static bool createStartMenuEntry(QString targetPath);
 		void disableControls();
 
