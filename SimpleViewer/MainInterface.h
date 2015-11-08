@@ -139,15 +139,15 @@ namespace sv {
 		void startSlideshow();
 		void stopSlideshow();
 		void toggleFullscreen();
-		void reactToShowInfoToggle(bool value);
-		void reactToShowZoomLevelToggle(bool value);
+		void toggleInfoOverlay(bool value);
+		void toggleZoomLevelOverlay(bool value);
 		void reactToReadImageCompletion(Image image);
 		void reactToExifLoadingCompletion(ExifData* sender);
 		void openDialog();
-		void reactToSmoothingToggle(bool value);
-		void reactToEnlargementToggle(bool value);
-		void reactToSharpeningToggle(bool value);
-		void reactoToAutoHideMenuBarToggle(bool value);
+		void toggleEnglargmentInterpolationMethod(bool value);
+		void toggleSmallImageUpscaling(bool value);
+		void toggleSharpening(bool value);
+		void toggleMenuBarAutoHide(bool value);
 		void showSharpeningOptions();
 		void updateSharpening();
 	signals:
