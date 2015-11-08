@@ -75,7 +75,7 @@ endif()
 set(EXIV_PATH_HINTS "." ".." "../../../.." "../..")
 ask_for_path("Exiv" "" "/usr/local" EXIV_FILES EXIV_PATH_HINTS)
 if(EXIV_ROOT_FOUND)
-	set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}" "${PATH_EXIV_ROOT}/include" "${PATH_EXIV_ROOT}" "${PATH_EXIV_ROOT}/bin/vc12/x64")
+	set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}" "${PATH_EXIV_ROOT}" "${PATH_EXIV_ROOT}/include" "${PATH_EXIV_ROOT}/include/exiv2" "${PATH_EXIV_ROOT}/bin/vc12/x64")
 	find_package(Exiv2 REQUIRED)
 endif()
 
