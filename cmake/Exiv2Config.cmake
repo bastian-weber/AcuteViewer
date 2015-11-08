@@ -8,7 +8,7 @@
 			set(EXPAT_IMPORT_LIB_NAME "libexpat.lib")
 			set(ZLIB1_IMPORT_LIB_NAME "zlib1.lib")
 		elseif(UNIX)
-			set(EXIV2_LIB_NAME "libexiv2.a")
+			set(EXIV2_LIB_NAME "libexiv2.so")
 		endif()
 
 		FIND_PATH(EXIV2_INCLUDE_DIR "exiv2.hpp")
