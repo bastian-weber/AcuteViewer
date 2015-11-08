@@ -89,7 +89,7 @@ namespace sv {
 		this->showInfoAction->setChecked(false);
 		this->showInfoAction->setShortcut(Qt::Key_I);
 		this->showInfoAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->showInfoAction, SIGNAL(triggered(bool)), this, SLOT(reactToShowInfoToggle(bool)));
+		QObject::connect(this->showInfoAction, SIGNAL(triggered(bool)), this, SLOT(toggleInfoOverlay(bool)));
 		this->viewMenu->addAction(this->showInfoAction);
 		this->addAction(this->showInfoAction);
 
@@ -98,7 +98,7 @@ namespace sv {
 		this->zoomLevelAction->setChecked(false);
 		this->zoomLevelAction->setShortcut(Qt::Key_Z);
 		this->zoomLevelAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->zoomLevelAction, SIGNAL(triggered(bool)), this, SLOT(reactToShowZoomLevelToggle(bool)));
+		QObject::connect(this->zoomLevelAction, SIGNAL(triggered(bool)), this, SLOT(toggleZoomLevelOverlay(bool)));
 		this->viewMenu->addAction(this->zoomLevelAction);
 		this->addAction(this->zoomLevelAction);
 
@@ -109,7 +109,7 @@ namespace sv {
 		this->enlargementAction->setChecked(false);
 		this->enlargementAction->setShortcut(Qt::Key_U);
 		this->enlargementAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->enlargementAction, SIGNAL(triggered(bool)), this, SLOT(reactToEnlargementToggle(bool)));
+		QObject::connect(this->enlargementAction, SIGNAL(triggered(bool)), this, SLOT(toggleSmallImageUpscaling(bool)));
 		this->viewMenu->addAction(this->enlargementAction);
 		this->addAction(this->enlargementAction);
 
@@ -118,7 +118,7 @@ namespace sv {
 		this->smoothingAction->setChecked(false);
 		this->smoothingAction->setShortcut(Qt::Key_S);
 		this->smoothingAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->smoothingAction, SIGNAL(triggered(bool)), this, SLOT(reactToSmoothingToggle(bool)));
+		QObject::connect(this->smoothingAction, SIGNAL(triggered(bool)), this, SLOT(toggleEnglargmentInterpolationMethod(bool)));
 		this->viewMenu->addAction(this->smoothingAction);
 		this->addAction(this->smoothingAction);
 
@@ -127,7 +127,7 @@ namespace sv {
 		this->sharpeningAction->setChecked(false);
 		this->sharpeningAction->setShortcut(Qt::Key_E);
 		this->sharpeningAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->sharpeningAction, SIGNAL(triggered(bool)), this, SLOT(reactToSharpeningToggle(bool)));
+		QObject::connect(this->sharpeningAction, SIGNAL(triggered(bool)), this, SLOT(toggleSharpening(bool)));
 		this->viewMenu->addAction(this->sharpeningAction);
 		this->addAction(this->sharpeningAction);
 
@@ -145,7 +145,7 @@ namespace sv {
 		this->menuBarAutoHideAction->setChecked(false);
 		this->menuBarAutoHideAction->setShortcut(Qt::Key_M);
 		this->menuBarAutoHideAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->menuBarAutoHideAction, SIGNAL(triggered(bool)), this, SLOT(reactoToAutoHideMenuBarToggle(bool)));
+		QObject::connect(this->menuBarAutoHideAction, SIGNAL(triggered(bool)), this, SLOT(toggleMenuBarAutoHide(bool)));
 		this->viewMenu->addAction(this->menuBarAutoHideAction);
 		this->addAction(this->menuBarAutoHideAction);
 
@@ -694,13 +694,13 @@ namespace sv {
 		this->showInfoAction->setChecked(this->settings->value("showImageInfo", false).toBool());
 		this->zoomLevelAction->setChecked(this->settings->value("showZoomLevel", false).toBool());
 		this->enlargementAction->setChecked(this->settings->value("enlargeSmallImages", false).toBool());
-		this->reactToEnlargementToggle(this->enlargementAction->isChecked());
+		this->toggleSmallImageUpscaling(this->enlargementAction->isChecked());
 		this->smoothingAction->setChecked(this->settings->value("useSmoothEnlargmentInterpolation", false).toBool());
-		this->reactToSmoothingToggle(this->smoothingAction->isChecked());
+		this->toggleEnglargmentInterpolationMethod(this->smoothingAction->isChecked());
 		this->sharpeningAction->setChecked(this->settings->value("sharpenImagesAfterDownscale", false).toBool());
-		this->reactToSharpeningToggle(this->sharpeningAction->isChecked());
+		this->toggleSharpening(this->sharpeningAction->isChecked());
 		this->menuBarAutoHideAction->setChecked(!this->settings->value("autoHideMenuBar", true).toBool());
-		this->reactoToAutoHideMenuBarToggle(this->menuBarAutoHideAction->isChecked());
+		this->toggleMenuBarAutoHide(this->menuBarAutoHideAction->isChecked());
 	}
 
 	//============================================================================ PRIVATE SLOTS =============================================================================\\
@@ -874,18 +874,20 @@ namespace sv {
 		}
 	}
 
-	void MainInterface::reactToShowInfoToggle(bool value) {
+	void MainInterface::toggleInfoOverlay(bool value) {
 		//if the thread of the currently displayed image is ready, start loading exif
-		if (this->currentThread().valid()
+		if (!this->currentThreadName.isEmpty() 
+			&& this->currentThread().valid()
 			&& this->currentThread().wait_for(std::chrono::milliseconds(0)) == std::future_status::ready
 			&& this->currentThread().get().isValid()) {
 			this->currentThread().get().exif()->startLoading();
 		}
+		if (this->image.isValid()) this->image.exif()->startLoading();
 		this->imageView->update();
 		this->settings->setValue("showImageInfo", value);
 	}
 
-	void MainInterface::reactToShowZoomLevelToggle(bool value) {
+	void MainInterface::toggleZoomLevelOverlay(bool value) {
 		this->imageView->update();
 		this->settings->setValue("showZoomLevel", value);
 	}
@@ -938,22 +940,22 @@ namespace sv {
 		}
 	}
 
-	void MainInterface::reactToSmoothingToggle(bool value) {
+	void MainInterface::toggleEnglargmentInterpolationMethod(bool value) {
 		this->imageView->setUseSmoothTransform(value);
 		this->settings->setValue("useSmoothEnlargmentInterpolation", value);
 	}
 
-	void MainInterface::reactToEnlargementToggle(bool value) {
+	void MainInterface::toggleSmallImageUpscaling(bool value) {
 		this->imageView->setPreventMagnificationInDefaultZoom(!value);
 		this->settings->setValue("enlargeSmallImages", value);
 	}
 
-	void MainInterface::reactToSharpeningToggle(bool value) {
+	void MainInterface::toggleSharpening(bool value) {
 		this->imageView->setEnablePostResizeSharpening(value);
 		this->settings->setValue("sharpenImagesAfterDownscale", value);
 	}
 
-	void MainInterface::reactoToAutoHideMenuBarToggle(bool value) {
+	void MainInterface::toggleMenuBarAutoHide(bool value) {
 		this->settings->setValue("autoHideMenuBar", !value);
 		if (value) {
 			this->showMenuBar();
