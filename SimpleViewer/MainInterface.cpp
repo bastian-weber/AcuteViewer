@@ -356,11 +356,11 @@ namespace sv {
 				return Image();
 			}
 			image = cv::imdecode(*buffer, CV_LOAD_IMAGE_COLOR);
-			if(image.data) exifData = std::shared_ptr<ExifData>(new ExifData(buffer));
+			if (image.data) exifData = std::shared_ptr<ExifData>(new ExifData(buffer));
 		} else {
 #endif
 			image = cv::imread(path.toStdString(), CV_LOAD_IMAGE_COLOR);
-			if(image.data) exifData = std::shared_ptr<ExifData>(new ExifData(path, !this->exifIsRequired()));
+			if (image.data) exifData = std::shared_ptr<ExifData>(new ExifData(path, !this->exifIsRequired()));
 #ifdef Q_OS_WIN
 		}
 #endif
@@ -787,6 +787,7 @@ namespace sv {
 	}
 
 	void MainInterface::runInstaller() {
+#ifdef Q_OS_WIN
 		QString installerPath = QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("WinInstaller.exe");
 		if (QFileInfo(installerPath).exists()) {
 			ShellExecuteW(GetDesktopWindow(),
@@ -802,6 +803,7 @@ namespace sv {
 								  tr("The installer executable (WinInstaller.exe) could not be found. Make sure it is located in the same directory as SimpleViewer.exe."),
 								  QMessageBox::Close);
 		}
+#endif
 	}
 
 	void MainInterface::runUninstaller() {
@@ -876,7 +878,7 @@ namespace sv {
 
 	void MainInterface::toggleInfoOverlay(bool value) {
 		//if the thread of the currently displayed image is ready, start loading exif
-		if (!this->currentThreadName.isEmpty() 
+		if (!this->currentThreadName.isEmpty()
 			&& this->currentThread().valid()
 			&& this->currentThread().wait_for(std::chrono::milliseconds(0)) == std::future_status::ready
 			&& this->currentThread().get().isValid()) {
