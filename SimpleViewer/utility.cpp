@@ -13,7 +13,13 @@ namespace utility {
 		//file.read(buffer.data(), file.size());
 		//file.close();
 
-		std::ifstream file(path.toStdWString().c_str(), std::iostream::binary);
+#ifdef Q_OS_WIN
+		//wchar for utf-16
+		std::ifstream file(path.toStdWString(), std::iostream::binary);
+#else
+		//char for utf-8
+		std::ifstream file(path.toStdString(), std::iostream::binary);
+#endif
 		if (!file.good()) {
 			return std::shared_ptr<std::vector<char>>(new std::vector<char>());
 		}
