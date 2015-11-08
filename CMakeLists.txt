@@ -67,11 +67,15 @@ if(QT_ROOT_FOUND)
 endif(QT_ROOT_FOUND)
 
 #Exiv2
-set(EXIV_FILES "exiv2.hpp")
-set(EXIV_PATH_HINTS "./include" "../include" "../../../../include" "./include/exiv2" "../include/exiv2" "./exiv2")
+if(WIN32)
+	set(EXIV_FILES "include/exiv2.hpp")
+else()
+	set(EXIV_FILES "include/exiv2/exiv2.hpp")
+endif()
+set(EXIV_PATH_HINTS "." ".." "../../../.." "../..")
 ask_for_path("Exiv" "" "/usr/local" EXIV_FILES EXIV_PATH_HINTS)
 if(EXIV_ROOT_FOUND)
-	set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}" "${PATH_EXIV_ROOT}" "${PATH_EXIV_ROOT}/.." "${PATH_EXIV_ROOT}/../bin/vc12/x64")
+	set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}" "${PATH_EXIV_ROOT}/include" "${PATH_EXIV_ROOT}" "${PATH_EXIV_ROOT}/bin/vc12/x64")
 	find_package(Exiv2 REQUIRED)
 endif()
 
