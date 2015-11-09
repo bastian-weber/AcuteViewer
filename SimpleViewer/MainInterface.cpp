@@ -297,10 +297,12 @@ namespace sv {
 	void MainInterface::keyReleaseEvent(QKeyEvent* e) {
 		if (!this->menuBar()->isVisible() && e->key() == Qt::Key_Alt) {
 			this->showMenuBar();
+			e->accept();
 		} else {
 			this->hideMenuBar();
+			e->ignore();
 		}
-		e->ignore();
+
 	}
 
 	void MainInterface::mouseDoubleClickEvent(QMouseEvent* e) {
