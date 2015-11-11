@@ -12,7 +12,7 @@ namespace utility {
 
 	std::shared_ptr<std::vector<char>> readFileIntoBuffer(QString const& path);
 
-	bool isASCII(QString const& string);
+	bool isCharCompatible(QString const& string);
 
 }
 
