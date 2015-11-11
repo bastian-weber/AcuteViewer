@@ -350,8 +350,7 @@ namespace sv {
 	Image MainInterface::readImage(QString path, bool emitSignals) {
 		cv::Mat image;
 		std::shared_ptr<ExifData> exifData;
-#ifdef Q_OS_WIN
-		if (!utility::isASCII(path)) {
+		if (!utility::isCharCompatible(path)) {
 			std::shared_ptr<std::vector<char>> buffer = utility::readFileIntoBuffer(path);
 			if (buffer->empty()) {
 				if (emitSignals) emit(readImageFinished(Image()));
@@ -360,16 +359,13 @@ namespace sv {
 			image = cv::imdecode(*buffer, CV_LOAD_IMAGE_COLOR);
 			if (image.data) exifData = std::shared_ptr<ExifData>(new ExifData(buffer));
 		} else {
-#endif
 			image = cv::imread(path.toStdString(), CV_LOAD_IMAGE_COLOR);
 			if (image.data) exifData = std::shared_ptr<ExifData>(new ExifData(path, !this->exifIsRequired()));
-#ifdef Q_OS_WIN
 		}
-#endif
 		Image result;
 		if (image.data) {
-			cv::cvtColor(image, image, CV_BGR2RGB);
 			QObject::connect(exifData.get(), SIGNAL(loadingFinished(ExifData*)), this, SLOT(reactToExifLoadingCompletion(ExifData*)));
+			cv::cvtColor(image, image, CV_BGR2RGB);
 			result = Image(image, exifData);
 		}
 		if (emitSignals) emit(readImageFinished(result));

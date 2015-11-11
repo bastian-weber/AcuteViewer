@@ -193,17 +193,13 @@ namespace sv {
 
 	void ExifData::load(QString filepath) {
 		try {
-#ifdef Q_OS_WIN
-			if (utility::isASCII(filepath)) {
-#endif
+			if (utility::isCharCompatible(filepath)) {
 				Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(filepath.toStdString());
 				this->readExifFromImage(image);
-#ifdef Q_OS_WIN
 			} else {
 				std::shared_ptr<std::vector<char>> buffer = utility::readFileIntoBuffer(filepath);
 				this->loadFromBuffer(buffer);
 			}
-#endif
 		} catch (...) {
 			this->ready = true;
 			emit(loadingFinished(this));

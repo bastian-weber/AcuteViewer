@@ -40,12 +40,15 @@ namespace utility {
 		return buffer;
 	}
 
-	bool isASCII(QString const& string) {
-		bool isASCII = true;
+	bool isCharCompatible(QString const& string) {
+#ifdef Q_OS_WIN
+		bool isCharCompatible = true;
 		for (QString::ConstIterator i = string.begin(); i != string.end(); ++i) {
-			isASCII = isASCII && (i->unicode() < 128);
+			isCharCompatible = isCharCompatible && (i->unicode() < 128);
 		}
-		return isASCII;
+		return isCharCompatible;
 	}
-
+#else
+		return true;
+#endif
 }
