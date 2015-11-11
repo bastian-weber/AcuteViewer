@@ -9,12 +9,13 @@ namespace hb {
 		_interfaceOutline(true),
 		_useHighQualityDownscaling(true),
 		_rightClickForHundredPercentView(true),
+		_usePanZooming(true),
 		_imageAssigned(false),
 		_isMat(false),
 		_zoomBasis(1.5),
 		_zoomExponent(0),
 		_preventMagnificationInDefaultZoom(false),
-		_magnificationIsHundredPercent(false),
+		_hundredPercentZoomMode(false),
 		_panOffset(0, 0),
 		_viewRotation(0),
 		_dragging(false),
@@ -22,6 +23,7 @@ namespace hb {
 		_pointManipulationActive(false),
 		_renderPoints(false),
 		_moved(false),
+		_panZooming(false),
 		_paintingActive(false),
 		_maskInitialized(false),
 		_brushRadius(5),
@@ -72,6 +74,21 @@ namespace hb {
 	///If set to true, a right click zooms the image to 100% magnification.
 	void ImageView::setRightClickForHundredPercentView(bool value) {
 		_rightClickForHundredPercentView = value;
+	}
+
+	///Returns \c true if the right click for 100% view feature is enabled.
+	bool ImageView::rightClickForHundredPercentView() {
+		return _rightClickForHundredPercentView;
+	}
+
+	///If set to true, panning while holding the middle mouse button will change the zoom.
+	void ImageView::setUsePanZooming(bool value) {
+		_usePanZooming = true;
+	}
+
+	///Returns true if pan-zooming is enabled.
+	bool ImageView::usesPanZooming() {
+		return _usePanZooming;
 	}
 
 	///Rotates the viewport 90° in anticlockwise direction.
@@ -238,12 +255,12 @@ namespace hb {
 	* When resizing images to lower resolutions their sharpness impression might suffer.
 	* By enabling this feature images will be sharpened after they have resampled to a
 	* smaller size. The strenght and radius of this sharpening filter can be set via
-	* \c ImageView::setPostResizeSharpeningStrength(double value) and 
+	* \c ImageView::setPostResizeSharpeningStrength(double value) and
 	* \c ImageView::setPostResizeSharpeningRadius(double value). If the zoom level is
 	* at a level at which the image does not have to be downsampled, no sharpening
 	* filter will be applied.
 	*/
-	void ImageView::setEnablePostResizeSharpening(bool value) { 
+	void ImageView::setEnablePostResizeSharpening(bool value) {
 		_enablePostResizeSharpening = value;
 		updateResizedImage();
 		update();
@@ -255,7 +272,7 @@ namespace hb {
 	}
 
 	///Sets the strength value of the post-resize unsharp masking filter to \p value.
-	void ImageView::setPostResizeSharpeningStrength(double value) { 
+	void ImageView::setPostResizeSharpeningStrength(double value) {
 		_postResizeSharpeningStrength = value;
 		updateResizedImage();
 		update();
@@ -267,7 +284,7 @@ namespace hb {
 	}
 
 	///Sets the radius value of the post-resize unsharp masking filter to \p value.
-	void ImageView::setPostResizeSharpeningRadius(double value) { 
+	void ImageView::setPostResizeSharpeningRadius(double value) {
 		_postResizeSharpeningRadius = value;
 		updateResizedImage();
 		update();
@@ -280,7 +297,7 @@ namespace hb {
 
 	///Sets all parameters for the post resize sharpening at once.
 	/**
-	* The advantage of using this function instead of setting the three 
+	* The advantage of using this function instead of setting the three
 	* parameters separately is that the imageView will only have to update once,
 	* resulting in better performance.
 	*/
@@ -509,7 +526,7 @@ namespace hb {
 			//remove the rotation from the delta
 			QPointF mouseDelta = getTransformRotateOnly().map(mousePositionCoordinateAfter - mousePositionCoordinateBefore);
 			_panOffset += mouseDelta;
-			_magnificationIsHundredPercent = true;
+			_hundredPercentZoomMode = true;
 			enforcePanConstraints();
 			updateResizedImage();
 			update();
@@ -518,7 +535,7 @@ namespace hb {
 
 	void ImageView::resetZoom() {
 		_zoomExponent = 0;
-		_magnificationIsHundredPercent = false;
+		_hundredPercentZoomMode = false;
 		enforcePanConstraints();
 		updateResizedImage();
 		update();
@@ -552,6 +569,7 @@ namespace hb {
 
 	void ImageView::mousePressEvent(QMouseEvent *e) {
 		_lastMousePosition = e->pos();
+		_initialMousePosition = e->pos();
 
 		if (e->modifiers() & Qt::AltModifier && _polylineManipulationActive && _polylineAssigned) {
 			//span a selection rectangle
@@ -606,9 +624,15 @@ namespace hb {
 						}
 					}
 				}
-			} else if (!_paintingActive || e->button() == Qt::MiddleButton) {
+			} else if ((!_paintingActive && e->button() != Qt::MiddleButton) || (_paintingActive && e->button() == Qt::MiddleButton)) {
 				//dragging
-				_dragging = true;
+				_dragging = true;		
+			} else if (e->button() == Qt::MiddleButton) {
+				//pan-zooming
+				_panZooming = true;
+				_panZoomingInitialPanOffset = _panOffset;
+				_panZoomingInitialZoomExponent = _zoomExponent;
+				qApp->setOverrideCursor(QCursor(Qt::SizeVerCursor));
 			} else if (_imageAssigned) {
 				//painting
 				_painting = true;
@@ -697,7 +721,16 @@ namespace hb {
 			update();
 		}
 
-		if (!_dragging && !_painting && !_pointGrabbed && !_spanningSelectionRectangle) {
+		if (_panZooming) {
+			_zoomExponent = _panZoomingInitialZoomExponent;
+			_panOffset = _panZoomingInitialPanOffset;
+			double delta = (_initialMousePosition - e->pos()).y() * (-3);
+			zoomBy(delta, _initialMousePosition);
+			//doesn't work as expected
+			//QCursor::setPos(mapToGlobal(_lastMousePosition.toPoint()));
+		}
+
+		if (!_dragging && !_painting && !_pointGrabbed && !_spanningSelectionRectangle && !_panZooming) {
 			//check for close points to grab
 			if (_pointManipulationActive) {
 				if (closestGrabbablePoint(e->pos()).index >= 0) {
@@ -741,7 +774,7 @@ namespace hb {
 
 			if (e->button() == Qt::RightButton && _rightClickForHundredPercentView) {
 				//zoom to 100%
-				if (_magnificationIsHundredPercent) {
+				if (_hundredPercentZoomMode) {
 					resetZoom();
 				} else {
 					zoomToHundredPercent(e->pos());
@@ -789,6 +822,11 @@ namespace hb {
 		}
 		_painting = false;
 
+		if (_panZooming) {
+			qApp->setOverrideCursor(QCursor(Qt::ArrowCursor));
+			_panZooming = false;
+		}
+
 		update();
 	}
 
@@ -803,7 +841,7 @@ namespace hb {
 
 	void ImageView::resizeEvent(QResizeEvent* e) {
 		//maintain 100% view if in 100% view
-		if (_magnificationIsHundredPercent) {
+		if (_hundredPercentZoomMode) {
 			QPointF center(width() / 2.0, height() / 2.0);
 			zoomToHundredPercent(center);
 		}
@@ -1187,7 +1225,7 @@ namespace hb {
 			//remove the rotation from the delta
 			QPointF mouseDelta = getTransformRotateOnly().map(mousePositionCoordinateAfter - mousePositionCoordinateBefore);
 			_panOffset += mouseDelta;
-			_magnificationIsHundredPercent = false;
+			_hundredPercentZoomMode = false;
 			enforcePanConstraints();
 			updateResizedImage();
 			update();

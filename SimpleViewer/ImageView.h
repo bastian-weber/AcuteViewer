@@ -34,6 +34,9 @@ namespace hb {
 		void setShowInterfaceOutline(bool value);
 		void setInterfaceBackgroundColor(QColor const& color);
 		void setRightClickForHundredPercentView(bool value);
+		bool rightClickForHundredPercentView();
+		void setUsePanZooming(bool value);
+		bool usesPanZooming();
 
 		void rotateLeft();
 		void rotateRight();
@@ -151,17 +154,23 @@ namespace hb {
 		bool _interfaceOutline;
 		QColor _backgroundColor;
 		bool _rightClickForHundredPercentView;
+		bool _usePanZooming;
 		//the users transformations (panning, zooming)
 		double _zoomExponent;
 		const double _zoomBasis;
 		bool _preventMagnificationInDefaultZoom;
-		bool _magnificationIsHundredPercent;
+		bool _hundredPercentZoomMode;
 		QPointF _panOffset;
 		double _viewRotation;
 		//related to general click and drag events
 		bool _dragging;
 		QPointF _lastMousePosition;
 		bool _moved;
+		//related to pan-zooming
+		bool _panZooming;
+		QPointF _initialMousePosition;
+		double _panZoomingInitialZoomExponent;
+		QPointF _panZoomingInitialPanOffset;
 		//related to setting points and rendering them
 		std::vector<QPointF> _points;
 		bool _pointEditingActive;
