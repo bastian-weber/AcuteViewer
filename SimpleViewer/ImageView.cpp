@@ -835,7 +835,9 @@ namespace hb {
 	}
 
 	void ImageView::wheelEvent(QWheelEvent* e) {
-		zoomBy(e->delta(), e->pos(), e->modifiers());
+		if (!_panZooming) {
+			zoomBy(e->delta(), e->pos(), e->modifiers());
+		}
 		e->accept();
 	}
 
@@ -1055,9 +1057,9 @@ namespace hb {
 
 	void ImageView::keyPressEvent(QKeyEvent * e) {
 		if ((isVisible() && (underMouse() || e->key() == Qt::Key_X) && _imageAssigned) || e->key() == Qt::Key_S) {
-			if (e->key() == Qt::Key_Plus) {
+			if (e->key() == Qt::Key_Plus && !_panZooming) {
 				zoomInKey();
-			} else if (e->key() == Qt::Key_Minus) {
+			} else if (e->key() == Qt::Key_Minus && !_panZooming) {
 				zoomOutKey();
 			} else if (e->key() == Qt::Key_S) {
 				setUseSmoothTransform(!_useSmoothTransform);
