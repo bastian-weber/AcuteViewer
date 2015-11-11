@@ -28,6 +28,7 @@ View Navigation
 	Right Mouse Button: 						Click to toggle 100% view and back
 	Mouse Wheel: 								Zoom in and out; hold Ctrl to zoom in 
 												smaller steps
+	Middle Mouse Button (Mouse Wheel)			Hold and drag mouse forth or back to zoom
 	+ and - Keys: 								Same as scroll wheel
 	Left Mouse button: 							Double click to toggle full-screen mode
 	F Key 										Toggle full-screen mode
