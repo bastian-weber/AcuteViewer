@@ -13,7 +13,7 @@ echo "This script will copy the Simple Viewer application to a location of you c
 read -e -p "Installation path: " -i "/opt" path
 if [ -d "$path" ]; then
 	installPath="$path/SimpleViewer"
-	uninstallScript="$installPath/uninstall.sh"
+	uninstallScript="$installPath/Uninstall.sh"
 	if mkdir -p $installPath; then
 		cp -r "$scriptPath/"* "$installPath"
 		#write desktop file
