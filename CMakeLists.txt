@@ -109,7 +109,7 @@ endif(CMAKE_COMPILER_IS_GNUCC)
 
 #add custom target for copying ressources
 add_custom_target(COPY_RESSOURCES)
-add_custom_command(TARGET COPY_RESSOURCES POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/data ${PROJECT_BINARY_DIR}/data)
+add_custom_command(TARGET COPY_RESSOURCES POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/deploy_ressources/general/data ${PROJECT_BINARY_DIR}/data)
 add_dependencies(${EXECUTABLE_NAME_1} COPY_RESSOURCES)
 if(WIN32)
 	add_dependencies(${EXECUTABLE_NAME_2} COPY_RESSOURCES)
