@@ -47,8 +47,8 @@ namespace utility {
 			isCharCompatible = isCharCompatible && (i->unicode() < 128);
 		}
 		return isCharCompatible;
-	}
 #else
 		return true;
 #endif
+	}
 }
