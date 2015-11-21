@@ -197,15 +197,14 @@ namespace wi {
 			IShellLinkW* shellLink = NULL;
 			result = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_ALL, IID_IShellLinkW, (void**)&shellLink);
 			if (SUCCEEDED(result)) {
-				shellLink->SetPath(reinterpret_cast<LPCWSTR>(targetPath.utf16()));
+				shellLink->SetPath(targetPath.toStdWString().c_str());
 				shellLink->SetDescription(L"Simple Viewer image viewer");
-				shellLink->SetIconLocation(reinterpret_cast<LPCWSTR>(targetPath.utf16()), 0);
-
+				shellLink->SetIconLocation(targetPath.toStdWString().c_str(), 0);
 				IPersistFile* persistFile;
 				result = shellLink->QueryInterface(IID_IPersistFile, (void**)&persistFile);
 
 				if (SUCCEEDED(result)) {
-					result = persistFile->Save(reinterpret_cast<LPCOLESTR>(linkPath.utf16()), TRUE);
+					result = persistFile->Save(linkPath.toStdWString().c_str(), TRUE);
 
 					persistFile->Release();
 				} else {
