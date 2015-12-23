@@ -41,10 +41,12 @@ Browsing Images & Slideshow
 
 	Left and Right Arrow Keys: 					Go to previous or next image
 	Up and Down Arrow Keys: 					Same as left and right arrow keys
-	P Key: Toggle slideshow 					play/pause; dialog will appear that lets 
-												you choose the slide duration; hold Ctrl 
-												to launch with most recent settings and 
-												without dialog
+	F5 Key 										Reload the current image and refresh
+												the list of files in the current directory
+	P Key: 										Toggle slideshow play/pause; dialog will 
+												appear that lets you choose the slide 
+												duration; hold Ctrl to launch with most 
+												recent settings and without dialog
 
 Image Rendering and Display Options
 

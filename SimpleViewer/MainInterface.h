@@ -122,6 +122,7 @@ namespace sv {
 		QTimer* slideshowTimer;
 		private slots:
 		void nextSlide();
+		void refresh();
 		void cleanUpThreads();
 		void quit();
 		void hideMouse() const;

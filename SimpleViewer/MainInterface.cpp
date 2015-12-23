@@ -289,6 +289,8 @@ namespace sv {
 			} else if (this->isFullScreen()) {
 				this->exitFullscreen();
 			}
+		} else if (e->key() == Qt::Key_F5) {
+			this->refresh();
 		} else {
 			e->ignore();
 		}
@@ -701,6 +703,10 @@ namespace sv {
 		if (!settings->value("slideshowLoop", false).toBool() && this->currentFileIndex == (this->filesInDirectory.size() - 1)) {
 			this->stopSlideshow();
 		}
+	}
+
+	void MainInterface::refresh() {
+		this->loadImage(this->getFullImagePath(this->currentFileIndex));
 	}
 
 	void MainInterface::cleanUpThreads() {
