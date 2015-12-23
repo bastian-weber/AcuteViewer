@@ -552,6 +552,9 @@ namespace sv {
 							this->currentFileInfo.fileName());
 			int sizeAndResolutionTopOffset = 30 + this->lineSpacing + 2 * metrics.height();
 			if (this->image.isValid()) {
+				QString resolution = QString::fromWCharArray(L"%1\u2006x\u2006%2").arg(this->image.mat().cols).arg(this->image.mat().rows);
+				canvas.drawText(QPoint(30, sizeAndResolutionTopOffset),
+								QString::fromWCharArray(L"%1, %2\u2006Mb").arg(resolution).arg(this->currentFileInfo.size() / 1048576.0, 0, 'f', 2));
 				if (this->image.exif()->isReady()) {
 					if (this->image.exif()->hasExif()) {
 						//get camera model, speed, aperture and ISO
@@ -564,7 +567,6 @@ namespace sv {
 						QString exposureBias = this->image.exif()->exposureBias();
 						QString iso = this->image.exif()->iso();
 						QString captureDate = this->image.exif()->captureDate();
-						QString resolution = this->image.exif()->resolution();
 						//calculate the v coordinates for the lines
 						int cameraModelTopOffset = 30 + 2 * this->lineSpacing + 3 * metrics.height();
 						int lensTopOffset = 30 + 3 * this->lineSpacing + 4 * metrics.height();
@@ -597,13 +599,6 @@ namespace sv {
 						}
 						if (iso.isEmpty() && exposureBias.isEmpty()) dateTopOffset -= heightOfOneLine;
 						//draw the EXIF text (note \u2005 is a sixth of a quad)
-						if (!resolution.isEmpty()) {
-							canvas.drawText(QPoint(30, sizeAndResolutionTopOffset),
-											QString::fromWCharArray(L"%1, %2\u2006Mb").arg(resolution).arg(this->currentFileInfo.size() / 1048576.0, 0, 'f', 2));
-						} else {
-							canvas.drawText(QPoint(30, sizeAndResolutionTopOffset),
-											QString::fromWCharArray(L"%1\u2006Mb").arg(this->currentFileInfo.size() / 1048576.0, 0, 'f', 2));
-						}
 						if (!cameraModel.isEmpty()) canvas.drawText(QPoint(30, cameraModelTopOffset),
 																	cameraModel);
 						if (!lensModel.isEmpty()) canvas.drawText(QPoint(30, lensTopOffset),
@@ -642,8 +637,6 @@ namespace sv {
 																	QString("%1").arg(captureDate));
 					}
 				} else {
-					canvas.drawText(QPoint(30, sizeAndResolutionTopOffset),
-									QString::fromWCharArray(L"%1\u2006Mb").arg(this->currentFileInfo.size() / 1048576.0, 0, 'f', 2));
 					canvas.drawText(QPoint(30, 30 + 2 * this->lineSpacing + 3 * metrics.height()),
 									tr("Loading EXIF..."));
 				}
