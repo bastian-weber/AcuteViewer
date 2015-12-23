@@ -1,13 +1,13 @@
 1. Installation
-	- Run the Install.sh script as root
-	- Specify a folder where Simple Viewer shall be installed
-	- Files will be copied there and desktop file will be created
-	  in /usr/local/share/applications
-	  
+    - Run the Install.sh script as root
+    - Specify a folder where Simple Viewer shall be installed
+    - Files will be copied there and desktop file will be created
+      in /usr/local/share/applications
+      
 2. Uninstalltion
-	- Run the Uninstallation.sh script inside the directory where
-	  Simple Viewer was installed as root
-	  
+    - Run the Uninstallation.sh script inside the directory where
+      Simple Viewer was installed as root
+      
 3. Launching
-	- Run the Run_Simple_Viewer.sh script
-	- If installed you can launch via the launcher
+    - Run the Run_Simple_Viewer.sh script
+    - If installed you can launch via the launcher
