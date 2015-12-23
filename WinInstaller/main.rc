@@ -16,7 +16,7 @@ FILESUBTYPE 0x0L
 			VALUE "FileDescription",  "Installs Simple Viewer on a Microsoft Windows system.\0"
 			VALUE "OriginalFilename", "WinInstaller.exe\0"
 			VALUE "ProductName",      "Simple Viewer Installer\0"
-			VALUE "ProductVersion",   "1.0 Beta 8\0"
+			VALUE "ProductVersion",   "1.0\0"
 		}
 	}
 	BLOCK "VarFileInfo" {
