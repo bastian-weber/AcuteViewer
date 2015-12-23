@@ -15,54 +15,54 @@ https://bitbucket.org/bastian_weber/simpleviewer
 
 ===== Supported Filetypes =====
 
-	Jpeg, Tif, Png, Bitmap, Jpeg 2000, WebP, Portable Image Format, Sun Raster
+    Jpeg, Tif, Png, Bitmap, Jpeg 2000, WebP, Portable Image Format, Sun Raster
 
 ===== Controls =====
 
 Interface
 
-	Alt Key: 									Show menu bar; will auto-hide again 
-												upon next action
-	M Key: 										Toggle option to always show menu bar 
-												on and off
+    Alt Key:                                    Show menu bar; will auto-hide again 
+                                                upon next action
+    M Key:                                      Toggle option to always show menu bar 
+                                                on and off
 
 View Navigation
 
-	Any Mouse Button: 							Hold and drag to pan
-	Right Mouse Button: 						Click to toggle 100% view and back
-	Mouse Wheel: 								Zoom in and out; hold Ctrl to zoom in 
-												smaller steps
-	Middle Mouse Button (Mouse Wheel)			Hold and drag mouse forth or back to zoom
-	+ and - Keys: 								Same as scroll wheel
-	Left Mouse button: 							Double click to toggle full-screen mode
-	F Key 										Toggle full-screen mode
+    Any Mouse Button:                           Hold and drag to pan
+    Right Mouse Button:                         Click to toggle 100% view and back
+    Mouse Wheel:                                Zoom in and out; hold Ctrl to zoom in 
+                                                smaller steps
+    Middle Mouse Button (Mouse Wheel)           Hold and drag mouse forth or back to zoom
+    + and - Keys:                               Same as scroll wheel
+    Left Mouse button:                          Double click to toggle full-screen mode
+    F Key                                       Toggle full-screen mode
 
 Browsing Images & Slideshow
 
-	Left and Right Arrow Keys: 					Go to previous or next image
-	Up and Down Arrow Keys: 					Same as left and right arrow keys
-	F5 Key 										Reload the current image and refresh
-												the list of files in the current directory
-	P Key: 										Toggle slideshow play/pause; dialog will 
-												appear that lets you choose the slide 
-												duration; hold Ctrl to launch with most 
-												recent settings and without dialog
+    Left and Right Arrow Keys:                  Go to previous or next image
+    Up and Down Arrow Keys:                     Same as left and right arrow keys
+    F5 Key                                      Reload the current image and refresh
+                                                the list of files in the current directory
+    P Key:                                      Toggle slideshow play/pause; dialog will 
+                                                appear that lets you choose the slide 
+                                                duration; hold Ctrl to launch with most 
+                                                recent settings and without dialog
 
 Image Rendering and Display Options
 
-	I Key: 										Toggle info and EXIF overlay on and off
-	Z Key: 										Toggle zoom level overlay on and off
-	Ctrl + Shift + Left or Right Arrow Keys: 	Change the font size of the text overlay
-	Ctrl + Shift + Up or Down Arrow Keys: 		Change the line spacing of the text overlay
-	U Key: 										Toggle option to upscale smaller images to 
-												fit the window on and off
-	S Key: 										Toggle the use of a smooth interpolation 
-												method instead of nearest neighbour when 
-												enlarging above 100%
-	E Key: 										Toggle post-resize sharpening (effect)
-	O Key: 										Show sharpening options dialog
+    I Key:                                      Toggle info and EXIF overlay on and off
+    Z Key:                                      Toggle zoom level overlay on and off
+    Ctrl + Shift + Left or Right Arrow Keys:    Change the font size of the text overlay
+    Ctrl + Shift + Up or Down Arrow Keys:       Change the line spacing of the text overlay
+    U Key:                                      Toggle option to upscale smaller images to 
+                                                fit the window on and off
+    S Key:                                      Toggle the use of a smooth interpolation 
+                                                method instead of nearest neighbour when 
+                                                enlarging above 100%
+    E Key:                                      Toggle post-resize sharpening (effect)
+    O Key:                                      Show sharpening options dialog
 
 Application Shortcuts
 
-	Ctrl + O: 									Open a file (shows open dialog)
-	Ctrl + Q: 									Quit the application
+    Ctrl + O:                                   Open a file (shows open dialog)
+    Ctrl + Q:                                   Quit the application
