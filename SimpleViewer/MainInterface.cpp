@@ -68,6 +68,14 @@ namespace sv {
 		this->fileMenu->addAction(this->openAction);
 		this->addAction(this->openAction);
 
+		this->refreshAction = new QAction(tr("&Refresh"), this);
+		this->refreshAction->setEnabled(false);
+		this->refreshAction->setShortcut(Qt::Key_F5);
+		this->refreshAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->refreshAction, SIGNAL(triggered()), this, SLOT(refresh()));
+		this->fileMenu->addAction(this->refreshAction);
+		this->addAction(this->refreshAction);
+
 		this->fileMenu->addSeparator();
 
 		this->resetSettingsAction = new QAction(tr("&Reset All Settings to Default"), this);
@@ -209,6 +217,7 @@ namespace sv {
 		delete this->applicationMenu;
 		delete this->quitAction;
 		delete this->openAction;
+		delete this->refreshAction;
 		delete this->resetSettingsAction;
 		delete this->showInfoAction;
 		delete this->smoothingAction;
@@ -289,8 +298,6 @@ namespace sv {
 			} else if (this->isFullScreen()) {
 				this->exitFullscreen();
 			}
-		} else if (e->key() == Qt::Key_F5) {
-			this->refresh();
 		} else {
 			e->ignore();
 		}
@@ -440,7 +447,7 @@ namespace sv {
 
 	void MainInterface::clearThreads() {
 		for (std::map<QString, std::shared_future<Image>>::iterator it = this->threads.begin(); it != this->threads.end(); ++it) {
-			this->waitForThreadToFinish(it->second);
+			this->waitForThreadToFinish(it->second, false);
 		}
 		this->threads.clear();
 	}
@@ -698,15 +705,17 @@ namespace sv {
 
 	//============================================================================ PRIVATE SLOTS =============================================================================\\
 
+	void MainInterface::refresh() {
+		if (this->currentFileIndex >= 0 && this->filesInDirectory.size() > 0) {
+			this->loadImage(this->getFullImagePath(this->currentFileIndex));
+		}
+	}
+
 	void MainInterface::nextSlide() {
 		this->loadNextImage();
 		if (!settings->value("slideshowLoop", false).toBool() && this->currentFileIndex == (this->filesInDirectory.size() - 1)) {
 			this->stopSlideshow();
 		}
-	}
-
-	void MainInterface::refresh() {
-		this->loadImage(this->getFullImagePath(this->currentFileIndex));
 	}
 
 	void MainInterface::cleanUpThreads() {
@@ -916,6 +925,7 @@ namespace sv {
 		}
 		this->slideshowAction->setEnabled(true);
 		this->slideshowNoDialogAction->setEnabled(true);
+		this->refreshAction->setEnabled(true);
 		this->loading = false;
 	}
 

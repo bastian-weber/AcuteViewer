@@ -56,7 +56,7 @@ namespace sv {
 		void loadNextImage();
 		void loadPreviousImage();
 		void clearThreads();
-		template <typename T> void waitForThreadToFinish(std::shared_future<T> const& thread);
+		template <typename T> void waitForThreadToFinish(std::shared_future<T> const& thread, bool indicateLoading = true);
 		size_t nextFileIndex() const;
 		size_t previousFileIndex() const;
 		QString getFullImagePath(size_t index) const;
@@ -103,6 +103,7 @@ namespace sv {
 		//actions
 		QAction* quitAction;
 		QAction* openAction;
+		QAction* refreshAction;
 		QAction* resetSettingsAction;
 		QAction* showInfoAction;
 		QAction* smoothingAction;
@@ -120,7 +121,7 @@ namespace sv {
 		QTimer* mouseHideTimer;
 		QTimer* threadCleanUpTimer;
 		QTimer* slideshowTimer;
-		private slots:
+	private slots:
 		void nextSlide();
 		void refresh();
 		void cleanUpThreads();
@@ -157,10 +158,10 @@ namespace sv {
 
 	//================================= Implementation of Template Functions =================================\\
 
-	template <typename T> void MainInterface::waitForThreadToFinish(std::shared_future<T> const& thread) {
+	template <typename T> void MainInterface::waitForThreadToFinish(std::shared_future<T> const& thread, bool indicateLoading) {
 		if (!thread.valid()) return;
 		if (thread.wait_for(std::chrono::milliseconds(0)) != std::future_status::ready) {
-			this->setWindowTitle(this->windowTitle() + QString(tr(" - Loading...")));
+			if(indicateLoading) this->setWindowTitle(this->windowTitle() + QString(tr(" - Loading...")));
 		}
 
 		while (thread.wait_for(std::chrono::milliseconds(this->eventProcessIntervalDuringWait)) != std::future_status::ready) {
