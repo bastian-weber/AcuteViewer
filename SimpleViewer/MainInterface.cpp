@@ -473,7 +473,8 @@ namespace sv {
 		QFileInfo fileInfo = QFileInfo(QDir::cleanPath(path));
 		QDir directory = fileInfo.absoluteDir();
 		QString filename = fileInfo.fileName();
-		if (directory != this->currentDirectory || this->noCurrentDir) {
+		//always scan directory; uncomment to scan only if different directory
+		//if (directory != this->currentDirectory || this->noCurrentDir) {
 			this->currentDirectory = directory;
 			this->noCurrentDir = false;
 			QStringList filters;
@@ -483,7 +484,7 @@ namespace sv {
 			collator.setNumericMode(true);
 			std::sort(contents.begin(), contents.end(), collator);
 			this->filesInDirectory = contents.toVector();
-		}
+		//}
 		if (this->filesInDirectory.size() == 0 || this->currentFileIndex < 0 || this->currentFileIndex >= this->filesInDirectory.size() || this->filesInDirectory.at(this->currentFileIndex) != filename) {
 			this->currentFileIndex = this->filesInDirectory.indexOf(filename);
 		}
