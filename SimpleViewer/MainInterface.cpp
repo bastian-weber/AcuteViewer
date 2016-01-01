@@ -168,6 +168,12 @@ namespace sv {
 		this->viewMenu->addAction(this->fullscreenAction);
 		this->addAction(this->fullscreenAction);
 
+		this->viewMenu->addSeparator();
+
+		this->saveSizeAction = new QAction(tr("&Save Current Window Size and Position as Default"), this);
+		QObject::connect(this->saveSizeAction, SIGNAL(triggered(bool)), this, SLOT(saveWindowSize()));
+		this->viewMenu->addAction(this->saveSizeAction);
+
 		this->slideshowAction = new QAction(tr("&Start Slideshow"), this);
 		this->slideshowAction->setEnabled(false);
 		this->slideshowAction->setShortcut(Qt::Key_P);
@@ -198,9 +204,16 @@ namespace sv {
 
 		//load settings
 		this->loadSettings();
+		if (this->settings->contains("windowPosition")) {
+			this->move(this->settings->value("windowPosition", QPoint(10, 10)).toPoint());
+		}
+		if (this->settings->contains("windowSize")) {
+			this->resize(this->settings->value("windowSize", QSize(900, 600)).toSize());
+		}
 		if (this->settings->value("maximized", false).toBool()) {
 			this->showMaximized();
 		}
+
 
 		if (openWithFilename != QString()) {
 			this->loadImage(openWithFilename);
@@ -236,7 +249,8 @@ namespace sv {
 	}
 
 	QSize MainInterface::sizeHint() const {
-		return QSize(900, 600);
+		return this->settings->value("windowSize", QSize(900, 600)).toSize();
+		//return QSize(900, 600);
 	}
 
 	//============================================================================== PROTECTED ==============================================================================\\
@@ -339,9 +353,11 @@ namespace sv {
 		if (e->type() == QEvent::WindowStateChange) {
 			if (!this->isMinimized() && !this->isFullScreen()) {
 				this->settings->setValue("maximized", this->isMaximized());
+				this->saveSizeAction->setEnabled(!this->isMaximized());
 			} else if (this->isFullScreen()) {
 				QWindowStateChangeEvent* windowStateChangeEvent = static_cast<QWindowStateChangeEvent*>(e);
 				this->settings->setValue("maximized", bool(windowStateChangeEvent->oldState() & Qt::WindowMaximized));
+				this->saveSizeAction->setEnabled(false);
 			}
 		}
 	}
@@ -748,6 +764,15 @@ namespace sv {
 
 	void MainInterface::quit() {
 		QCoreApplication::quit();
+	}
+
+	void MainInterface::saveWindowSize() {
+		this->settings->setValue("windowSize", this->size());
+		this->settings->setValue("windowPosition", this->pos());
+		QMessageBox::information(this,
+								 tr("Successfull"),
+								 tr("The current size and position of the window have been saved as the new default."),
+								 QMessageBox::Close);
 	}
 
 	void MainInterface::hideMouse() const {

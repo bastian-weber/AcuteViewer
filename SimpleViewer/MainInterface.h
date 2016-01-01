@@ -111,6 +111,7 @@ namespace sv {
 		QAction* sharpeningAction;
 		QAction* sharpeningOptionsAction;
 		QAction* menuBarAutoHideAction;
+		QAction* saveSizeAction;
 		QAction* fullscreenAction;
 		QAction* slideshowAction;
 		QAction* slideshowNoDialogAction;
@@ -126,6 +127,7 @@ namespace sv {
 		void refresh();
 		void cleanUpThreads();
 		void quit();
+		void saveWindowSize();
 		void hideMouse() const;
 		void showMouse() const;
 		void enableAutomaticMouseHide();
