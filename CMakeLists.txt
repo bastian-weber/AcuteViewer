@@ -122,6 +122,9 @@ if(WIN32)
 	add_dependencies(${EXECUTABLE_NAME_2} COPY_RESSOURCES)
 endif()
 
+set(RELEASE_DLLS)
+set(DEBUG_DLLS)
+
 #add lib files and copy dlls
 
 ########################################### OpenCV Libs ###########################################
@@ -134,7 +137,7 @@ if((DEFINED OPENCV_ROOT_FOUND) OR UNIX)
 	#somehow include directories have to be added manually since OpenCV 3
 	include_directories(${OpenCV_INCLUDE_DIRS})
 	if(MSVC)
-		copydlls(OPENCV_MODULES_ALL)
+		copydlls(RELEASE_DLLS DEBUG_DLLS OPENCV_MODULES_ALL)
 	endif(MSVC)
 endif()
 
@@ -150,17 +153,22 @@ IF(DEFINED QT_ROOT_FOUND)
 	#copy the dlls
 	IF(MSVC)
 
-		copydlls(QT_MODULES_ALL)	
+		copydlls(RELEASE_DLLS DEBUG_DLLS QT_MODULES_ALL)	
 
-		file(COPY ${PATH_QT_ROOT}/bin/icudt54.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Debug)
-		file(COPY ${PATH_QT_ROOT}/bin/icuin54.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Debug)
-		file(COPY ${PATH_QT_ROOT}/bin/icuuc54.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Debug)
-		file(COPY ${PATH_QT_ROOT}/plugins/platforms DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Debug)
+		list(APPEND RELEASE_DLLS ${PATH_QT_ROOT}/bin/icudt54.dll)
+		list(APPEND RELEASE_DLLS ${PATH_QT_ROOT}/bin/icuin54.dll)
+		list(APPEND RELEASE_DLLS ${PATH_QT_ROOT}/bin/icuuc54.dll)
+		
+		list(APPEND DEBUG_DLLS ${PATH_QT_ROOT}/bin/icudt54.dll)
+		list(APPEND DEBUG_DLLS ${PATH_QT_ROOT}/bin/icuin54.dll)
+		list(APPEND DEBUG_DLLS ${PATH_QT_ROOT}/bin/icuuc54.dll)
 
-		file(COPY ${PATH_QT_ROOT}/bin/icudt54.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Release)
-		file(COPY ${PATH_QT_ROOT}/bin/icuin54.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Release)
-		file(COPY ${PATH_QT_ROOT}/bin/icuuc54.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Release)
-		file(COPY ${PATH_QT_ROOT}/plugins/platforms DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Release)
+		add_custom_command(TARGET ${EXECUTABLE_NAME_1} POST_BUILD 
+			COMMAND ${CMAKE_COMMAND} -E copy_directory ${PATH_QT_ROOT}/plugins/platforms ${CMAKE_CURRENT_BINARY_DIR}/Debug/platforms
+			COMMAND ${CMAKE_COMMAND} -E copy_directory ${PATH_QT_ROOT}/plugins/platforms ${CMAKE_CURRENT_BINARY_DIR}/Release/platforms)
+		add_custom_command(TARGET ${EXECUTABLE_NAME_2} POST_BUILD 
+			COMMAND ${CMAKE_COMMAND} -E copy_directory ${PATH_QT_ROOT}/plugins/platforms ${CMAKE_CURRENT_BINARY_DIR}/Debug/platforms
+			COMMAND ${CMAKE_COMMAND} -E copy_directory ${PATH_QT_ROOT}/plugins/platforms ${CMAKE_CURRENT_BINARY_DIR}/Release/platforms)
 
 	ENDIF(MSVC)
 
@@ -173,9 +181,32 @@ if(DEFINED EXIV_ROOT_FOUND)
 
 	if(MSVC)
 		set(EXIV2_MODULES "exiv2")
-		copydlls(EXIV2_MODULES)
+		copydlls(RELEASE_DLLS DEBUG_DLLS EXIV2_MODULES)
 	endif(MSVC)
 endif()
+
+#copy dlls
+
+set(COPY_COMMAND_RELEASE "-E copy_if_different ")
+set(COPY_COMMAND_DEBUG "-E copy_if_different ")
+
+list(REMOVE_DUPLICATES RELEASE_DLLS)
+list(REMOVE_DUPLICATES DEBUG_DLLS)
+
+foreach(DLL ${RELEASE_DLLS})
+	string(CONCAT COPY_COMMAND_RELEASE "${COPY_COMMAND_RELEASE} \"${DLL}\" ")
+endforeach()
+foreach(DLL ${DEBUG_DLLS})
+	string(CONCAT COPY_COMMAND_DEBUG "${COPY_COMMAND_DEBUG} \"${DLL}\" ")
+endforeach()
+
+string(CONCAT COPY_COMMAND_RELEASE ${COPY_COMMAND_RELEASE} "\"${CMAKE_CURRENT_BINARY_DIR}/Release\" ")
+string(CONCAT COPY_COMMAND_DEBUG ${COPY_COMMAND_DEBUG} "\"${CMAKE_CURRENT_BINARY_DIR}/Debug\" ")
+
+add_custom_command(TARGET ${EXECUTABLE_NAME_1} POST_BUILD COMMAND ${CMAKE_COMMAND} ${COPY_COMMAND_RELEASE})
+add_custom_command(TARGET ${EXECUTABLE_NAME_1} POST_BUILD COMMAND ${CMAKE_COMMAND} ${COPY_COMMAND_DEBUG})
+add_custom_command(TARGET ${EXECUTABLE_NAME_2} POST_BUILD COMMAND ${CMAKE_COMMAND} ${COPY_COMMAND_RELEASE})
+add_custom_command(TARGET ${EXECUTABLE_NAME_2} POST_BUILD COMMAND ${CMAKE_COMMAND} ${COPY_COMMAND_DEBUG})
 
 IF(OPENCV_ROOT_FOUND AND QT_ROOT_FOUND AND EXIV_ROOT_FOUND)
 	message("Everything fine, ready to generate.")
