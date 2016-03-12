@@ -572,7 +572,7 @@ namespace sv {
 			canvas.drawText(QPoint((canvas.device()->width() - metrics.width(message)) / 2.0, canvas.device()->height() / 2.0 + 0.5*metrics.height()),
 							message);
 		}
-		if (this->showInfoAction->isChecked() && this->imageView->imageAssigned()) {
+		if (this->showInfoAction->isChecked() && this->imageView->getImageAssigned()) {
 			//draw current filename
 			canvas.drawText(QPoint(30, 30 + metrics.height()),
 							this->currentFileInfo.fileName());
@@ -668,7 +668,7 @@ namespace sv {
 				}
 			}
 		}
-		if (this->zoomLevelAction->isChecked() && this->imageView->imageAssigned()) {
+		if (this->zoomLevelAction->isChecked() && this->imageView->getImageAssigned()) {
 			QString message = QString::number(this->imageView->getCurrentPreviewScalingFactor() * 100, 'f', 1).append("%");
 			canvas.drawText(QPoint(30, canvas.device()->height() - 30), message);
 		}
