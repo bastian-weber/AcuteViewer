@@ -176,7 +176,7 @@ namespace sv {
 
 		this->slideshowAction = new QAction(tr("&Start Slideshow"), this);
 		this->slideshowAction->setEnabled(false);
-		this->slideshowAction->setShortcut(Qt::Key_P);
+		this->slideshowAction->setShortcut(Qt::CTRL + Qt::Key_Space);
 		this->slideshowAction->setShortcutContext(Qt::ApplicationShortcut);
 		QObject::connect(this->slideshowAction, SIGNAL(triggered()), this, SLOT(toggleSlideshow()));
 		this->slideshowMenu->addAction(this->slideshowAction);
@@ -184,7 +184,7 @@ namespace sv {
 
 		this->slideshowNoDialogAction = new QAction(this);
 		this->slideshowNoDialogAction->setEnabled(false);
-		this->slideshowNoDialogAction->setShortcut(Qt::CTRL + Qt::Key_P);
+		this->slideshowNoDialogAction->setShortcut(Qt::Key_Space);
 		this->slideshowNoDialogAction->setShortcutContext(Qt::ApplicationShortcut);
 		QObject::connect(this->slideshowNoDialogAction, SIGNAL(triggered()), this, SLOT(toggleSlideshowNoDialog()));
 		this->addAction(this->slideshowNoDialogAction);
