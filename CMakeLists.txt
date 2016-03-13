@@ -50,7 +50,7 @@ set(OPENCV_PATH_HINTS "." "./build" "./.." "./../.." "./../../.." "./share/OpenC
 ask_for_path("OpenCV" "" "/usr/local" OPENCV_FILES OPENCV_PATH_HINTS)
 if(OPENCV_ROOT_FOUND)
 	set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${PATH_OPENCV_ROOT})
-	find_package(OpenCV 3.0 REQUIRED)
+	find_package(OpenCV 3.1 REQUIRED)
 endif()
 
 #Qt
@@ -62,7 +62,7 @@ endif()
 list(REMOVE_DUPLICATES QT_MODULES_ALL)
 set(QT_FILES "lib/cmake/Qt5/Qt5Config.cmake")
 set(QT_PATH_HINTS "." "./../../.." "./../.." "./..")
-ask_for_path("Qt" "" "~/Qt/5.5/gcc_64" QT_FILES QT_PATH_HINTS)
+ask_for_path("Qt" "" "~/Qt5.5.1/5.5/gcc_64" QT_FILES QT_PATH_HINTS)
 if(QT_ROOT_FOUND)
 	set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${PATH_QT_ROOT})
 	foreach(module ${QT_MODULES_ALL})
@@ -193,7 +193,7 @@ endif()
 
 #copy dlls
 if(MSVC)
-	
+
 	set(COPY_COMMAND_RELEASE "-E copy_if_different ")
 	set(COPY_COMMAND_DEBUG "-E copy_if_different ")
 
