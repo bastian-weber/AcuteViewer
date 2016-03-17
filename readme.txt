@@ -26,13 +26,15 @@ The required libraries are:
 			-	Extract to C:/gnu/exiv2
 			-	Download dependencies from
 					http://clanmills.com/files/exiv2libs.zip
-			-	Extract dependencies to C:/gnu
+			-	Extract dependencies to C:/
 			-	Rename the folders of the dependencies to match the folder names in 
 				C:/gnu/exiv2/msvc2005/copylibs.bat (add the version numbers to the folders)
 			-	Run C:/gnu/exiv2/msvc2005/copylibs.bat, this copies the dependencies to the
 				correct folders
 			-	Open the Visual Studio project inside the folder C:/gnu/exiv2/msvc2005 and
 				upgrade to the current compiler version
+			-	If you're using VS2015 the compiler will complain that 'tzname' is not defined.
+				Replace it by '_tzname'.
 			-	Compile
 			-	Note: the drive letter does not matter
 		-	The directory structure of the compiled Exiv2 library should look like this:
@@ -42,7 +44,7 @@ The required libraries are:
 					<header files here>
 				bin
 					vc12 (or the vc version you built for)
-						x64 (or the architecture you built for)
+						x64
 							Debug
 								<debug dlls and libs here>
 							Release
