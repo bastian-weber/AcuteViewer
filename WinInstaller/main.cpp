@@ -36,7 +36,7 @@ namespace uninstallation {
 							"libexiv2.dll",
 							"libexpat.dll",
 							"zlib1.dll",
-							"opencv_world300.dll",
+							"opencv_world310.dll",
 							"SimpleViewer.exe",
 							"SimpleViewer.ini",
 							"readme.txt",
