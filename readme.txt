@@ -6,9 +6,9 @@ With cmake you can automatically create a Visual Studio project on Windows or a 
 
 The required libraries are:
 
-	1. OpenCV (currently 3.0)
+	1. OpenCV (currently 3.1)
 			http://opencv.org/downloads.html
-	2. Qt (currently 5.5.1)
+	2. Qt (currently 5.6)
 	3. Exiv2 (currently 0.25)
 			Precompiled for Windows (VS2015, x64): https://bitbucket.org/bastian_weber/simpleviewer/downloads
 			Or source: http://www.exiv2.org/download.html

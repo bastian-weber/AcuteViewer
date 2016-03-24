@@ -8,7 +8,7 @@ for presentation purposes and to evaluate how an image looks when it is downscal
 the actual screen resolution.
 
 You can use the WinInstaller.exe to install Simple Viewer on your Windows system. The
-Visual C++ 2013 Redistributable has to be installed before if not already present.
+Visual C++ 2015 Redistributable has to be installed before if not already present.
 Refer to the How_to_install.txt for installation instructions on Linux.
 
 Simple Viewer  is open source. The code repsitory can be found at:
