@@ -34,7 +34,14 @@ View Navigation
     Mouse Wheel                                 Zoom in and out; hold Ctrl to zoom in 
                                                 smaller steps
     Middle Mouse Button (Mouse Wheel)           Hold and drag mouse forth or back to zoom
+
     + and - Keys                                Same as scroll wheel
+    Ctrl + 0                                    Zoom to fit
+    Ctrl + Alt + 0                              Zoom to 100%
+    Shift + Mouse Wheel                         Rotate view in steps of 10°  
+    Ctrl + Left Arrow Key                       Rotate view 90° to the left
+    Ctrl + Right Arrow Key                      Rotate view 90° to the right
+    Escape Key                                  Reset view rotation
     Left Mouse button                           Double click to toggle full-screen mode
     F Key                                       Toggle full-screen mode
 
