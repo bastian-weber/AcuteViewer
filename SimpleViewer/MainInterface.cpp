@@ -336,6 +336,8 @@ namespace sv {
 	}
 
 	void MainInterface::mouseReleaseEvent(QMouseEvent* e) {
+		if (e->button() == Qt::ForwardButton) this->loadNextImage();
+		if (e->button() == Qt::BackButton) this->loadPreviousImage();
 		if (this->menuBar()->isVisible()) {
 			this->hideMenuBar();
 		}
