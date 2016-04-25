@@ -168,6 +168,20 @@ namespace sv {
 		this->viewMenu->addAction(this->fullscreenAction);
 		this->addAction(this->fullscreenAction);
 
+		this->rotateLeftAction = new QAction(tr("&Rotate View Left"), this);
+		this->rotateLeftAction->setShortcut(Qt::CTRL + Qt::Key_Left);
+		this->rotateLeftAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->rotateLeftAction, SIGNAL(triggered(bool)), this, SLOT(rotateLeft()));
+		this->viewMenu->addAction(this->rotateLeftAction);
+		this->addAction(this->rotateLeftAction);
+
+		this->rotateRightAction = new QAction(tr("&Rotate View Right"), this);
+		this->rotateRightAction->setShortcut(Qt::CTRL + Qt::Key_Right);
+		this->rotateRightAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->rotateRightAction, SIGNAL(triggered(bool)), this, SLOT(rotateRight()));
+		this->viewMenu->addAction(this->rotateRightAction);
+		this->addAction(this->rotateRightAction);
+
 		this->viewMenu->addSeparator();
 
 		this->saveSizeAction = new QAction(tr("&Save Current Window Size and Position as Default"), this);
@@ -908,6 +922,14 @@ namespace sv {
 		} else {
 			this->enterFullscreen();
 		}
+	}
+
+	void MainInterface::rotateLeft() {
+		this->imageView->rotateLeft();
+	}
+
+	void MainInterface::rotateRight() {
+		this->imageView->rotateRight();
 	}
 
 	void MainInterface::toggleInfoOverlay(bool value) {

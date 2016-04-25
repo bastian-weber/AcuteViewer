@@ -113,6 +113,8 @@ namespace sv {
 		QAction* menuBarAutoHideAction;
 		QAction* saveSizeAction;
 		QAction* fullscreenAction;
+		QAction* rotateLeftAction;
+		QAction* rotateRightAction;
 		QAction* slideshowAction;
 		QAction* slideshowNoDialogAction;
 		QAction* zoomLevelAction;
@@ -143,6 +145,8 @@ namespace sv {
 		void startSlideshow();
 		void stopSlideshow();
 		void toggleFullscreen();
+		void rotateLeft();
+		void rotateRight();
 		void toggleInfoOverlay(bool value);
 		void toggleZoomLevelOverlay(bool value);
 		void reactToReadImageCompletion(Image image);
