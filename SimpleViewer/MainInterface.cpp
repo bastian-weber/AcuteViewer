@@ -139,7 +139,7 @@ namespace sv {
 		this->viewMenu->addAction(this->sharpeningAction);
 		this->addAction(this->sharpeningAction);
 
-		this->sharpeningOptionsAction = new QAction(tr("Sharpening Options..."), this);
+		this->sharpeningOptionsAction = new QAction(tr("Sharpening &Options..."), this);
 		this->sharpeningOptionsAction->setShortcut(Qt::Key_O);
 		this->sharpeningOptionsAction->setShortcutContext(Qt::ApplicationShortcut);
 		QObject::connect(this->sharpeningOptionsAction, SIGNAL(triggered(bool)), this, SLOT(showSharpeningOptions()));
@@ -168,19 +168,42 @@ namespace sv {
 		this->viewMenu->addAction(this->fullscreenAction);
 		this->addAction(this->fullscreenAction);
 
-		this->rotateLeftAction = new QAction(tr("&Rotate View Left"), this);
+		this->viewMenu->addSeparator();
+
+		this->rotateLeftAction = new QAction(tr("Rotate View &Left"), this);
 		this->rotateLeftAction->setShortcut(Qt::CTRL + Qt::Key_Left);
 		this->rotateLeftAction->setShortcutContext(Qt::ApplicationShortcut);
 		QObject::connect(this->rotateLeftAction, SIGNAL(triggered(bool)), this, SLOT(rotateLeft()));
 		this->viewMenu->addAction(this->rotateLeftAction);
 		this->addAction(this->rotateLeftAction);
 
-		this->rotateRightAction = new QAction(tr("&Rotate View Right"), this);
+		this->rotateRightAction = new QAction(tr("Rotate &View Right"), this);
 		this->rotateRightAction->setShortcut(Qt::CTRL + Qt::Key_Right);
 		this->rotateRightAction->setShortcutContext(Qt::ApplicationShortcut);
 		QObject::connect(this->rotateRightAction, SIGNAL(triggered(bool)), this, SLOT(rotateRight()));
 		this->viewMenu->addAction(this->rotateRightAction);
 		this->addAction(this->rotateRightAction);
+
+		this->resetRotationAction = new QAction(tr("&Reset Rotation"), this);
+		this->resetRotationAction->setShortcut(Qt::Key_Escape);
+		this->resetRotationAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->resetRotationAction, SIGNAL(triggered(bool)), this, SLOT(resetRotation()));
+		this->viewMenu->addAction(this->resetRotationAction);
+		this->addAction(this->resetRotationAction);
+
+		this->zoomToFitAction = new QAction(tr("Zoo&m to Fit"), this);
+		this->zoomToFitAction->setShortcut(Qt::CTRL + Qt::Key_0);
+		this->zoomToFitAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->zoomToFitAction, SIGNAL(triggered(bool)), this->imageView, SLOT(resetZoom()));
+		this->viewMenu->addAction(this->zoomToFitAction);
+		this->addAction(this->zoomToFitAction);
+
+		this->zoomTo100Action = new QAction(tr("Zoom to &100%"), this);
+		this->zoomTo100Action->setShortcut(Qt::CTRL + Qt::ALT + Qt::Key_0);
+		this->zoomTo100Action->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->zoomTo100Action, SIGNAL(triggered(bool)), this, SLOT(zoomTo100()));
+		this->viewMenu->addAction(this->zoomTo100Action);
+		this->addAction(this->zoomTo100Action);
 
 		this->viewMenu->addSeparator();
 
@@ -332,14 +355,18 @@ namespace sv {
 	}
 
 	void MainInterface::keyReleaseEvent(QKeyEvent* e) {
-		if (!this->menuBar()->isVisible() && e->key() == Qt::Key_Alt) {
-			this->showMenuBar();
-			e->accept();
-		} else {
-			this->hideMenuBar();
-			e->ignore();
+		if (e->key() == Qt::Key_Alt && !this->skipNextAltRelease) {
+			if (!this->menuBar()->isVisible()){
+				this->showMenuBar();
+				e->accept();
+			} else {
+				this->hideMenuBar();
+				e->ignore();
+			}
 		}
-
+		if (e->key() == Qt::Key_Alt) {
+			this->skipNextAltRelease = false;
+		}
 	}
 
 	void MainInterface::mouseDoubleClickEvent(QMouseEvent* e) {
@@ -374,6 +401,16 @@ namespace sv {
 				QWindowStateChangeEvent* windowStateChangeEvent = static_cast<QWindowStateChangeEvent*>(e);
 				this->settings->setValue("maximized", bool(windowStateChangeEvent->oldState() & Qt::WindowMaximized));
 				this->saveSizeAction->setEnabled(false);
+			}
+		}
+	}
+
+	void MainInterface::wheelEvent(QWheelEvent * e) {
+		if (e->modifiers() == Qt::ShiftModifier) {
+			if (e->delta() > 0) {
+				this->imageView->rotateBy(-10);
+			} else if (e->delta() < 0) {
+				this->imageView->rotateBy(10);
 			}
 		}
 	}
@@ -930,6 +967,15 @@ namespace sv {
 
 	void MainInterface::rotateRight() {
 		this->imageView->rotateRight();
+	}
+
+	void MainInterface::resetRotation() {
+		this->imageView->setRotation(0);
+	}
+
+	void MainInterface::zoomTo100() {
+		this->skipNextAltRelease = true;
+		this->imageView->zoomToHundredPercent();
 	}
 
 	void MainInterface::toggleInfoOverlay(bool value) {

@@ -41,6 +41,8 @@ namespace hb {
 		void rotateLeft();
 		void rotateRight();
 		void setRotation(double degrees);
+		void rotateBy(double degrees);
+		double getRotation() const;
 		void centerViewportOn(QPointF point);
 		void setPreventMagnificationInDefaultZoom(bool value);
 
@@ -97,7 +99,7 @@ namespace hb {
 	public slots:
 		void zoomInKey();
 		void zoomOutKey();
-		void zoomToHundredPercent(QPointF center);
+		void zoomToHundredPercent(QPointF center = QPointF());
 		void resetZoom();
 		void resetMask();
 		void setBrushRadius(int value);
