@@ -119,6 +119,14 @@ namespace hb {
 		if (this->isVisible()) this->update();
 	}
 
+	void ImageView::rotateBy(double degrees) {
+		this->setRotation(this->viewRotation + degrees);
+	}
+
+	double ImageView::getRotation() const {
+		return this->viewRotation;
+	}
+
 	///Moves the viewport to the point \p point.
 	void ImageView::centerViewportOn(QPointF point) {
 		QPointF transformedPoint = this->getTransform().map(point);
@@ -543,6 +551,9 @@ namespace hb {
 	///Displays the image at 100% magnification; the point \p center (in widget screen coordinates) will be centered.
 	void ImageView::zoomToHundredPercent(QPointF center) {
 		if (this->imageAssigned) {
+			if (center == QPointF()) {
+				center = QPointF(this->width() / 2, this->height() / 2);
+			}
 			QPointF mousePositionCoordinateBefore = this->getTransform().inverted().map(center);
 			double desiredZoomFactor = 1 / this->getWindowScalingFactor();
 			this->zoomExponent = log(desiredZoomFactor) / log(this->zoomBasis);

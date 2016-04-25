@@ -48,6 +48,7 @@ namespace sv {
 		void mouseReleaseEvent(QMouseEvent* e);
 		void mouseMoveEvent(QMouseEvent* e);
 		void changeEvent(QEvent* e);
+		void wheelEvent(QWheelEvent* e);
 	private:
 		//functions
 		std::shared_future<Image>& currentThread();
@@ -88,6 +89,7 @@ namespace sv {
 		std::atomic<bool> paintLoadingHint{ false };
 		std::map<QString, std::shared_future<Image>> threads;
 		std::shared_ptr<QSettings> settings;
+		bool skipNextAltRelease = false;
 		unsigned int fontSize;
 		unsigned int lineSpacing;
 
@@ -115,6 +117,9 @@ namespace sv {
 		QAction* fullscreenAction;
 		QAction* rotateLeftAction;
 		QAction* rotateRightAction;
+		QAction* resetRotationAction;
+		QAction* zoomTo100Action;
+		QAction* zoomToFitAction;
 		QAction* slideshowAction;
 		QAction* slideshowNoDialogAction;
 		QAction* zoomLevelAction;
@@ -147,6 +152,8 @@ namespace sv {
 		void toggleFullscreen();
 		void rotateLeft();
 		void rotateRight();
+		void resetRotation();
+		void zoomTo100();
 		void toggleInfoOverlay(bool value);
 		void toggleZoomLevelOverlay(bool value);
 		void reactToReadImageCompletion(Image image);
