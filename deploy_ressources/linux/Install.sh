@@ -15,7 +15,10 @@ if [ -d "$path" ]; then
 	installPath="$path/SimpleViewer"
 	uninstallScript="$installPath/Uninstall.sh"
 	if mkdir -p $installPath; then
+		#copy files
 		cp -r "$scriptPath/"* "$installPath"
+		#add symbolic link for use from command line
+		sudo ln -s $installPath/Run_SimpleViewer.sh /usr/bin/simpleviewer
 		#write desktop file
 		cat <<- _EOF_ > "/usr/share/applications/SimpleViewer.desktop"
 		[Desktop Entry]
