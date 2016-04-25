@@ -34,7 +34,6 @@ View Navigation
     Mouse Wheel                                 Zoom in and out; hold Ctrl to zoom in 
                                                 smaller steps
     Middle Mouse Button (Mouse Wheel)           Hold and drag mouse forth or back to zoom
-
     + and - Keys                                Same as scroll wheel
     Ctrl + 0                                    Zoom to fit
     Ctrl + Alt + 0                              Zoom to 100%
