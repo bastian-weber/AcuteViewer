@@ -199,7 +199,7 @@ if(DEFINED EXIV_ROOT_FOUND)
 endif()
 
 #copy dlls
-if(MSVC)
+if(MSVC AND DEFINED RELEASE_DLLS AND DEFINED DEBUG_DLLS)
 
 	set(COPY_COMMAND_RELEASE "-E copy_if_different ")
 	set(COPY_COMMAND_DEBUG "-E copy_if_different ")
