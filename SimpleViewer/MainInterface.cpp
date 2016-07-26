@@ -185,7 +185,7 @@ namespace sv {
 		this->addAction(this->rotateRightAction);
 
 		this->resetRotationAction = new QAction(tr("&Reset Rotation"), this);
-		this->resetRotationAction->setShortcut(Qt::Key_Escape);
+		this->resetRotationAction->setShortcut(Qt::SHIFT + Qt::Key_Escape);
 		this->resetRotationAction->setShortcutContext(Qt::ApplicationShortcut);
 		QObject::connect(this->resetRotationAction, SIGNAL(triggered(bool)), this, SLOT(resetRotation()));
 		this->viewMenu->addAction(this->resetRotationAction);
