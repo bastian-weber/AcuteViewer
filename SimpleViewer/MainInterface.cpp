@@ -4,9 +4,9 @@ namespace sv {
 
 	Image::Image() { }
 
-	Image::Image(cv::Mat mat, std::shared_ptr<ExifData> exifData) : matrix(mat), exifData(exifData), valid(true) { }
+	Image::Image(QImage mat, std::shared_ptr<ExifData> exifData) : matrix(mat), exifData(exifData), valid(true) { }
 
-	cv::Mat Image::mat() const {
+	QImage Image::mat() const {
 		return this->matrix;
 	}
 
@@ -446,24 +446,27 @@ namespace sv {
 	}
 
 	Image MainInterface::readImage(QString path, bool emitSignals) {
-		cv::Mat image;
+		QImage image(path);
 		std::shared_ptr<ExifData> exifData;
-		if (!utility::isCharCompatible(path)) {
-			std::shared_ptr<std::vector<char>> buffer = utility::readFileIntoBuffer(path);
-			if (buffer->empty()) {
-				if (emitSignals) emit(readImageFinished(Image()));
-				return Image();
-			}
-			image = cv::imdecode(*buffer, CV_LOAD_IMAGE_COLOR);
-			if (image.data) exifData = std::shared_ptr<ExifData>(new ExifData(buffer));
-		} else {
-			image = cv::imread(path.toStdString(), CV_LOAD_IMAGE_COLOR);
-			if (image.data) exifData = std::shared_ptr<ExifData>(new ExifData(path, !this->exifIsRequired()));
-		}
+		if(!image.isNull()) exifData = std::shared_ptr<ExifData>(new ExifData(path, !this->exifIsRequired()));
+
+		//if (!utility::isCharCompatible(path)) {
+		//	std::shared_ptr<std::vector<char>> buffer = utility::readFileIntoBuffer(path);
+		//	if (buffer->empty()) {
+		//		if (emitSignals) emit(readImageFinished(Image()));
+		//		return Image();
+		//	}
+		//	image = cv::imdecode(*buffer, CV_LOAD_IMAGE_COLOR);
+		//	if (image.data) exifData = std::shared_ptr<ExifData>(new ExifData(buffer));
+		//} else {
+		//	image = cv::imread(path.toStdString(), CV_LOAD_IMAGE_COLOR);
+		//	if (image.data) exifData = std::shared_ptr<ExifData>(new ExifData(path, !this->exifIsRequired()));
+		//}
+
 		Image result;
-		if (image.data) {
+		if (!image.isNull()) {
 			QObject::connect(exifData.get(), SIGNAL(loadingFinished(ExifData*)), this, SLOT(reactToExifLoadingCompletion(ExifData*)));
-			cv::cvtColor(image, image, CV_BGR2RGB);
+			//cv::cvtColor(image, image, CV_BGR2RGB);
 			result = Image(image, exifData);
 		}
 		if (emitSignals) emit(readImageFinished(result));
@@ -679,7 +682,7 @@ namespace sv {
 							this->currentFileInfo.fileName());
 			int sizeAndResolutionTopOffset = 30 + this->lineSpacing + 2 * metrics.height();
 			if (this->image.isValid()) {
-				QString resolution = QString::fromWCharArray(L"%1\u2006x\u2006%2").arg(this->image.mat().cols).arg(this->image.mat().rows);
+				QString resolution = QString::fromWCharArray(L"%1\u2006x\u2006%2").arg(this->image.mat().width()).arg(this->image.mat().height());
 				canvas.drawText(QPoint(30, sizeAndResolutionTopOffset),
 								QString::fromWCharArray(L"%1, %2\u2006Mb").arg(resolution).arg(this->currentFileInfo.size() / 1048576.0, 0, 'f', 2));
 				if (this->image.exif()->isReady()) {
