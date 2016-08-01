@@ -590,18 +590,19 @@ namespace sv {
 		if (this->loading) return;
 		std::unique_lock<std::mutex> lock(this->threadDeletionMutex);
 		this->loading = true;
-
+		
 		QString path = paths.first();
 		//find the path in the current directory listing
 		QFileInfo fileInfo = QFileInfo(QDir::cleanPath(path));
 		QDir directory = fileInfo.absoluteDir();
 		QString filename = fileInfo.fileName();
-		//always scan directory; uncomment to scan only if different directory
-		//if (directory != this->currentDirectory || this->noCurrentDir) {
 		this->currentDirectory = directory;
 		this->noCurrentDir = false;
-		this->filesInDirectory = paths.toVector();
-		//}
+		this->filesInDirectory.resize(paths.size());
+		for (int i = 0; i < paths.size(); ++i) {
+			this->filesInDirectory[i] = QFileInfo(QDir::cleanPath(paths[i])).fileName();
+		}
+
 		if (this->filesInDirectory.size() == 0 || this->currentFileIndex < 0 || this->currentFileIndex >= this->filesInDirectory.size() || this->filesInDirectory.at(this->currentFileIndex) != filename) {
 			this->currentFileIndex = this->filesInDirectory.indexOf(filename);
 		}
