@@ -1332,14 +1332,18 @@ namespace hb {
 			double scalingFactor = std::pow(this->zoomBasis, this->zoomExponent) * this->getWindowScalingFactor();
 			if (scalingFactor < 1) {
 				if (!this->isMat) {
-					if (this->image.format() == QImage::Format_RGB888 || this->image.format() == QImage::Format_Indexed8 || this->image.format() == QImage::Format_ARGB32) {
+					if (this->image.format() == QImage::Format_RGB888 || 
+						this->image.format() == QImage::Format_Indexed8 || 
+						this->image.format() == QImage::Format_Grayscale8 || 
+						this->image.format() == QImage::Format_ARGB32 || 
+						this->image.format() == QImage::Format_RGB32) {
 						cv::Mat orig;
 						ImageView::shallowCopyImageToMat(this->image, orig);
 						cv::resize(orig, this->downsampledMat, cv::Size(), scalingFactor, scalingFactor, cv::INTER_AREA);
 						if (this->enablePostResizeSharpening) {
 							ImageView::sharpen(this->downsampledMat, this->postResizeSharpeningStrength, this->postResizeSharpeningRadius);
 						}
-						ImageView::deepCopyMatToImage(this->downsampledMat, this->downsampledImage);
+						ImageView::shallowCopyMatToImage(this->downsampledMat, this->downsampledImage);
 					} else {
 						//alternative
 						this->downsampledImage = this->image.scaledToWidth(this->image.width() * scalingFactor, Qt::SmoothTransformation);
@@ -1516,7 +1520,7 @@ namespace hb {
 	}
 
 	void ImageView::imageToMat(const QImage& image, cv::Mat& destMat, bool deepCopy) {
-		if (image.format() == QImage::Format_ARGB32 || image.format() == QImage::Format_ARGB32_Premultiplied) {
+		if (image.format() == QImage::Format_ARGB32 || image.format() == QImage::Format_ARGB32_Premultiplied || image.format() == QImage::Format_RGB32) {
 			if (deepCopy) {
 				destMat = cv::Mat(image.height(), image.width(), CV_8UC4, const_cast<uchar*>(image.bits()), image.bytesPerLine()).clone();
 			} else {
@@ -1528,7 +1532,7 @@ namespace hb {
 			} else {
 				destMat = cv::Mat(image.height(), image.width(), CV_8UC3, const_cast<uchar*>(image.bits()), image.bytesPerLine());
 			}
-		} else if (image.format() == QImage::Format_Indexed8) {
+		} else if (image.format() == QImage::Format_Indexed8 || image.format() == QImage::Format_Grayscale8) {
 			if (deepCopy) {
 				destMat = cv::Mat(image.height(), image.width(), CV_8UC1, const_cast<uchar*>(image.bits()), image.bytesPerLine()).clone();
 			} else {
