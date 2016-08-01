@@ -36,6 +36,7 @@ namespace sv {
 		Q_OBJECT
 	public:
 		MainInterface(QString openWithFilename, QWidget *parent = 0);
+		MainInterface(QStringList openWithFilenames, QWidget *parent = 0);
 		~MainInterface();
 		QSize sizeHint() const;
 	protected:
@@ -51,6 +52,7 @@ namespace sv {
 		void wheelEvent(QWheelEvent* e);
 	private:
 		//functions
+		void initialize();
 		std::shared_future<Image>& currentThread();
 		bool exifIsRequired() const;
 		Image readImage(QString path, bool emitSignals = false);
@@ -62,6 +64,7 @@ namespace sv {
 		size_t previousFileIndex() const;
 		QString getFullImagePath(size_t index) const;
 		void loadImage(QString path);
+		void loadImages(QStringList paths);
 		void displayImageIfOk();
 		void enterFullscreen();
 		void exitFullscreen();

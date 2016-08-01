@@ -24,6 +24,191 @@ namespace sv {
 		: QMainWindow(parent),
 		settings(new QSettings(QSettings::IniFormat, QSettings::UserScope, "Simple Viewer", "Simple Viewer")) {
 
+		this->initialize();
+
+		if (openWithFilename != QString()) {
+			this->loadImage(openWithFilename);
+		}
+	}
+
+	MainInterface::MainInterface(QStringList openWithFilenames, QWidget * parent) 
+		: QMainWindow(parent),
+		settings(new QSettings(QSettings::IniFormat, QSettings::UserScope, "Simple Viewer", "Simple Viewer")) {
+
+		this->initialize();
+		
+		this->loadImages(openWithFilenames);
+	}
+
+	MainInterface::~MainInterface() {
+		delete this->imageView;
+		delete this->slideshowDialog;
+		delete this->sharpeningDialog;
+		delete this->fileMenu;
+		delete this->viewMenu;
+		delete this->slideshowMenu;
+		delete this->applicationMenu;
+		delete this->quitAction;
+		delete this->openAction;
+		delete this->refreshAction;
+		delete this->resetSettingsAction;
+		delete this->showInfoAction;
+		delete this->smoothingAction;
+		delete this->enlargementAction;
+		delete this->sharpeningAction;
+		delete this->sharpeningOptionsAction;
+		delete this->menuBarAutoHideAction;
+		delete this->slideshowAction;
+		delete this->slideshowNoDialogAction;
+		delete this->zoomLevelAction;
+		delete this->installAction;
+		delete this->uninstallAction;
+		delete this->mouseHideTimer;
+		delete this->threadCleanUpTimer;
+		delete this->slideshowTimer;
+	}
+
+	QSize MainInterface::sizeHint() const {
+		return this->settings->value("windowSize", QSize(900, 600)).toSize();
+		//return QSize(900, 600);
+	}
+
+	//============================================================================== PROTECTED ==============================================================================\\
+
+	bool MainInterface::eventFilter(QObject* object, QEvent* e) {
+		if (e->type() == QEvent::MouseButtonRelease) {
+			QMouseEvent* keyEvent = (QMouseEvent*)e;
+			this->mouseReleaseEvent(keyEvent);
+		} else if (e->type() == QEvent::Wheel) {
+			if (this->menuBar()->isVisible()) {
+				this->hideMenuBar();
+			}
+		} else if (e->type() == QEvent::MouseMove) {
+			QMouseEvent* keyEvent = (QMouseEvent*)e;
+			this->mouseMoveEvent(keyEvent);
+		}
+		return false;
+	}
+
+	void MainInterface::dragEnterEvent(QDragEnterEvent* e) {
+		if (e->mimeData()->hasUrls()) {
+			if (!e->mimeData()->urls().isEmpty() && QFileInfo(e->mimeData()->urls().first().toLocalFile()).isFile()) {
+				e->acceptProposedAction();
+			}
+		}
+	}
+
+	void MainInterface::dropEvent(QDropEvent* e) {
+		if (!e->mimeData()->urls().isEmpty()) {
+			if (e->mimeData()->urls().size() == 1) {
+				QString path = e->mimeData()->urls().first().toLocalFile();
+				loadImage(path);
+			} else {
+				QStringList paths;
+				for (QUrl& url : e->mimeData()->urls()) {
+					paths.append(url.toLocalFile());
+				}
+				loadImages(paths);
+			}
+		}
+	}
+
+	void MainInterface::keyPressEvent(QKeyEvent* e) {
+		if (e->modifiers() == (Qt::ControlModifier | Qt::ShiftModifier)) {
+			if (e->key() == Qt::Key_Right) {
+				this->changeFontSizeBy(1);
+				e->accept();
+			} else if (e->key() == Qt::Key_Left) {
+				this->changeFontSizeBy(-1);
+				e->accept();
+			} else if (e->key() == Qt::Key_Up) {
+				this->changeLineSpacingBy(1);
+				e->accept();
+			} else if (e->key() == Qt::Key_Down) {
+				this->changeLineSpacingBy(-1);
+				e->accept();
+			}
+		} else if (e->key() == Qt::Key_Right || e->key() == Qt::Key_Down) {
+			loadNextImage();
+			e->accept();
+		} else if (e->key() == Qt::Key_Left || e->key() == Qt::Key_Up) {
+			loadPreviousImage();
+			e->accept();
+		} else if (e->key() == Qt::Key_Escape) {
+			if (this->menuBar()->isVisible()) {
+				this->hideMenuBar();
+			} else if (this->isFullScreen()) {
+				this->exitFullscreen();
+			}
+		} else {
+			e->ignore();
+		}
+	}
+
+	void MainInterface::keyReleaseEvent(QKeyEvent* e) {
+		if (e->key() == Qt::Key_Alt && !this->skipNextAltRelease) {
+			if (!this->menuBar()->isVisible()){
+				this->showMenuBar();
+				e->accept();
+			} else {
+				this->hideMenuBar();
+				e->ignore();
+			}
+		}
+		if (e->key() == Qt::Key_Alt) {
+			this->skipNextAltRelease = false;
+		}
+	}
+
+	void MainInterface::mouseDoubleClickEvent(QMouseEvent* e) {
+		if (e->button() == Qt::LeftButton) {
+			this->toggleFullscreen();
+			e->accept();
+		}
+	}
+
+	void MainInterface::mouseReleaseEvent(QMouseEvent* e) {
+		if (e->button() == Qt::ForwardButton) this->loadNextImage();
+		if (e->button() == Qt::BackButton) this->loadPreviousImage();
+		if (this->menuBar()->isVisible()) {
+			this->hideMenuBar();
+		}
+	}
+
+	void MainInterface::mouseMoveEvent(QMouseEvent* e) {
+		if (this->isFullScreen()) {
+			this->showMouse();
+			this->enableAutomaticMouseHide();
+		}
+		e->ignore();
+	}
+
+	void MainInterface::changeEvent(QEvent* e) {
+		if (e->type() == QEvent::WindowStateChange) {
+			if (!this->isMinimized() && !this->isFullScreen()) {
+				this->settings->setValue("maximized", this->isMaximized());
+				this->saveSizeAction->setEnabled(!this->isMaximized());
+			} else if (this->isFullScreen()) {
+				QWindowStateChangeEvent* windowStateChangeEvent = static_cast<QWindowStateChangeEvent*>(e);
+				this->settings->setValue("maximized", bool(windowStateChangeEvent->oldState() & Qt::WindowMaximized));
+				this->saveSizeAction->setEnabled(false);
+			}
+		}
+	}
+
+	void MainInterface::wheelEvent(QWheelEvent * e) {
+		if (e->modifiers() == Qt::ShiftModifier) {
+			if (e->delta() > 0) {
+				this->imageView->rotateBy(-10);
+			} else if (e->delta() < 0) {
+				this->imageView->rotateBy(10);
+			}
+		}
+	}
+
+	//=============================================================================== PRIVATE ===============================================================================\\
+
+	void MainInterface::initialize() {
 		setAcceptDrops(true);
 		qRegisterMetaType<Image>("Image");
 		QObject::connect(this, SIGNAL(readImageFinished(Image)), this, SLOT(reactToReadImageCompletion(Image)));
@@ -250,172 +435,7 @@ namespace sv {
 		if (this->settings->value("maximized", false).toBool()) {
 			this->showMaximized();
 		}
-
-
-		if (openWithFilename != QString()) {
-			this->loadImage(openWithFilename);
-		}
 	}
-
-	MainInterface::~MainInterface() {
-		delete this->imageView;
-		delete this->slideshowDialog;
-		delete this->sharpeningDialog;
-		delete this->fileMenu;
-		delete this->viewMenu;
-		delete this->slideshowMenu;
-		delete this->applicationMenu;
-		delete this->quitAction;
-		delete this->openAction;
-		delete this->refreshAction;
-		delete this->resetSettingsAction;
-		delete this->showInfoAction;
-		delete this->smoothingAction;
-		delete this->enlargementAction;
-		delete this->sharpeningAction;
-		delete this->sharpeningOptionsAction;
-		delete this->menuBarAutoHideAction;
-		delete this->slideshowAction;
-		delete this->slideshowNoDialogAction;
-		delete this->zoomLevelAction;
-		delete this->installAction;
-		delete this->uninstallAction;
-		delete this->mouseHideTimer;
-		delete this->threadCleanUpTimer;
-		delete this->slideshowTimer;
-	}
-
-	QSize MainInterface::sizeHint() const {
-		return this->settings->value("windowSize", QSize(900, 600)).toSize();
-		//return QSize(900, 600);
-	}
-
-	//============================================================================== PROTECTED ==============================================================================\\
-
-	bool MainInterface::eventFilter(QObject* object, QEvent* e) {
-		if (e->type() == QEvent::MouseButtonRelease) {
-			QMouseEvent* keyEvent = (QMouseEvent*)e;
-			this->mouseReleaseEvent(keyEvent);
-		} else if (e->type() == QEvent::Wheel) {
-			if (this->menuBar()->isVisible()) {
-				this->hideMenuBar();
-			}
-		} else if (e->type() == QEvent::MouseMove) {
-			QMouseEvent* keyEvent = (QMouseEvent*)e;
-			this->mouseMoveEvent(keyEvent);
-		}
-		return false;
-	}
-
-	void MainInterface::dragEnterEvent(QDragEnterEvent* e) {
-		if (e->mimeData()->hasUrls()) {
-			if (!e->mimeData()->urls().isEmpty() && QFileInfo(e->mimeData()->urls().first().toLocalFile()).isFile()) {
-				e->acceptProposedAction();
-			}
-		}
-	}
-
-	void MainInterface::dropEvent(QDropEvent* e) {
-		if (!e->mimeData()->urls().isEmpty()) {
-			QString path = e->mimeData()->urls().first().toLocalFile();
-			loadImage(path);
-		}
-	}
-
-	void MainInterface::keyPressEvent(QKeyEvent* e) {
-		if (e->modifiers() == (Qt::ControlModifier | Qt::ShiftModifier)) {
-			if (e->key() == Qt::Key_Right) {
-				this->changeFontSizeBy(1);
-				e->accept();
-			} else if (e->key() == Qt::Key_Left) {
-				this->changeFontSizeBy(-1);
-				e->accept();
-			} else if (e->key() == Qt::Key_Up) {
-				this->changeLineSpacingBy(1);
-				e->accept();
-			} else if (e->key() == Qt::Key_Down) {
-				this->changeLineSpacingBy(-1);
-				e->accept();
-			}
-		} else if (e->key() == Qt::Key_Right || e->key() == Qt::Key_Down) {
-			loadNextImage();
-			e->accept();
-		} else if (e->key() == Qt::Key_Left || e->key() == Qt::Key_Up) {
-			loadPreviousImage();
-			e->accept();
-		} else if (e->key() == Qt::Key_Escape) {
-			if (this->menuBar()->isVisible()) {
-				this->hideMenuBar();
-			} else if (this->isFullScreen()) {
-				this->exitFullscreen();
-			}
-		} else {
-			e->ignore();
-		}
-	}
-
-	void MainInterface::keyReleaseEvent(QKeyEvent* e) {
-		if (e->key() == Qt::Key_Alt && !this->skipNextAltRelease) {
-			if (!this->menuBar()->isVisible()){
-				this->showMenuBar();
-				e->accept();
-			} else {
-				this->hideMenuBar();
-				e->ignore();
-			}
-		}
-		if (e->key() == Qt::Key_Alt) {
-			this->skipNextAltRelease = false;
-		}
-	}
-
-	void MainInterface::mouseDoubleClickEvent(QMouseEvent* e) {
-		if (e->button() == Qt::LeftButton) {
-			this->toggleFullscreen();
-			e->accept();
-		}
-	}
-
-	void MainInterface::mouseReleaseEvent(QMouseEvent* e) {
-		if (e->button() == Qt::ForwardButton) this->loadNextImage();
-		if (e->button() == Qt::BackButton) this->loadPreviousImage();
-		if (this->menuBar()->isVisible()) {
-			this->hideMenuBar();
-		}
-	}
-
-	void MainInterface::mouseMoveEvent(QMouseEvent* e) {
-		if (this->isFullScreen()) {
-			this->showMouse();
-			this->enableAutomaticMouseHide();
-		}
-		e->ignore();
-	}
-
-	void MainInterface::changeEvent(QEvent* e) {
-		if (e->type() == QEvent::WindowStateChange) {
-			if (!this->isMinimized() && !this->isFullScreen()) {
-				this->settings->setValue("maximized", this->isMaximized());
-				this->saveSizeAction->setEnabled(!this->isMaximized());
-			} else if (this->isFullScreen()) {
-				QWindowStateChangeEvent* windowStateChangeEvent = static_cast<QWindowStateChangeEvent*>(e);
-				this->settings->setValue("maximized", bool(windowStateChangeEvent->oldState() & Qt::WindowMaximized));
-				this->saveSizeAction->setEnabled(false);
-			}
-		}
-	}
-
-	void MainInterface::wheelEvent(QWheelEvent * e) {
-		if (e->modifiers() == Qt::ShiftModifier) {
-			if (e->delta() > 0) {
-				this->imageView->rotateBy(-10);
-			} else if (e->delta() < 0) {
-				this->imageView->rotateBy(10);
-			}
-		}
-	}
-
-	//=============================================================================== PRIVATE ===============================================================================\\
 
 	std::shared_future<Image>& MainInterface::currentThread() {
 		return this->threads[this->currentThreadName];
@@ -553,6 +573,34 @@ namespace sv {
 			collator.setNumericMode(true);
 			std::sort(contents.begin(), contents.end(), collator);
 			this->filesInDirectory = contents.toVector();
+		//}
+		if (this->filesInDirectory.size() == 0 || this->currentFileIndex < 0 || this->currentFileIndex >= this->filesInDirectory.size() || this->filesInDirectory.at(this->currentFileIndex) != filename) {
+			this->currentFileIndex = this->filesInDirectory.indexOf(filename);
+		}
+		this->currentThreadName = filename;
+		this->currentFileInfo = fileInfo;
+		this->clearThreads();
+		this->threads[filename] = std::async(std::launch::async, &MainInterface::readImage, this, path, true);
+		this->setWindowTitle(this->windowTitle() + QString(tr(" - Loading...")));
+		this->paintLoadingHint = true;
+		this->imageView->update();
+	}
+
+	void MainInterface::loadImages(QStringList paths) {
+		if (this->loading) return;
+		std::unique_lock<std::mutex> lock(this->threadDeletionMutex);
+		this->loading = true;
+
+		QString path = paths.first();
+		//find the path in the current directory listing
+		QFileInfo fileInfo = QFileInfo(QDir::cleanPath(path));
+		QDir directory = fileInfo.absoluteDir();
+		QString filename = fileInfo.fileName();
+		//always scan directory; uncomment to scan only if different directory
+		//if (directory != this->currentDirectory || this->noCurrentDir) {
+		this->currentDirectory = directory;
+		this->noCurrentDir = false;
+		this->filesInDirectory = paths.toVector();
 		//}
 		if (this->filesInDirectory.size() == 0 || this->currentFileIndex < 0 || this->currentFileIndex >= this->filesInDirectory.size() || this->filesInDirectory.at(this->currentFileIndex) != filename) {
 			this->currentFileIndex = this->filesInDirectory.indexOf(filename);
