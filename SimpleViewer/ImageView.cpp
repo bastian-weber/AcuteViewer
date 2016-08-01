@@ -1332,7 +1332,6 @@ namespace hb {
 			double scalingFactor = std::pow(this->zoomBasis, this->zoomExponent) * this->getWindowScalingFactor();
 			if (scalingFactor < 1) {
 				if (!this->isMat) {
-					std::cout << image.format() << std::endl;
 					if (this->image.format() == QImage::Format_RGB888 || this->image.format() == QImage::Format_Indexed8 || this->image.format() == QImage::Format_Grayscale8 || this->image.format() == QImage::Format_ARGB32 || this->image.format() == QImage::Format_RGB32) {
 						cv::Mat orig;
 						ImageView::shallowCopyImageToMat(this->image, orig);
@@ -1341,11 +1340,9 @@ namespace hb {
 							ImageView::sharpen(this->downsampledMat, this->postResizeSharpeningStrength, this->postResizeSharpeningRadius);
 						}
 						ImageView::shallowCopyMatToImage(this->downsampledMat, this->downsampledImage);
-						std::cout << "opencv resize" << std::endl;
 					} else {
 						//alternative
 						this->downsampledImage = this->image.scaledToWidth(this->image.width() * scalingFactor, Qt::SmoothTransformation);
-						std::cout << "qt resize" << std::endl;
 					}
 				} else {
 					cv::resize(this->mat, this->downsampledMat, cv::Size(), scalingFactor, scalingFactor, cv::INTER_AREA);
