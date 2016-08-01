@@ -1504,16 +1504,11 @@ namespace hb {
 				destImage = QImage(mat.data, mat.cols, mat.rows, mat.step, QImage::Format_RGB888);
 			}
 		} else if (mat.type() == CV_8UC1) {
-			QVector<QRgb> sColorTable;
-			for (int i = 0; i < 256; ++i) {
-				sColorTable.push_back(qRgb(i, i, i));
-			}
 			if (deepCopy) {
-				destImage = QImage((const uchar*)mat.data, mat.cols, mat.rows, mat.step, QImage::Format_Indexed8).copy();
+				destImage = QImage((const uchar*)mat.data, mat.cols, mat.rows, mat.step, QImage::Format_Grayscale8).copy();
 			} else {
-				destImage = QImage(mat.data, mat.cols, mat.rows, mat.step, QImage::Format_Indexed8);
+				destImage = QImage(mat.data, mat.cols, mat.rows, mat.step, QImage::Format_Grayscale8);
 			}
-			destImage.setColorTable(sColorTable);
 		} else {
 			std::cerr << "ERROR: Conversion from cv::Mat to QImage unsuccessfull because type is unknown." << std::endl;
 		}
