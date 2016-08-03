@@ -92,9 +92,13 @@ namespace hb {
 	}
 
 	void ImageView::setUseGpu(bool value) {
-		this->useGpu = value;
 		//free the uMat
-		if (!this->useGpu) this->uMat = cv::UMat();
+		if (!value) this->uMat = cv::UMat();
+		//upload the uMat
+		if (value && !this->useGpu && this->hasMat) {
+			this->mat.copyTo(this->uMat);
+		}
+		this->useGpu = value;
 	}
 
 	bool ImageView::getUseGpu() {

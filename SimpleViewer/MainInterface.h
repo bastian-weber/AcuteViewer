@@ -117,6 +117,7 @@ namespace sv {
 		QAction* sharpeningOptionsAction;
 		QAction* menuBarAutoHideAction;
 		QAction* saveSizeAction;
+		QAction* gpuAction;
 		QAction* fullscreenAction;
 		QAction* rotateLeftAction;
 		QAction* rotateRightAction;
@@ -157,6 +158,7 @@ namespace sv {
 		void rotateRight();
 		void resetRotation();
 		void zoomTo100();
+		void toggleGpu(bool value);
 		void toggleInfoOverlay(bool value);
 		void toggleZoomLevelOverlay(bool value);
 		void reactToReadImageCompletion(Image image);
