@@ -37,6 +37,8 @@ namespace hb {
 		bool getRightClickForHundredPercentView();
 		void setUsePanZooming(bool value);
 		bool getUsesPanZooming();
+		void setUseGpu(bool value);
+		bool getUseGpu();
 
 		void rotateLeft();
 		void rotateRight();
@@ -159,6 +161,7 @@ namespace hb {
 		QColor backgroundColor;
 		bool rightClickForHundredPercentView;
 		bool usePanZooming;
+		bool useGpu = true;
 		//the users transformations (panning, zooming)
 		double zoomExponent;
 		const double zoomBasis;
@@ -190,10 +193,13 @@ namespace hb {
 		//related to displaying the image
 		QImage image;
 		cv::Mat mat;
+		cv::UMat uMat;
 		bool isMat = false;
 		bool hasMat = false;
+		bool hasUmat = false;
 		QImage downsampledImage;
 		cv::Mat downsampledMat;
+		cv::UMat downsampledUmat;
 		bool imageAssigned;
 		bool useHighQualityDownscaling;
 		bool useSmoothTransform;

@@ -91,6 +91,16 @@ namespace hb {
 		return this->usePanZooming;
 	}
 
+	void ImageView::setUseGpu(bool value) {
+		this->useGpu = value;
+		//free the uMat
+		if (!this->useGpu) this->uMat = cv::UMat();
+	}
+
+	bool ImageView::getUseGpu() {
+		return this->useGpu;
+	}
+
 	///Rotates the viewport 90° in anticlockwise direction.
 	void ImageView::rotateLeft() {
 		this->viewRotation -= 90;
@@ -154,6 +164,10 @@ namespace hb {
 		} else {
 			this->hasMat = false;
 		}
+		if (this->hasMat && this->useGpu) {
+			this->mat.copyTo(this->uMat);
+			this->hasUmat = true;
+		}
 		if (this->image.size() != oldSize) {
 			this->resetMask();
 			this->hundredPercentZoomMode = false;
@@ -178,6 +192,10 @@ namespace hb {
 		} else {
 			this->hasMat = false;
 		}
+		if (this->hasMat && this->useGpu) {
+			this->mat.copyTo(this->uMat);
+			this->hasUmat = true;
+		}
 		if (this->image.size() != oldSize) {
 			this->resetMask();
 			this->hundredPercentZoomMode = false;
@@ -201,6 +219,10 @@ namespace hb {
 			}
 			this->isMat = true;
 			this->hasMat = true;
+			if (this->hasMat && this->useGpu) {
+				this->mat.copyTo(this->uMat);
+				this->hasUmat = true;
+			}
 
 			this->imageAssigned = true;
 			this->updateResizedImage();
@@ -232,6 +254,10 @@ namespace hb {
 			ImageView::shallowCopyMatToImage(this->downsampledMat, this->downsampledImage);
 			this->isMat = true;
 			this->hasMat = true;
+			if (this->hasMat && this->useGpu) {
+				this->mat.copyTo(this->uMat);
+				this->hasUmat = true;
+			}
 
 			this->imageAssigned = true;
 			this->update();
@@ -1349,11 +1375,26 @@ namespace hb {
 					//alternative for QImages that could not be converted to a mat
 					this->downsampledImage = this->image.scaledToWidth(this->image.width() * scalingFactor, Qt::SmoothTransformation);
 				} else {
-					cv::resize(this->mat, this->downsampledMat, cv::Size(), scalingFactor, scalingFactor, cv::INTER_AREA);
+
+					bool fallBackToCpu = false;
+					if (this->useGpu) {
+						try {
+							cv::resize(this->uMat, this->downsampledUmat, cv::Size(), scalingFactor, scalingFactor, cv::INTER_AREA);
+							this->downsampledUmat.copyTo(this->downsampledMat);
+						} catch (...) {
+							//something went wrong, fall back to CPU
+							fallBackToCpu = true;
+						}
+					}
+					if (!this->useGpu || fallBackToCpu) {
+						cv::resize(this->mat, this->downsampledMat, cv::Size(), scalingFactor, scalingFactor, cv::INTER_AREA);
+					}
+
 					if (this->enablePostResizeSharpening) {
 						ImageView::sharpen(this->downsampledMat, this->postResizeSharpeningStrength, this->postResizeSharpeningRadius);
 					}
 					ImageView::shallowCopyMatToImage(this->downsampledMat, this->downsampledImage);
+
 				}
 			}
 		}
