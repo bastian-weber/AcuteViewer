@@ -148,6 +148,12 @@ namespace hb {
 		//free the mat
 		this->isMat = false;
 		this->mat = cv::Mat();
+		if (this->isConvertible(image.format())) {
+			this->shallowCopyImageToMat(image, this->mat);
+			this->hasMat = true;
+		} else {
+			this->hasMat = false;
+		}
 		if (this->image.size() != oldSize) {
 			this->resetMask();
 			this->hundredPercentZoomMode = false;
@@ -166,6 +172,12 @@ namespace hb {
 		//free the mat
 		this->isMat = false;
 		this->mat = cv::Mat();
+		if (this->isConvertible(image.format())) {
+			this->shallowCopyImageToMat(image, this->mat);
+			this->hasMat = true;
+		} else {
+			this->hasMat = false;
+		}
 		if (this->image.size() != oldSize) {
 			this->resetMask();
 			this->hundredPercentZoomMode = false;
@@ -188,6 +200,7 @@ namespace hb {
 				this->hundredPercentZoomMode = false;
 			}
 			this->isMat = true;
+			this->hasMat = true;
 
 			this->imageAssigned = true;
 			this->updateResizedImage();
@@ -218,6 +231,7 @@ namespace hb {
 			this->downsampledMat = downscaledImage;
 			ImageView::shallowCopyMatToImage(this->downsampledMat, this->downsampledImage);
 			this->isMat = true;
+			this->hasMat = true;
 
 			this->imageAssigned = true;
 			this->update();
@@ -1331,23 +1345,9 @@ namespace hb {
 		if (this->useHighQualityDownscaling && this->imageAssigned) {
 			double scalingFactor = std::pow(this->zoomBasis, this->zoomExponent) * this->getWindowScalingFactor();
 			if (scalingFactor < 1) {
-				if (!this->isMat) {
-					if (this->image.format() == QImage::Format_RGB888 || 
-						this->image.format() == QImage::Format_Indexed8 || 
-						this->image.format() == QImage::Format_Grayscale8 || 
-						this->image.format() == QImage::Format_ARGB32 || 
-						this->image.format() == QImage::Format_RGB32) {
-						cv::Mat orig;
-						ImageView::shallowCopyImageToMat(this->image, orig);
-						cv::resize(orig, this->downsampledMat, cv::Size(), scalingFactor, scalingFactor, cv::INTER_AREA);
-						if (this->enablePostResizeSharpening) {
-							ImageView::sharpen(this->downsampledMat, this->postResizeSharpeningStrength, this->postResizeSharpeningRadius);
-						}
-						ImageView::shallowCopyMatToImage(this->downsampledMat, this->downsampledImage);
-					} else {
-						//alternative
-						this->downsampledImage = this->image.scaledToWidth(this->image.width() * scalingFactor, Qt::SmoothTransformation);
-					}
+				if (!this->hasMat) {
+					//alternative for QImages that could not be converted to a mat
+					this->downsampledImage = this->image.scaledToWidth(this->image.width() * scalingFactor, Qt::SmoothTransformation);
 				} else {
 					cv::resize(this->mat, this->downsampledMat, cv::Size(), scalingFactor, scalingFactor, cv::INTER_AREA);
 					if (this->enablePostResizeSharpening) {
@@ -1471,6 +1471,14 @@ namespace hb {
 		cv::Mat tmp;
 		cv::GaussianBlur(image, tmp, cv::Size(0, 0), radius);
 		cv::addWeighted(image, 1 + strength, tmp, -strength, 0, image);
+	}
+
+	bool ImageView::isConvertible(QImage::Format) {
+		return (this->image.format() == QImage::Format_RGB888 ||
+				this->image.format() == QImage::Format_Indexed8 ||
+				this->image.format() == QImage::Format_Grayscale8 ||
+				this->image.format() == QImage::Format_ARGB32 ||
+				this->image.format() == QImage::Format_RGB32);
 	}
 
 	void ImageView::shallowCopyMatToImage(const cv::Mat& mat, QImage& destImage) {

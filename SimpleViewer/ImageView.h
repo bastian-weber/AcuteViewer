@@ -146,6 +146,7 @@ namespace hb {
 
 		static void sharpen(cv::Mat& image, double strength, double radius);
 
+		bool isConvertible(QImage::Format);
 		static void shallowCopyMatToImage(const cv::Mat& mat, QImage& destImage);
 		static void deepCopyMatToImage(const cv::Mat& mat, QImage& destImage);
 		static void shallowCopyImageToMat(const QImage& image, cv::Mat& destMat);
@@ -189,7 +190,8 @@ namespace hb {
 		//related to displaying the image
 		QImage image;
 		cv::Mat mat;
-		bool isMat;
+		bool isMat = false;
+		bool hasMat = false;
 		QImage downsampledImage;
 		cv::Mat downsampledMat;
 		bool imageAssigned;
