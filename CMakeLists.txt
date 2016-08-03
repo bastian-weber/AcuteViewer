@@ -3,19 +3,19 @@ cmake_minimum_required (VERSION 3.5)
 #=======================================================================#
 
 #Opencv modules
-set(OPENCV_MODULES_SIMPLE_VIEWER "opencv_core" "opencv_highgui" "opencv_imgproc" "opencv_imgcodecs")
+set(OPENCV_MODULES_ACUTE_VIEWER "opencv_core" "opencv_highgui" "opencv_imgproc" "opencv_imgcodecs")
 set(OPENCV_MODULES_WININSTALLER)
 
 #Qt modules
-set(QT_MODULES_SIMPLE_VIEWER "Qt5::Core" "Qt5::Gui" "Qt5::Widgets")
+set(QT_MODULES_ACUTE_VIEWER "Qt5::Core" "Qt5::Gui" "Qt5::Widgets")
 set(QT_MODULES_WININSTALLER "Qt5::Core" "Qt5::Gui" "Qt5::Widgets")
 #these modules will only be linked on windows
-#set(QT_MODULES_SIMPLE_VIEWER_WIN "Qt5::WinExtras")
+#set(QT_MODULES_ACUTE_VIEWER_WIN "Qt5::WinExtras")
 
 #=======================================================================#
 
-set(PROJECT_NAME SimpleViewer)
-set(EXECUTABLE_NAME_1 SimpleViewer)
+set(PROJECT_NAME AcuteViewer)
+set(EXECUTABLE_NAME_1 AcuteViewer)
 set(EXECUTABLE_NAME_2 WinInstaller)
 if(WIN32)
 	set(TARGETS "${EXECUTABLE_NAME_1}" "${EXECUTABLE_NAME_2}")
@@ -31,19 +31,19 @@ project(${PROJECT_NAME})
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-file(GLOB SOURCEFILES_SIMPLE_VIEWER "./SimpleViewer/*.h"  "./SimpleViewer/*.hpp"  "./SimpleViewer/*.cpp")
+file(GLOB SOURCEFILES_ACUTE_VIEWER "./AcuteViewer/*.h"  "./AcuteViewer/*.hpp"  "./AcuteViewer/*.cpp")
 file(GLOB SOURCEFILES_WININSTALLER "./WinInstaller/*.h"  "./WinInstaller/*.hpp"  "./WinInstaller/*.cpp")
 
 if(WIN32)
 	#add application icon ressource
-	list(APPEND SOURCEFILES_SIMPLE_VIEWER "${CMAKE_CURRENT_SOURCE_DIR}/SimpleViewer/main.rc")
+	list(APPEND SOURCEFILES_ACUTE_VIEWER "${CMAKE_CURRENT_SOURCE_DIR}/AcuteViewer/main.rc")
 	list(APPEND SOURCEFILES_WININSTALLER "${CMAKE_CURRENT_SOURCE_DIR}/WinInstaller/main.rc")
 endif()
 
 #OpenCV
 set(OpenCV_STATIC OFF)
 set(OPENCV_MODULES_ALL)
-list(APPEND OPENCV_MODULES_ALL ${OPENCV_MODULES_SIMPLE_VIEWER} ${OPENCV_MODULES_WININSTALLER})
+list(APPEND OPENCV_MODULES_ALL ${OPENCV_MODULES_ACUTE_VIEWER} ${OPENCV_MODULES_WININSTALLER})
 list(REMOVE_DUPLICATES OPENCV_MODULES_ALL)
 set(OPENCV_FILES "OpenCVConfig.cmake")
 set(OPENCV_PATH_HINTS "." "./build" "./.." "./../.." "./../../.." "./share/OpenCV")
@@ -55,9 +55,9 @@ endif()
 
 #Qt
 set(QT_MODULES_ALL)
-list(APPEND QT_MODULES_ALL ${QT_MODULES_SIMPLE_VIEWER} ${QT_MODULES_WININSTALLER})
+list(APPEND QT_MODULES_ALL ${QT_MODULES_ACUTE_VIEWER} ${QT_MODULES_WININSTALLER})
 if(WIN32)
-	list(APPEND QT_MODULES_ALL ${QT_MODULES_SIMPLE_VIEWER_WIN})
+	list(APPEND QT_MODULES_ALL ${QT_MODULES_ACUTE_VIEWER_WIN})
 endif()
 list(REMOVE_DUPLICATES QT_MODULES_ALL)
 set(QT_FILES "lib/cmake/Qt5/Qt5Config.cmake")
@@ -100,7 +100,7 @@ endif()
 
 ################################################ Configuration ################################################
 
-add_executable(${EXECUTABLE_NAME_1} ${SOURCEFILES_SIMPLE_VIEWER})
+add_executable(${EXECUTABLE_NAME_1} ${SOURCEFILES_ACUTE_VIEWER})
 if(WIN32)
 	add_executable(${EXECUTABLE_NAME_2} ${SOURCEFILES_WININSTALLER})
 endif()
@@ -147,7 +147,7 @@ if((DEFINED OPENCV_ROOT_FOUND) OR UNIX)
 	if(MSVC)
 		message("Copying dlls, please wait.")
 	endif()
-	target_link_libraries(${EXECUTABLE_NAME_1} ${OPENCV_MODULES_SIMPLE_VIEWER})
+	target_link_libraries(${EXECUTABLE_NAME_1} ${OPENCV_MODULES_ACUTE_VIEWER})
 	#somehow include directories have to be added manually since OpenCV 3
 	include_directories(${OpenCV_INCLUDE_DIRS})
 	if(MSVC)
@@ -159,7 +159,7 @@ endif()
 
 IF(DEFINED QT_ROOT_FOUND)
 
-	target_link_libraries(${EXECUTABLE_NAME_1} ${QT_MODULES_SIMPLE_VIEWER})
+	target_link_libraries(${EXECUTABLE_NAME_1} ${QT_MODULES_ACUTE_VIEWER})
 	if(WIN32)
 		target_link_libraries(${EXECUTABLE_NAME_2} ${QT_MODULES_WININSTALLER})
 	endif()

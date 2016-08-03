@@ -1,4 +1,4 @@
-IDI_ICON1               ICON    DISCARDABLE     "data/icon.ico"
+IDI_ICON1               ICON    DISCARDABLE     "deploy_ressources/general/data/icon.ico"
 1 VERSIONINFO
 FILEVERSION    0, 5, 0, 0
 FILEFLAGSMASK 0x3fL
@@ -13,12 +13,12 @@ FILESUBTYPE 0x0L
 {
 	BLOCK "StringFileInfo" {
 		BLOCK "040904b0"{
-				VALUE "FileDescription",  "Simple Viewer\0"
-				VALUE "OriginalFilename", "SimpleViewer.exe\0"
-				VALUE "ProductName",      "Simple Viewer\0"
+				VALUE "FileDescription",  "Acute Viewer\0"
+				VALUE "OriginalFilename", "AcuteViewer.exe\0"
+				VALUE "ProductName",      "Acute Viewer\0"
 				VALUE "ProductVersion",   "1.2\0"
 				VALUE "CompanyName",	  "Bastian Weber\0"
-				VALUE "InternalName",	  "Simple Viewer\0"
+				VALUE "InternalName",	  "Acute Viewer\0"
 				VALUE "FileVersion",	  "1.2\0"
 			}
 	}

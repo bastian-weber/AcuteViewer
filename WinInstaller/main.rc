@@ -1,4 +1,4 @@
-IDI_ICON1 ICON DISCARDABLE "data/icon_installer.ico"
+IDI_ICON1 ICON DISCARDABLE "deploy_ressources/general/data/icon_installer.ico"
 1 VERSIONINFO
 FILEVERSION    0, 5, 0, 0
 FILEFLAGSMASK 0x3fL
@@ -13,9 +13,9 @@ FILESUBTYPE 0x0L
 {
 	BLOCK "StringFileInfo" {
 		BLOCK "040904b0"{
-			VALUE "FileDescription",  "Installs Simple Viewer on a Microsoft Windows system.\0"
+			VALUE "FileDescription",  "Installs Acute Viewer on a Microsoft Windows system.\0"
 			VALUE "OriginalFilename", "WinInstaller.exe\0"
-			VALUE "ProductName",      "Simple Viewer Installer\0"
+			VALUE "ProductName",      "Acute Viewer Installer\0"
 			VALUE "ProductVersion",   "1.2\0"
 			VALUE "CompanyName",	  "Bastian Weber\0"
 			VALUE "FileVersion",	  "1.2\0"

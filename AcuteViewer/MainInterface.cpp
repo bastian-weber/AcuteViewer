@@ -22,7 +22,7 @@ namespace sv {
 
 	MainInterface::MainInterface(QString openWithFilename, QWidget *parent)
 		: QMainWindow(parent),
-		settings(new QSettings(QSettings::IniFormat, QSettings::UserScope, "Simple Viewer", "Simple Viewer")) {
+		settings(new QSettings(QSettings::IniFormat, QSettings::UserScope, "Acute Viewer", "Acute Viewer")) {
 
 		this->initialize();
 
@@ -33,7 +33,7 @@ namespace sv {
 
 	MainInterface::MainInterface(QStringList openWithFilenames, QWidget * parent) 
 		: QMainWindow(parent),
-		settings(new QSettings(QSettings::IniFormat, QSettings::UserScope, "Simple Viewer", "Simple Viewer")) {
+		settings(new QSettings(QSettings::IniFormat, QSettings::UserScope, "Acute Viewer", "Acute Viewer")) {
 
 		this->initialize();
 		
@@ -788,7 +788,7 @@ namespace sv {
 	bool MainInterface::applicationIsInstalled() {
 #ifdef Q_OS_WIN
 		QSettings registry("HKEY_LOCAL_MACHINE\\SOFTWARE", QSettings::NativeFormat);
-		return registry.contains("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/UninstallString");
+		return registry.contains("Microsoft/Windows/CurrentVersion/Uninstall/AcuteViewer/UninstallString");
 #else
 		return false;
 #endif
@@ -945,7 +945,7 @@ namespace sv {
 		} else {
 			QMessageBox::critical(this,
 								  tr("Installer not found"),
-								  tr("The installer executable (WinInstaller.exe) could not be found. Make sure it is located in the same directory as SimpleViewer.exe."),
+								  tr("The installer executable (WinInstaller.exe) could not be found. Make sure it is located in the same directory as AcuteViewer.exe."),
 								  QMessageBox::Close);
 		}
 #endif
@@ -965,7 +965,7 @@ namespace sv {
 		} else {
 			QMessageBox::critical(this,
 								  tr("Installer not found"),
-								  tr("The installer executable (WinInstaller.exe) could not be found. Make sure it is located in the same directory as SimpleViewer.exe."),
+								  tr("The installer executable (WinInstaller.exe) could not be found. Make sure it is located in the same directory as AcuteViewer.exe."),
 								  QMessageBox::Close);
 		}
 #endif

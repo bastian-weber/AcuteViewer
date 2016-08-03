@@ -13,20 +13,20 @@ namespace uninstallation {
 	void clearRegistryEntries() {
 		QSettings registry("HKEY_LOCAL_MACHINE\\SOFTWARE", QSettings::NativeFormat);
 		//file types
-		registry.remove("Classes/SimpleViewer.AssocFile.TIF");
-		registry.remove("Classes/SimpleViewer.AssocFile.BMP");
-		registry.remove("Classes/SimpleViewer.AssocFile.JPG");
-		registry.remove("Classes/SimpleViewer.AssocFile.JP2");
-		registry.remove("Classes/SimpleViewer.AssocFile.PNG");
-		registry.remove("Classes/SimpleViewer.AssocFile.WEBP");
-		registry.remove("Classes/SimpleViewer.AssocFile.PBM");
-		registry.remove("Classes/SimpleViewer.AssocFile.SR");
+		registry.remove("Classes/AcuteViewer.AssocFile.TIF");
+		registry.remove("Classes/AcuteViewer.AssocFile.BMP");
+		registry.remove("Classes/AcuteViewer.AssocFile.JPG");
+		registry.remove("Classes/AcuteViewer.AssocFile.JP2");
+		registry.remove("Classes/AcuteViewer.AssocFile.PNG");
+		registry.remove("Classes/AcuteViewer.AssocFile.WEBP");
+		registry.remove("Classes/AcuteViewer.AssocFile.PBM");
+		registry.remove("Classes/AcuteViewer.AssocFile.SR");
 		//capabilities
-		registry.remove("Simple Viewer");
+		registry.remove("Acute Viewer");
 		//application registration
-		registry.remove("RegisteredApplications/Simple Viewer");
+		registry.remove("RegisteredApplications/Acute Viewer");
 		//uninstallation entries
-		registry.remove("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer");
+		registry.remove("Microsoft/Windows/CurrentVersion/Uninstall/AcuteViewer");
 	}
 
 	void removeFiles(QDir const& installDir) {
@@ -37,9 +37,10 @@ namespace uninstallation {
 							"libexpat.dll",
 							"zlib1.dll",
 							"opencv_world310.dll",
-							"SimpleViewer.exe",
-							"SimpleViewer.ini",
+							"AcuteViewer.exe",
+							"AcuteViewer.ini",
 							"readme.txt",
+							"license.txt",
 							"data/icon.ico",
 							"data/icon_16.png",
 							"data/icon_16_installer.png",
@@ -88,7 +89,7 @@ namespace uninstallation {
 		HRESULT result = SHGetFolderPathW(NULL, CSIDL_COMMON_PROGRAMS, NULL, 0, startMenuPath);
 
 		if (SUCCEEDED(result)) {
-			QFile::remove(QDir(QString::fromWCharArray(startMenuPath)).absoluteFilePath("Simple Viewer.lnk"));
+			QFile::remove(QDir(QString::fromWCharArray(startMenuPath)).absoluteFilePath("Acute Viewer.lnk"));
 		}
 
 	}
@@ -97,12 +98,12 @@ namespace uninstallation {
 	void removeSettings() {
 		QString settingsPath;
 		{
-			settingsPath = QSettings(QSettings::IniFormat, QSettings::UserScope, "Simple Viewer", "Simple Viewer").fileName();
+			settingsPath = QSettings(QSettings::IniFormat, QSettings::UserScope, "Acute Viewer", "Acute Viewer").fileName();
 		}
 		QFile::remove(settingsPath);
 		QDir settingsDir = QFileInfo(settingsPath).absoluteDir();
 		settingsDir.cd("..");
-		settingsDir.rmdir("Simple Viewer");
+		settingsDir.rmdir("Acute Viewer");
 	}
 
 	void initiateSelfRemoval(QDir installDir) {
@@ -137,13 +138,13 @@ int init(int argc, char* argv[]) {
 
 	if (QCoreApplication::arguments().contains("-uninstall", Qt::CaseInsensitive)) {
 		QSettings registry("HKEY_LOCAL_MACHINE\\SOFTWARE", QSettings::NativeFormat);
-		if (registry.contains("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/UninstallString")) {
+		if (registry.contains("Microsoft/Windows/CurrentVersion/Uninstall/AcuteViewer/UninstallString")) {
 			if (QMessageBox::Yes == QMessageBox::question(nullptr,
 														  QObject::tr("Uninstall"),
-														  QObject::tr("Are you sure you want to remove the Simple Viewer application from your system?"),
+														  QObject::tr("Are you sure you want to remove the Acute Viewer application from your system?"),
 														  QMessageBox::Yes | QMessageBox::No)) {
 				QSettings registry("HKEY_LOCAL_MACHINE\\SOFTWARE", QSettings::NativeFormat);
-				QDir installDir(QFileInfo(registry.value("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/UninstallString").toString().section('"', 1, 1)).path());
+				QDir installDir(QFileInfo(registry.value("Microsoft/Windows/CurrentVersion/Uninstall/AcuteViewer/UninstallString").toString().section('"', 1, 1)).path());
 				uninstallation::removeFiles(installDir);
 				uninstallation::clearRegistryEntries();
 				QMessageBox::information(nullptr,
@@ -158,7 +159,7 @@ int init(int argc, char* argv[]) {
 			//but I can't remove any files
 			QMessageBox::critical(nullptr,
 								  QObject::tr("Application Not Found"),
-								  QObject::tr("Uninstallation is not possible because no existing Simple Viewer installation could be found."),
+								  QObject::tr("Uninstallation is not possible because no existing Acute Viewer installation could be found."),
 								  QMessageBox::Close);
 		}
 	} else {
