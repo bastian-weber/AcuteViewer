@@ -221,6 +221,7 @@ namespace sv {
 		this->imageView->setExternalPostPaintFunction(this, &MainInterface::infoPaintFunction);
 		this->imageView->setInterfaceBackgroundColor(Qt::black);
 		this->imageView->setPreventMagnificationInDefaultZoom(true);
+		this->imageView->setUseGpu(true);
 		this->imageView->setPostResizeSharpening(false, this->settings->value("sharpeningStrength", 0.5).toDouble(), this->settings->value("sharpeningRadius", 0.5).toDouble());
 		setCentralWidget(this->imageView);
 
@@ -297,6 +298,54 @@ namespace sv {
 
 		this->viewMenu->addSeparator();
 
+		this->fullscreenAction = new QAction(tr("&Fullscreen"), this);
+		this->fullscreenAction->setCheckable(true);
+		this->fullscreenAction->setChecked(false);
+		this->fullscreenAction->setShortcut(Qt::Key_F);
+		this->fullscreenAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->fullscreenAction, SIGNAL(triggered(bool)), this, SLOT(toggleFullscreen()));
+		this->viewMenu->addAction(this->fullscreenAction);
+		this->addAction(this->fullscreenAction);
+
+		this->viewMenu->addSeparator();
+
+		this->rotateLeftAction = new QAction(tr("Rotate View &Left"), this);
+		this->rotateLeftAction->setShortcut(Qt::CTRL + Qt::Key_Left);
+		this->rotateLeftAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->rotateLeftAction, SIGNAL(triggered(bool)), this, SLOT(rotateLeft()));
+		this->viewMenu->addAction(this->rotateLeftAction);
+		this->addAction(this->rotateLeftAction);
+
+		this->rotateRightAction = new QAction(tr("Rotate &View Right"), this);
+		this->rotateRightAction->setShortcut(Qt::CTRL + Qt::Key_Right);
+		this->rotateRightAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->rotateRightAction, SIGNAL(triggered(bool)), this, SLOT(rotateRight()));
+		this->viewMenu->addAction(this->rotateRightAction);
+		this->addAction(this->rotateRightAction);
+
+		this->resetRotationAction = new QAction(tr("&Reset Rotation"), this);
+		this->resetRotationAction->setShortcut(Qt::SHIFT + Qt::Key_Escape);
+		this->resetRotationAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->resetRotationAction, SIGNAL(triggered(bool)), this, SLOT(resetRotation()));
+		this->viewMenu->addAction(this->resetRotationAction);
+		this->addAction(this->resetRotationAction);
+
+		this->zoomToFitAction = new QAction(tr("Zoo&m to Fit"), this);
+		this->zoomToFitAction->setShortcut(Qt::CTRL + Qt::Key_0);
+		this->zoomToFitAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->zoomToFitAction, SIGNAL(triggered(bool)), this->imageView, SLOT(resetZoom()));
+		this->viewMenu->addAction(this->zoomToFitAction);
+		this->addAction(this->zoomToFitAction);
+
+		this->zoomTo100Action = new QAction(tr("Zoom to &100%"), this);
+		this->zoomTo100Action->setShortcut(Qt::CTRL + Qt::ALT + Qt::Key_0);
+		this->zoomTo100Action->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->zoomTo100Action, SIGNAL(triggered(bool)), this, SLOT(zoomTo100()));
+		this->viewMenu->addAction(this->zoomTo100Action);
+		this->addAction(this->zoomTo100Action);
+
+		this->viewMenu->addSeparator();
+
 		this->enlargementAction = new QAction(tr("&Enlarge Smaller Images to Fit Window"), this);
 		this->enlargementAction->setCheckable(true);
 		this->enlargementAction->setChecked(false);
@@ -344,51 +393,11 @@ namespace sv {
 
 		this->viewMenu->addSeparator();
 
-		this->fullscreenAction = new QAction(tr("&Fullscreen"), this);
-		this->fullscreenAction->setCheckable(true);
-		this->fullscreenAction->setChecked(false);
-		this->fullscreenAction->setShortcut(Qt::Key_F);
-		this->fullscreenAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->fullscreenAction, SIGNAL(triggered(bool)), this, SLOT(toggleFullscreen()));
-		this->viewMenu->addAction(this->fullscreenAction);
-		this->addAction(this->fullscreenAction);
-
-		this->viewMenu->addSeparator();
-
-		this->rotateLeftAction = new QAction(tr("Rotate View &Left"), this);
-		this->rotateLeftAction->setShortcut(Qt::CTRL + Qt::Key_Left);
-		this->rotateLeftAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->rotateLeftAction, SIGNAL(triggered(bool)), this, SLOT(rotateLeft()));
-		this->viewMenu->addAction(this->rotateLeftAction);
-		this->addAction(this->rotateLeftAction);
-
-		this->rotateRightAction = new QAction(tr("Rotate &View Right"), this);
-		this->rotateRightAction->setShortcut(Qt::CTRL + Qt::Key_Right);
-		this->rotateRightAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->rotateRightAction, SIGNAL(triggered(bool)), this, SLOT(rotateRight()));
-		this->viewMenu->addAction(this->rotateRightAction);
-		this->addAction(this->rotateRightAction);
-
-		this->resetRotationAction = new QAction(tr("&Reset Rotation"), this);
-		this->resetRotationAction->setShortcut(Qt::SHIFT + Qt::Key_Escape);
-		this->resetRotationAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->resetRotationAction, SIGNAL(triggered(bool)), this, SLOT(resetRotation()));
-		this->viewMenu->addAction(this->resetRotationAction);
-		this->addAction(this->resetRotationAction);
-
-		this->zoomToFitAction = new QAction(tr("Zoo&m to Fit"), this);
-		this->zoomToFitAction->setShortcut(Qt::CTRL + Qt::Key_0);
-		this->zoomToFitAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->zoomToFitAction, SIGNAL(triggered(bool)), this->imageView, SLOT(resetZoom()));
-		this->viewMenu->addAction(this->zoomToFitAction);
-		this->addAction(this->zoomToFitAction);
-
-		this->zoomTo100Action = new QAction(tr("Zoom to &100%"), this);
-		this->zoomTo100Action->setShortcut(Qt::CTRL + Qt::ALT + Qt::Key_0);
-		this->zoomTo100Action->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->zoomTo100Action, SIGNAL(triggered(bool)), this, SLOT(zoomTo100()));
-		this->viewMenu->addAction(this->zoomTo100Action);
-		this->addAction(this->zoomTo100Action);
+		this->gpuAction = new QAction(tr("&Use GPU Acceleration"), this);
+		this->gpuAction->setCheckable(true);
+		this->gpuAction->setChecked(this->imageView->getUseGpu());
+		QObject::connect(this->gpuAction, SIGNAL(triggered(bool)), this, SLOT(toggleGpu(bool)));
+		this->viewMenu->addAction(this->gpuAction);
 
 		this->viewMenu->addSeparator();
 
@@ -820,6 +829,8 @@ namespace sv {
 		this->toggleSharpening(this->sharpeningAction->isChecked());
 		this->menuBarAutoHideAction->setChecked(!this->settings->value("autoHideMenuBar", true).toBool());
 		this->toggleMenuBarAutoHide(this->menuBarAutoHideAction->isChecked());
+		this->gpuAction->setChecked(this->settings->value("useGpu", true).toBool());
+		this->toggleGpu(this->gpuAction->isChecked());
 	}
 
 	//============================================================================ PRIVATE SLOTS =============================================================================\\
@@ -1025,6 +1036,11 @@ namespace sv {
 	void MainInterface::zoomTo100() {
 		this->skipNextAltRelease = true;
 		this->imageView->zoomToHundredPercent();
+	}
+
+	void MainInterface::toggleGpu(bool value) {
+		this->imageView->setUseGpu(value);
+		this->settings->setValue("useGpu", value);
 	}
 
 	void MainInterface::toggleInfoOverlay(bool value) {
