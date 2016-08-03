@@ -75,7 +75,7 @@ namespace sv {
 		void loadSettings();
 
 		//variables
-		const QString programTitle = "Simple Viewer";
+		const QString programTitle = "Acute Viewer";
 		const int mouseHideDelay = 1000;
 		const int threadCleanUpInterval = 500;
 		const int eventProcessIntervalDuringWait = 16;

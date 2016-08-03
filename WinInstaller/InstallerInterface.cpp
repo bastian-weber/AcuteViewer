@@ -4,17 +4,17 @@ namespace wi {
 
 	InstallerInterface::InstallerInterface(QWidget *parent)
 		: QMainWindow(parent),
-		currentlySelectedPath(QDir::toNativeSeparators(QDir::cleanPath(QString(getenv("PROGRAMFILES")) + QString("/Simple Viewer")))) {
+		currentlySelectedPath(QDir::toNativeSeparators(QDir::cleanPath(QString(getenv("PROGRAMFILES")) + QString("/Acute Viewer")))) {
 
 		QSettings registry("HKEY_LOCAL_MACHINE\\SOFTWARE", QSettings::NativeFormat);
-		if (registry.contains("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/UninstallString")) {
-			currentlySelectedPath = QDir(QFileInfo(registry.value("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/UninstallString").toString().section('"', 1, 1)).path());
+		if (registry.contains("Microsoft/Windows/CurrentVersion/Uninstall/AcuteViewer/UninstallString")) {
+			currentlySelectedPath = QDir(QFileInfo(registry.value("Microsoft/Windows/CurrentVersion/Uninstall/AcuteViewer/UninstallString").toString().section('"', 1, 1)).path());
 		}
-		this->setWindowTitle("Simple Viewer Installer");
+		this->setWindowTitle("Acute Viewer Installer");
 
 		this->mainWidget = new QWidget(this);
 
-		this->descriptionLabel = new QLabel(tr("This will install Simple Viewer on your system under the specified path (a subdirectory will be created automatically). The application will also be registered for the \"Default Programs\" selection dialog and an uninstallation entry will be added to \"Programs and Features\"."), this);
+		this->descriptionLabel = new QLabel(tr("This will install Acute Viewer on your system under the specified path (a subdirectory will be created automatically). The application will also be registered for the \"Default Programs\" selection dialog and an uninstallation entry will be added to \"Programs and Features\"."), this);
 		this->descriptionLabel->setWordWrap(true);
 		this->descriptionLabel->setMinimumHeight(this->descriptionLabel->sizeHint().height());
 
@@ -78,74 +78,74 @@ namespace wi {
 	void InstallerInterface::registerProgramInRegistry(QDir installPath) {
 		QDir dataPath = installPath;
 		dataPath.cd("data");
-		QString openCommand = QString("\"%1\\SimpleViewer.exe\" \"%2\"").arg(QDir::toNativeSeparators(installPath.absolutePath())).arg("%1");
+		QString openCommand = QString("\"%1\\AcuteViewer.exe\" \"%2\"").arg(QDir::toNativeSeparators(installPath.absolutePath())).arg("%1");
 		//filetypes
 		QString icoPath = QString("\"%1\\%2.ico\"").arg(QDir::toNativeSeparators(dataPath.absolutePath()));
 		QSettings registryHklm("HKEY_LOCAL_MACHINE\\SOFTWARE", QSettings::NativeFormat);
-		registryHklm.setValue("Classes/SimpleViewer.AssocFile.TIF/.", "Tif Image File");
-		registryHklm.setValue("Classes/SimpleViewer.AssocFile.TIF/DefaultIcon/.", icoPath.arg("tif"));
-		registryHklm.setValue("Classes/SimpleViewer.AssocFile.TIF/shell/open/command/.", openCommand);
-		registryHklm.setValue("Classes/SimpleViewer.AssocFile.BMP/.", "Bitmap ImageFile");
-		registryHklm.setValue("Classes/SimpleViewer.AssocFile.BMP/DefaultIcon/.", icoPath.arg("bmp"));
-		registryHklm.setValue("Classes/SimpleViewer.AssocFile.BMP/shell/open/command/.", openCommand);
-		registryHklm.setValue("Classes/SimpleViewer.AssocFile.JPG/.", "Jpeg Image File");
-		registryHklm.setValue("Classes/SimpleViewer.AssocFile.JPG/DefaultIcon/.", icoPath.arg("jpg"));
-		registryHklm.setValue("Classes/SimpleViewer.AssocFile.JPG/shell/open/command/.", openCommand);
-		registryHklm.setValue("Classes/SimpleViewer.AssocFile.JP2/.", "Jpeg 2000 Image File");
-		registryHklm.setValue("Classes/SimpleViewer.AssocFile.JP2/DefaultIcon/.", icoPath.arg("jp2"));
-		registryHklm.setValue("Classes/SimpleViewer.AssocFile.JP2/shell/open/command/.", openCommand);
-		registryHklm.setValue("Classes/SimpleViewer.AssocFile.PNG/.", "Portable Network Graphics");
-		registryHklm.setValue("Classes/SimpleViewer.AssocFile.PNG/DefaultIcon/.", icoPath.arg("png"));
-		registryHklm.setValue("Classes/SimpleViewer.AssocFile.PNG/shell/open/command/.", openCommand);
-		registryHklm.setValue("Classes/SimpleViewer.AssocFile.WEBP/.", "WebP Image File");
-		registryHklm.setValue("Classes/SimpleViewer.AssocFile.WEBP/DefaultIcon/.", icoPath.arg("webp"));
-		registryHklm.setValue("Classes/SimpleViewer.AssocFile.WEBP/shell/open/command/.", openCommand);
-		registryHklm.setValue("Classes/SimpleViewer.AssocFile.PBM/.", "Portable Image Format");
-		registryHklm.setValue("Classes/SimpleViewer.AssocFile.PBM/DefaultIcon/.", icoPath.arg("pbm"));
-		registryHklm.setValue("Classes/SimpleViewer.AssocFile.PBM/shell/open/command/.", openCommand);
-		registryHklm.setValue("Classes/SimpleViewer.AssocFile.SR/.", "Sun Raster");
-		registryHklm.setValue("Classes/SimpleViewer.AssocFile.SR/DefaultIcon/.", icoPath.arg("sr"));
-		registryHklm.setValue("Classes/SimpleViewer.AssocFile.SR/shell/open/command/.", openCommand);
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.TIF/.", "Tif Image File");
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.TIF/DefaultIcon/.", icoPath.arg("tif"));
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.TIF/shell/open/command/.", openCommand);
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.BMP/.", "Bitmap ImageFile");
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.BMP/DefaultIcon/.", icoPath.arg("bmp"));
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.BMP/shell/open/command/.", openCommand);
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.JPG/.", "Jpeg Image File");
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.JPG/DefaultIcon/.", icoPath.arg("jpg"));
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.JPG/shell/open/command/.", openCommand);
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.JP2/.", "Jpeg 2000 Image File");
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.JP2/DefaultIcon/.", icoPath.arg("jp2"));
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.JP2/shell/open/command/.", openCommand);
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.PNG/.", "Portable Network Graphics");
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.PNG/DefaultIcon/.", icoPath.arg("png"));
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.PNG/shell/open/command/.", openCommand);
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.WEBP/.", "WebP Image File");
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.WEBP/DefaultIcon/.", icoPath.arg("webp"));
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.WEBP/shell/open/command/.", openCommand);
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.PBM/.", "Portable Image Format");
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.PBM/DefaultIcon/.", icoPath.arg("pbm"));
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.PBM/shell/open/command/.", openCommand);
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.SR/.", "Sun Raster");
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.SR/DefaultIcon/.", icoPath.arg("sr"));
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.SR/shell/open/command/.", openCommand);
 		//capabilities
-		registryHklm.setValue("Simple Viewer/Capabilities/ApplicationName", "Simple Viewer");
-		registryHklm.setValue("Simple Viewer/Capabilities/ApplicationDescription", "An image viewer featuring a minimal interface design and high-quality image display.");
+		registryHklm.setValue("Acute Viewer/Capabilities/ApplicationName", "Acute Viewer");
+		registryHklm.setValue("Acute Viewer/Capabilities/ApplicationDescription", "An image viewer featuring a minimal interface design and high-quality image display.");
 		//tif
-		registryHklm.setValue("Simple Viewer/Capabilities/FileAssociations/.tif", "SimpleViewer.AssocFile.TIF");
-		registryHklm.setValue("Simple Viewer/Capabilities/FileAssociations/.tiff", "SimpleViewer.AssocFile.TIF");
+		registryHklm.setValue("Acute Viewer/Capabilities/FileAssociations/.tif", "AcuteViewer.AssocFile.TIF");
+		registryHklm.setValue("Acute Viewer/Capabilities/FileAssociations/.tiff", "AcuteViewer.AssocFile.TIF");
 		//bmp, dib
-		registryHklm.setValue("Simple Viewer/Capabilities/FileAssociations/.bmp", "SimpleViewer.AssocFile.BMP");
-		registryHklm.setValue("Simple Viewer/Capabilities/FileAssociations/.dib", "SimpleViewer.AssocFile.BMP");
+		registryHklm.setValue("Acute Viewer/Capabilities/FileAssociations/.bmp", "AcuteViewer.AssocFile.BMP");
+		registryHklm.setValue("Acute Viewer/Capabilities/FileAssociations/.dib", "AcuteViewer.AssocFile.BMP");
 		//jpeg, jpg, jpe
-		registryHklm.setValue("Simple Viewer/Capabilities/FileAssociations/.jpeg", "SimpleViewer.AssocFile.JPG");
-		registryHklm.setValue("Simple Viewer/Capabilities/FileAssociations/.jpg", "SimpleViewer.AssocFile.JPG");
-		registryHklm.setValue("Simple Viewer/Capabilities/FileAssociations/.jpe", "SimpleViewer.AssocFile.JPG");
+		registryHklm.setValue("Acute Viewer/Capabilities/FileAssociations/.jpeg", "AcuteViewer.AssocFile.JPG");
+		registryHklm.setValue("Acute Viewer/Capabilities/FileAssociations/.jpg", "AcuteViewer.AssocFile.JPG");
+		registryHklm.setValue("Acute Viewer/Capabilities/FileAssociations/.jpe", "AcuteViewer.AssocFile.JPG");
 		//jp2
-		registryHklm.setValue("Simple Viewer/Capabilities/FileAssociations/.jp2", "SimpleViewer.AssocFile.JP2");
+		registryHklm.setValue("Acute Viewer/Capabilities/FileAssociations/.jp2", "AcuteViewer.AssocFile.JP2");
 		//png
-		registryHklm.setValue("Simple Viewer/Capabilities/FileAssociations/.png", "SimpleViewer.AssocFile.PNG");
+		registryHklm.setValue("Acute Viewer/Capabilities/FileAssociations/.png", "AcuteViewer.AssocFile.PNG");
 		//webp
-		registryHklm.setValue("Simple Viewer/Capabilities/FileAssociations/.webp", "SimpleViewer.AssocFile.WEBP");
+		registryHklm.setValue("Acute Viewer/Capabilities/FileAssociations/.webp", "AcuteViewer.AssocFile.WEBP");
 		//pbm, pgm, ppm
-		registryHklm.setValue("Simple Viewer/Capabilities/FileAssociations/.pbm", "SimpleViewer.AssocFile.PBM");
-		registryHklm.setValue("Simple Viewer/Capabilities/FileAssociations/.pgm", "SimpleViewer.AssocFile.PBM");
-		registryHklm.setValue("Simple Viewer/Capabilities/FileAssociations/.ppm", "SimpleViewer.AssocFile.PBM");
+		registryHklm.setValue("Acute Viewer/Capabilities/FileAssociations/.pbm", "AcuteViewer.AssocFile.PBM");
+		registryHklm.setValue("Acute Viewer/Capabilities/FileAssociations/.pgm", "AcuteViewer.AssocFile.PBM");
+		registryHklm.setValue("Acute Viewer/Capabilities/FileAssociations/.ppm", "AcuteViewer.AssocFile.PBM");
 		//sr, ras
-		registryHklm.setValue("Simple Viewer/Capabilities/FileAssociations/.sr", "SimpleViewer.AssocFile.SR");
-		registryHklm.setValue("Simple Viewer/Capabilities/FileAssociations/.ras", "SimpleViewer.AssocFile.SR");
+		registryHklm.setValue("Acute Viewer/Capabilities/FileAssociations/.sr", "AcuteViewer.AssocFile.SR");
+		registryHklm.setValue("Acute Viewer/Capabilities/FileAssociations/.ras", "AcuteViewer.AssocFile.SR");
 		//register application
-		registryHklm.setValue("RegisteredApplications/Simple Viewer", "SOFTWARE\\Simple Viewer\\Capabilities");
+		registryHklm.setValue("RegisteredApplications/Acute Viewer", "SOFTWARE\\Acute Viewer\\Capabilities");
 		//uninstallation entry
-		registryHklm.setValue("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/DisplayName", "Simple Viewer");
-		registryHklm.setValue("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/UninstallString", QString("\"%1\" %2").arg(QDir::toNativeSeparators(QDir(installPath).absoluteFilePath("WinInstaller.exe"))).arg("-uninstall"));
-		registryHklm.setValue("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/DisplayIcon", QString("\"%1\"").arg(QDir::toNativeSeparators(QDir(installPath).absoluteFilePath("data/icon.ico"))));
-		registryHklm.setValue("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/EstimatedSize", 108544);
-		registryHklm.setValue("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/Publisher", "Bastian Weber");
-		registryHklm.setValue("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/DisplayVersion", "1.2");
-		registryHklm.setValue("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/NoModify", "1");
-		registryHklm.setValue("Microsoft/Windows/CurrentVersion/Uninstall/SimpleViewer/NoRepair", "1");
+		registryHklm.setValue("Microsoft/Windows/CurrentVersion/Uninstall/AcuteViewer/DisplayName", "Acute Viewer");
+		registryHklm.setValue("Microsoft/Windows/CurrentVersion/Uninstall/AcuteViewer/UninstallString", QString("\"%1\" %2").arg(QDir::toNativeSeparators(QDir(installPath).absoluteFilePath("WinInstaller.exe"))).arg("-uninstall"));
+		registryHklm.setValue("Microsoft/Windows/CurrentVersion/Uninstall/AcuteViewer/DisplayIcon", QString("\"%1\"").arg(QDir::toNativeSeparators(QDir(installPath).absoluteFilePath("data/icon.ico"))));
+		registryHklm.setValue("Microsoft/Windows/CurrentVersion/Uninstall/AcuteViewer/EstimatedSize", 108544);
+		registryHklm.setValue("Microsoft/Windows/CurrentVersion/Uninstall/AcuteViewer/Publisher", "Bastian Weber");
+		registryHklm.setValue("Microsoft/Windows/CurrentVersion/Uninstall/AcuteViewer/DisplayVersion", "1.2");
+		registryHklm.setValue("Microsoft/Windows/CurrentVersion/Uninstall/AcuteViewer/NoModify", "1");
+		registryHklm.setValue("Microsoft/Windows/CurrentVersion/Uninstall/AcuteViewer/NoRepair", "1");
 		//set friendly app name
 		QSettings registryHkcr("HKEY_CLASSES_ROOT\\Applications", QSettings::NativeFormat);
-		registryHkcr.setValue("SimpleViewer.exe/shell/open/FriendlyAppName", "Simple Viewer");
+		registryHkcr.setValue("AcuteViewer.exe/shell/open/FriendlyAppName", "Acute Viewer");
 	}
 
 	bool InstallerInterface::copyAllFilesInDirectory(QDir const& sourceDir, QDir const& destinationDir) {
@@ -191,14 +191,14 @@ namespace wi {
 		HRESULT result = SHGetFolderPathW(NULL, CSIDL_COMMON_PROGRAMS, NULL, 0, startMenuPath);
 
 		if (SUCCEEDED(result)) {
-			QString linkPath = QDir(QString::fromWCharArray(startMenuPath)).absoluteFilePath("Simple Viewer.lnk");
+			QString linkPath = QDir(QString::fromWCharArray(startMenuPath)).absoluteFilePath("Acute Viewer.lnk");
 
 			CoInitialize(NULL);
 			IShellLinkW* shellLink = NULL;
 			result = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_ALL, IID_IShellLinkW, (void**)&shellLink);
 			if (SUCCEEDED(result)) {
 				shellLink->SetPath(targetPath.toStdWString().c_str());
-				shellLink->SetDescription(L"Simple Viewer image viewer");
+				shellLink->SetDescription(L"Acute Viewer image viewer");
 				shellLink->SetIconLocation(targetPath.toStdWString().c_str(), 0);
 				IPersistFile* persistFile;
 				result = shellLink->QueryInterface(IID_IPersistFile, (void**)&persistFile);
@@ -235,7 +235,7 @@ namespace wi {
 		QCoreApplication::processEvents();
 		bool allFilesCopied = InstallerInterface::installFiles(this->currentlySelectedPath);
 		InstallerInterface::registerProgramInRegistry(this->currentlySelectedPath);
-		if (this->startMenuCheckbox->isChecked()) this->createStartMenuEntry(this->currentlySelectedPath.absoluteFilePath("SimpleViewer.exe"));
+		if (this->startMenuCheckbox->isChecked()) this->createStartMenuEntry(this->currentlySelectedPath.absoluteFilePath("AcuteViewer.exe"));
 		if (allFilesCopied) {
 			QMessageBox::information(this,
 									 tr("Installation Successful"),
@@ -244,7 +244,7 @@ namespace wi {
 		} else {
 			QMessageBox::information(this,
 									 tr("Installation Completed"),
-									 tr("The installation completed, but not all files could be copied. If you are trying to overwrite an older Simple Viewer installation, make sure it's not running and try again. The installer will now quit."),
+									 tr("The installation completed, but not all files could be copied. If you are trying to overwrite an older Acute Viewer installation, make sure it's not running and try again. The installer will now quit."),
 									 QMessageBox::Close);
 		}
 		QCoreApplication::quit();
@@ -254,7 +254,7 @@ namespace wi {
 		QString path = QFileDialog::getExistingDirectory(this, tr("Select Installation Directory"), this->currentlySelectedPath.absolutePath());
 
 		if (!path.isEmpty()) {
-			this->currentlySelectedPath = QDir(path).absoluteFilePath("Simple Viewer");
+			this->currentlySelectedPath = QDir(path).absoluteFilePath("Acute Viewer");
 			this->pathInput->setText(this->currentlySelectedPath.absolutePath());
 		}
 	}
