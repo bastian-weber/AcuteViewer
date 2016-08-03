@@ -147,6 +147,7 @@ namespace hb {
 		static double distanceOfPointToLineSegment(QPointF const& lineStart, QPointF const& lineEnd, QPointF const& point);
 
 		static void sharpen(cv::Mat& image, double strength, double radius);
+		static void sharpen(cv::UMat& image, double strength, double radius);
 
 		bool isConvertible(QImage::Format);
 		static void shallowCopyMatToImage(const cv::Mat& mat, QImage& destImage);

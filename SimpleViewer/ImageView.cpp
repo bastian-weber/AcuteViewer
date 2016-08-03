@@ -1384,6 +1384,9 @@ namespace hb {
 					if (this->useGpu) {
 						try {
 							cv::resize(this->uMat, this->downsampledUmat, cv::Size(), scalingFactor, scalingFactor, cv::INTER_AREA);
+							if (this->enablePostResizeSharpening) {
+								ImageView::sharpen(this->downsampledUmat, this->postResizeSharpeningStrength, this->postResizeSharpeningRadius);
+							}
 							this->downsampledUmat.copyTo(this->downsampledMat);
 						} catch (...) {
 							//something went wrong, fall back to CPU
@@ -1392,10 +1395,9 @@ namespace hb {
 					}
 					if (!this->useGpu || fallBackToCpu) {
 						cv::resize(this->mat, this->downsampledMat, cv::Size(), scalingFactor, scalingFactor, cv::INTER_AREA);
-					}
-
-					if (this->enablePostResizeSharpening) {
-						ImageView::sharpen(this->downsampledMat, this->postResizeSharpeningStrength, this->postResizeSharpeningRadius);
+						if (this->enablePostResizeSharpening) {
+							ImageView::sharpen(this->downsampledMat, this->postResizeSharpeningStrength, this->postResizeSharpeningRadius);
+						}
 					}
 					ImageView::shallowCopyMatToImage(this->downsampledMat, this->downsampledImage);
 
@@ -1514,6 +1516,12 @@ namespace hb {
 
 	void ImageView::sharpen(cv::Mat& image, double strength, double radius) {
 		cv::Mat tmp;
+		cv::GaussianBlur(image, tmp, cv::Size(0, 0), radius);
+		cv::addWeighted(image, 1 + strength, tmp, -strength, 0, image);
+	}
+
+	void ImageView::sharpen(cv::UMat& image, double strength, double radius) {
+		cv::UMat tmp;
 		cv::GaussianBlur(image, tmp, cv::Size(0, 0), radius);
 		cv::addWeighted(image, 1 + strength, tmp, -strength, 0, image);
 	}
