@@ -1,4 +1,4 @@
-Simple Viewer is an open source image viewer application.
+Acute Viewer is an open source image viewer application.
 
 With cmake you can automatically create a Visual Studio project on Windows or a makefile on Linux.
 
@@ -10,7 +10,7 @@ The required libraries are:
 			http://opencv.org/downloads.html
 	2. Qt (currently 5.6)
 	3. Exiv2 (currently 0.25)
-			Precompiled for Windows (VS2015, x64): https://bitbucket.org/bastian_weber/simpleviewer/downloads
+			Precompiled for Windows (VS2015, x64): https://bitbucket.org/bastian_weber/acuteviewer/downloads
 			Or source: http://www.exiv2.org/download.html
 
 ============================================= Windows =============================================
@@ -21,7 +21,7 @@ The required libraries are:
 		-	Can also be downloaded precompiled
 	-	Exiv2 
 		-	Can be downloaded precompiled (VS2015, x64) from the repository
-				https://bitbucket.org/bastian_weber/simpleviewer/downloads
+				https://bitbucket.org/bastian_weber/acuteviewer/downloads
 		-	Can also be built from source:
 			-	Extract to C:/gnu/exiv2
 			-	Download dependencies from

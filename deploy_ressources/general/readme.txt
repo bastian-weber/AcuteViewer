@@ -1,18 +1,18 @@
-What Simple Viewer Is
+What Acute Viewer Is
 
-Simple Viewer is a slim image viewer that focuses on high quality image display a and 
+Acute Viewer is a slim image viewer that focuses on high quality image display a and 
 minimalist interface. It does not include unnecessary features for things that you 
 will use Photoshop for anyway. Instead it serves as an application to have a quick 
 look at an image without having to launch a heavier application. It can also be used 
 for presentation purposes and to evaluate how an image looks when it is downscaled to 
 the actual screen resolution.
 
-You can use the WinInstaller.exe to install Simple Viewer on your Windows system. The
+You can use the WinInstaller.exe to install Acute Viewer on your Windows system. The
 Visual C++ 2015 Redistributable has to be installed before if not already present.
 Refer to the How_to_install.txt for installation instructions on Linux.
 
-Simple Viewer  is open source. The code repsitory can be found at:
-https://bitbucket.org/bastian_weber/simpleviewer
+Acute Viewer  is open source. The code repsitory can be found at:
+https://bitbucket.org/bastian_weber/acuteviewer
 
 ===== Supported Filetypes =====
 
