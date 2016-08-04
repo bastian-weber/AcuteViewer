@@ -607,6 +607,13 @@ namespace sv {
 		QString filename = fileInfo.fileName();
 		this->currentDirectory = directory;
 		this->noCurrentDir = false;
+		//remove all images that are not in the same directory
+		QMutableListIterator<QString> it(paths);
+		while (it.hasNext()) {
+			if (QFileInfo(it.next()).absoluteDir() != this->currentDirectory) {
+				it.remove();
+			}
+		}
 		this->filesInDirectory.resize(paths.size());
 		for (int i = 0; i < paths.size(); ++i) {
 			this->filesInDirectory[i] = QFileInfo(QDir::cleanPath(paths[i])).fileName();
@@ -1100,13 +1107,18 @@ namespace sv {
 	}
 
 	void MainInterface::openDialog() {
-		QString path = QFileDialog::getOpenFileName(this,
-													tr("Open Config File"),
-													QDir::rootPath(),
-													"All Files (*.*);; Image Files (*.bmp *.dib *.jpeg *.jpg *.jpe *.jpeg *.jp2 *.png *.webp *.pbm *.pgm *.ppm *.sr *.ras *.tiff *.tif);;");
+		QStringList paths = QFileDialog::getOpenFileNames(this,
+														  tr("Open Config File"),
+														  this->settings->value("lastOpenPath", QDir::rootPath()).toString(),
+														  "All Files (*.*);; Image Files (*.bmp *.dib *.jpeg *.jpg *.jpe *.jpeg *.jp2 *.png *.webp *.pbm *.pgm *.ppm *.sr *.ras *.tiff *.tif);;");
 
-		if (!path.isEmpty()) {
-			this->loadImage(path);
+		if (!paths.size() < 1) {
+			this->settings->setValue("lastOpenPath", QFileInfo(paths.at(0)).path());
+			if (paths.size() == 1) {
+				this->loadImage(paths.at(0));
+			} else {
+				this->loadImages(paths);
+			}
 		}
 	}
 
