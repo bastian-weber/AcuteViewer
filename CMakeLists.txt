@@ -177,14 +177,19 @@ IF(DEFINED QT_ROOT_FOUND)
 		list(APPEND DEBUG_DLLS ${PATH_QT_ROOT}/bin/icudt54.dll)
 		list(APPEND DEBUG_DLLS ${PATH_QT_ROOT}/bin/icuin54.dll)
 		list(APPEND DEBUG_DLLS ${PATH_QT_ROOT}/bin/icuuc54.dll)
-
-		foreach(EXECUTABLE ${TARGETS})
-			add_custom_command(TARGET ${EXECUTABLE} POST_BUILD 
-				COMMAND ${CMAKE_COMMAND} -E copy_directory ${PATH_QT_ROOT}/plugins/platforms "${COPY_DIRECTORY_DEBUG}/platforms"
-				COMMAND ${CMAKE_COMMAND} -E copy_directory ${PATH_QT_ROOT}/plugins/platforms "${COPY_DIRECTORY_RELEASE}/platforms")
-		endforeach()
-
+	ELSEIF(UNIX)
+		list(APPEND RELEASE_DLLS ${PATH_QT_ROOT}/lib/libicudata.so.56)
+		list(APPEND RELEASE_DLLS ${PATH_QT_ROOT}/lib/libicui18n.so.56)
+		list(APPEND RELEASE_DLLS ${PATH_QT_ROOT}/lib/libicuuc.so.56)
+		list(APPEND RELEASE_DLLS ${PATH_QT_ROOT}/lib/libQt5DBus.so.5)
+		list(APPEND RELEASE_DLLS ${PATH_QT_ROOT}/lib/libQt5XcbQpa.so.5)
 	ENDIF(MSVC)
+
+	foreach(EXECUTABLE ${TARGETS})
+		add_custom_command(TARGET ${EXECUTABLE} POST_BUILD 
+			COMMAND ${CMAKE_COMMAND} -E copy_directory ${PATH_QT_ROOT}/plugins/platforms "${COPY_DIRECTORY_DEBUG}/platforms"
+			COMMAND ${CMAKE_COMMAND} -E copy_directory ${PATH_QT_ROOT}/plugins/platforms "${COPY_DIRECTORY_RELEASE}/platforms")
+	endforeach()
 
 ENDIF(DEFINED QT_ROOT_FOUND)
 
