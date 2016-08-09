@@ -12,11 +12,12 @@ set(QT_MODULES_WININSTALLER "Qt5::Core" "Qt5::Gui" "Qt5::Widgets")
 #these modules will only be linked on windows
 #set(QT_MODULES_ACUTE_VIEWER_WIN "Qt5::WinExtras")
 
-#=======================================================================#
-
 set(PROJECT_NAME AcuteViewer)
 set(EXECUTABLE_NAME_1 AcuteViewer)
 set(EXECUTABLE_NAME_2 WinInstaller)
+
+#=======================================================================#
+
 if(WIN32)
 	set(TARGETS "${EXECUTABLE_NAME_1}" "${EXECUTABLE_NAME_2}")
 	set(COPY_DIRECTORY_RELEASE "${CMAKE_CURRENT_BINARY_DIR}/Release")
@@ -145,12 +146,12 @@ endif()
 set(RELEASE_DLLS)
 set(DEBUG_DLLS)
 
-#add lib files and copy dlls
+#add lib files and copy libs
+message("Looking for libs, please wait.")
 
 ########################################### OpenCV Libs ###########################################
 
 if((DEFINED OPENCV_ROOT_FOUND) OR UNIX)
-	message("Copying dlls, please wait.")
 	target_link_libraries(${EXECUTABLE_NAME_1} ${OPENCV_MODULES_ACUTE_VIEWER})
 	#somehow include directories have to be added manually since OpenCV 3
 	include_directories(${OpenCV_INCLUDE_DIRS})
@@ -202,7 +203,7 @@ if(DEFINED EXIV_ROOT_FOUND)
 	copydlls(RELEASE_DLLS DEBUG_DLLS EXIV2_MODULES)
 endif()
 
-#copy dlls
+#copy libs
 if(DEFINED RELEASE_DLLS AND DEFINED DEBUG_DLLS)
 
 	set(COPY_COMMAND_RELEASE "-E" "copy_if_different")
