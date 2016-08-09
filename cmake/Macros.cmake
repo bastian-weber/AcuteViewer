@@ -2,9 +2,9 @@
 
 macro(copydlls RELEASE_DLLS DEBUG_DLLS MODULELIST)
 	if(WIN32)
-		set(FILE_EXTENSION ".dll$")
+		set(FILE_EXTENSION "\.dll$")
 	elseif(UNIX)
-		set(FILE_EXTENSION "(.so|.a)$")
+		set(FILE_EXTENSION "(\.so|\.a)(\..*)?$")
 	endif()
 	foreach(ELEMENT ${${MODULELIST}})
 		get_target_property(LOC_R ${ELEMENT} LOCATION_RELEASE)
