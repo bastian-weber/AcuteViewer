@@ -50,6 +50,8 @@ namespace hb {
 		spanningSelectionRectangle(false),
 		polylineColor(60, 60, 60),
 		externalPostPaintFunctionAssigned(false) {
+
+		cv::ocl::setUseOpenCL(true);
 		setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 		setFocusPolicy(Qt::FocusPolicy::StrongFocus);
 		setMouseTracking(true);
@@ -103,6 +105,10 @@ namespace hb {
 
 	bool ImageView::getUseGpu() {
 		return this->useGpu;
+	}
+
+	bool ImageView::OpenClAvailable() {
+		return cv::ocl::haveOpenCL();
 	}
 
 	///Rotates the viewport 90° in anticlockwise direction.
@@ -1381,7 +1387,7 @@ namespace hb {
 				} else {
 
 					bool fallBackToCpu = false;
-					if (this->useGpu) {
+					if (this->useGpu && this->OpenClAvailable()) {
 						try {
 							cv::resize(this->uMat, this->downsampledUmat, cv::Size(), scalingFactor, scalingFactor, cv::INTER_AREA);
 							if (this->enablePostResizeSharpening) {
@@ -1393,7 +1399,7 @@ namespace hb {
 							fallBackToCpu = true;
 						}
 					}
-					if (!this->useGpu || fallBackToCpu) {
+					if (!this->useGpu || !this->OpenClAvailable() || fallBackToCpu) {
 						cv::resize(this->mat, this->downsampledMat, cv::Size(), scalingFactor, scalingFactor, cv::INTER_AREA);
 						if (this->enablePostResizeSharpening) {
 							ImageView::sharpen(this->downsampledMat, this->postResizeSharpeningStrength, this->postResizeSharpeningRadius);

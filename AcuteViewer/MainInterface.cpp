@@ -836,8 +836,14 @@ namespace sv {
 		this->toggleSharpening(this->sharpeningAction->isChecked());
 		this->menuBarAutoHideAction->setChecked(!this->settings->value("autoHideMenuBar", true).toBool());
 		this->toggleMenuBarAutoHide(this->menuBarAutoHideAction->isChecked());
-		this->gpuAction->setChecked(this->settings->value("useGpu", true).toBool());
+		if (this->imageView->OpenClAvailable()) {
+			this->gpuAction->setChecked(this->settings->value("useGpu", true).toBool());
+		} else {
+			this->gpuAction->setChecked(false);
+			this->gpuAction->setEnabled(false);
+		}
 		this->toggleGpu(this->gpuAction->isChecked());
+
 	}
 
 	//============================================================================ PRIVATE SLOTS =============================================================================\\
