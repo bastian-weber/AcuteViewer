@@ -8,6 +8,7 @@
 //OpenCv
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
+#include <opencv2/core/ocl.hpp>
 
 //STL libraries
 #include <vector>
@@ -39,6 +40,7 @@ namespace hb {
 		bool getUsesPanZooming();
 		void setUseGpu(bool value);
 		bool getUseGpu();
+		bool OpenClAvailable();
 
 		void rotateLeft();
 		void rotateRight();
