@@ -66,11 +66,21 @@ namespace hb {
 	///Defines wether an outline should be drawn around the widget (indicating also if it has the focus or not)
 	void ImageView::setShowInterfaceOutline(bool value) {
 		this->interfaceOutline = value;
+		this->update();
+	}
+
+	bool ImageView::getShowInterfaceOutline() {
+		return this->interfaceOutline;
 	}
 
 	///Sets the background colour or the widget.
 	void ImageView::setInterfaceBackgroundColor(QColor const& color) {
 		this->backgroundColor = color;
+		this->update();
+	}
+
+	QColor const& ImageView::getInterfaceBackgroundColor() {
+		return this->backgroundColor;
 	}
 
 	///If set to true, a right click zooms the image to 100% magnification.

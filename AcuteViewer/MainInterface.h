@@ -95,6 +95,7 @@ namespace sv {
 		bool skipNextAltRelease = false;
 		unsigned int fontSize;
 		unsigned int lineSpacing;
+		QColor const darkGray = QColor(30, 30, 30);
 
 		//widgets
 		hb::ImageView* imageView;
@@ -103,6 +104,7 @@ namespace sv {
 		//menus
 		QMenu* fileMenu;
 		QMenu* viewMenu;
+		QMenu* backgroundColorMenu;
 		QMenu* slideshowMenu;
 		QMenu* applicationMenu;
 		//actions
@@ -127,8 +129,13 @@ namespace sv {
 		QAction* slideshowAction;
 		QAction* slideshowNoDialogAction;
 		QAction* zoomLevelAction;
+		QAction* backgroundColorCustomAction;
+		QAction* backgroundColorWhiteAction;
+		QAction* backgroundColorBlackAction;
+		QAction* backgroundColorGrayAction;
 		QAction* installAction;
 		QAction* uninstallAction;
+		QActionGroup* backgroundColorActionGroup;
 		//timer
 		QTimer* mouseHideTimer;
 		QTimer* threadCleanUpTimer;
@@ -170,6 +177,7 @@ namespace sv {
 		void toggleMenuBarAutoHide(bool value);
 		void showSharpeningOptions();
 		void updateSharpening();
+		void changeBackgroundColor(QAction* action);
 	signals:
 		void readImageFinished(Image image);
 	};

@@ -393,6 +393,50 @@ namespace sv {
 
 		this->viewMenu->addSeparator();
 
+		this->backgroundColorMenu = this->viewMenu->addMenu(tr("&Background Colour"));
+
+		this->backgroundColorBlackAction = new QAction(tr("&Black"), this);
+		this->backgroundColorBlackAction->setCheckable(true);
+		this->backgroundColorBlackAction->setChecked(false);
+		this->backgroundColorBlackAction->setShortcut(Qt::CTRL + Qt::Key_B);
+		this->backgroundColorBlackAction->setShortcutContext(Qt::ApplicationShortcut);
+		this->backgroundColorMenu->addAction(this->backgroundColorBlackAction);
+		this->addAction(this->backgroundColorBlackAction);
+
+		this->backgroundColorGrayAction = new QAction(tr("Dark &Grey"), this);
+		this->backgroundColorGrayAction->setCheckable(true);
+		this->backgroundColorGrayAction->setChecked(false);
+		this->backgroundColorGrayAction->setShortcut(Qt::CTRL + Qt::Key_G);
+		this->backgroundColorGrayAction->setShortcutContext(Qt::ApplicationShortcut);
+		this->backgroundColorMenu->addAction(this->backgroundColorGrayAction);
+		this->addAction(this->backgroundColorGrayAction);
+
+		this->backgroundColorWhiteAction = new QAction(tr("&White"), this);
+		this->backgroundColorWhiteAction->setCheckable(true);
+		this->backgroundColorWhiteAction->setChecked(false);
+		this->backgroundColorWhiteAction->setShortcut(Qt::CTRL + Qt::Key_W);
+		this->backgroundColorWhiteAction->setShortcutContext(Qt::ApplicationShortcut);
+		this->backgroundColorMenu->addAction(this->backgroundColorWhiteAction);
+		this->addAction(this->backgroundColorWhiteAction);
+
+		this->backgroundColorCustomAction = new QAction(tr("&Custom"), this);
+		this->backgroundColorCustomAction->setCheckable(true);
+		this->backgroundColorCustomAction->setChecked(false);
+		this->backgroundColorCustomAction->setShortcut(Qt::CTRL + Qt::Key_C);
+		this->backgroundColorCustomAction->setShortcutContext(Qt::ApplicationShortcut);
+		this->backgroundColorMenu->addAction(this->backgroundColorCustomAction);
+		this->addAction(this->backgroundColorCustomAction);
+
+		this->backgroundColorActionGroup = new QActionGroup(this);
+		this->backgroundColorActionGroup->addAction(this->backgroundColorBlackAction);
+		this->backgroundColorActionGroup->addAction(this->backgroundColorGrayAction);
+		this->backgroundColorActionGroup->addAction(this->backgroundColorWhiteAction);
+		this->backgroundColorActionGroup->addAction(this->backgroundColorCustomAction);
+		this->backgroundColorActionGroup->setExclusive(true);
+		QObject::connect(this->backgroundColorActionGroup, SIGNAL(triggered(QAction*)), this, SLOT(changeBackgroundColor(QAction*)));
+
+		this->viewMenu->addSeparator();
+
 		this->gpuAction = new QAction(tr("&Use GPU Acceleration"), this);
 		this->gpuAction->setCheckable(true);
 		this->gpuAction->setChecked(this->imageView->getUseGpu());
@@ -463,16 +507,24 @@ namespace sv {
 				if (emitSignals) emit(readImageFinished(Image()));
 				return Image();
 			}
-			image = cv::imdecode(*buffer, CV_LOAD_IMAGE_COLOR);
+			image = cv::imdecode(*buffer, cv::IMREAD_UNCHANGED);
 			if (image.data) exifData = std::shared_ptr<ExifData>(new ExifData(buffer));
 		} else {
-			image = cv::imread(path.toStdString(), CV_LOAD_IMAGE_COLOR);
+			image = cv::imread(path.toStdString(), cv::IMREAD_UNCHANGED);
 			if (image.data) exifData = std::shared_ptr<ExifData>(new ExifData(path, !this->exifIsRequired()));
 		}
 		Image result;
 		if (image.data) {
 			QObject::connect(exifData.get(), SIGNAL(loadingFinished(ExifData*)), this, SLOT(reactToExifLoadingCompletion(ExifData*)));
-			cv::cvtColor(image, image, CV_BGR2RGB);
+			//convert format
+			if (image.channels() == 3) {
+				cv::cvtColor(image, image, CV_BGR2RGB);
+			}
+			if (image.depth() == CV_16U) {
+				image.convertTo(image, CV_8U, 1.0/256.0);
+			} else if (image.depth() == CV_32F) {
+				image.convertTo(image, CV_8U, 256.0);
+			}
 			result = Image(image, exifData);
 		}
 		if (emitSignals) emit(readImageFinished(result));
@@ -843,7 +895,17 @@ namespace sv {
 			this->gpuAction->setEnabled(false);
 		}
 		this->toggleGpu(this->gpuAction->isChecked());
-
+		QColor backgroundColor = this->settings->value("backgroundColor", QColor(Qt::black)).value<QColor>();
+		this->imageView->setInterfaceBackgroundColor(backgroundColor);
+		if (backgroundColor == Qt::black) {
+			this->backgroundColorBlackAction->setChecked(true);
+		} else if (backgroundColor == Qt::white) {
+			this->backgroundColorWhiteAction->setChecked(true);
+		} else if (backgroundColor == this->darkGray) {
+			this->backgroundColorGrayAction->setChecked(true);
+		} else {
+			this->backgroundColorCustomAction->setChecked(true);
+		}
 	}
 
 	//============================================================================ PRIVATE SLOTS =============================================================================\\
@@ -1164,6 +1226,34 @@ namespace sv {
 		this->imageView->setPostResizeSharpening(this->sharpeningAction->isChecked(),
 												 this->settings->value("sharpeningStrength", 0.5).toDouble(),
 												 this->settings->value("sharpeningRadius", 1).toDouble());
+	}
+
+	void MainInterface::changeBackgroundColor(QAction* action) {
+		if (action == this->backgroundColorBlackAction) {
+			this->imageView->setInterfaceBackgroundColor(Qt::black);
+			this->settings->setValue("backgroundColor", QColor(Qt::black));
+		} else if (action == this->backgroundColorGrayAction) {
+			this->imageView->setInterfaceBackgroundColor(this->darkGray);
+			this->settings->setValue("backgroundColor", this->darkGray);
+		} else if (action == this->backgroundColorWhiteAction) {
+			this->imageView->setInterfaceBackgroundColor(Qt::white);
+			this->settings->setValue("backgroundColor", QColor(Qt::white));
+		} else if (action == this->backgroundColorCustomAction) {
+			QColor color = QColorDialog::getColor(this->settings->value("lastCustomColor", QColor(Qt::black)).value<QColor>(), this, tr("Choose Background Colour"));
+			if (color.isValid()) {
+				this->settings->setValue("lastCustomColor", color);
+				this->settings->setValue("backgroundColor", color);
+				this->imageView->setInterfaceBackgroundColor(color);
+			} else {
+				if (this->imageView->getInterfaceBackgroundColor() == Qt::black) {
+					this->backgroundColorBlackAction->setChecked(true);
+				} else if (this->imageView->getInterfaceBackgroundColor() == this->darkGray) {
+					this->backgroundColorGrayAction->setChecked(true);
+				} else if (this->imageView->getInterfaceBackgroundColor() == Qt::white) {
+					this->backgroundColorWhiteAction->setChecked(true);
+				}
+			}
+		}
 	}
 
 }
