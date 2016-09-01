@@ -33,7 +33,9 @@ namespace hb {
 		QSize sizeHint() const;
 
 		void setShowInterfaceOutline(bool value);
+		bool getShowInterfaceOutline();
 		void setInterfaceBackgroundColor(QColor const& color);
+		QColor const& getInterfaceBackgroundColor();
 		void setRightClickForHundredPercentView(bool value);
 		bool getRightClickForHundredPercentView();
 		void setUsePanZooming(bool value);
