@@ -22,12 +22,14 @@ namespace sv {
 	class Image {
 	public:
 		Image();
-		Image(cv::Mat mat, std::shared_ptr<ExifData> exifData);
+		Image(cv::Mat mat, std::shared_ptr<ExifData> exifData, bool isPreviewImage = false);
 		cv::Mat mat() const;
 		std::shared_ptr<ExifData> exif() const;
 		bool isValid() const;
+		bool isPreviewImage() const;
 	private:
 		bool valid = false;
+		bool previewImage = false;
 		cv::Mat matrix;
 		std::shared_ptr<ExifData> exifData;
 	};

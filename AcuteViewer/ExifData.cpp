@@ -160,8 +160,16 @@ namespace sv {
 		return resolution;
 	}
 
+	Exiv2::DataBuf const& ExifData::previewImage() {
+		return this->preview;
+	}
+
 	bool ExifData::hasExif() const {
 		return this->ready && !this->exifData.empty();
+	}
+
+	bool ExifData::hasPreviewImage() const {
+		return this->previewAvailable;
 	}
 
 	bool ExifData::isReady() const {
@@ -221,6 +229,12 @@ namespace sv {
 			if (image.get() != 0) {
 				image->readMetadata();
 				this->exifData = image->exifData();
+				Exiv2::PreviewManager previews(*image);
+				if (previews.getPreviewProperties().size() > 0) {
+					Exiv2::PreviewImage preview = previews.getPreviewImage(previews.getPreviewProperties().back());
+					this->preview = preview.copy();
+					this->previewAvailable = true;
+				}
 			}
 			this->ready = true;
 			emit(loadingFinished(this));
