@@ -4,7 +4,7 @@ namespace sv {
 
 	Image::Image() { }
 
-	Image::Image(cv::Mat mat, std::shared_ptr<ExifData> exifData) : matrix(mat), exifData(exifData), valid(true) { }
+	Image::Image(cv::Mat mat, std::shared_ptr<ExifData> exifData, bool isPreviewImage) : matrix(mat), exifData(exifData), valid(true), previewImage(isPreviewImage) { }
 
 	cv::Mat Image::mat() const {
 		return this->matrix;
@@ -16,6 +16,10 @@ namespace sv {
 
 	bool Image::isValid() const {
 		return valid;
+	}
+
+	bool Image::isPreviewImage() const {
+		return this->previewImage;
 	}
 
 	//============================================================================ MAIN INTERFACE ============================================================================\\
@@ -499,36 +503,51 @@ namespace sv {
 	}
 
 	Image MainInterface::readImage(QString path, bool emitSignals) {
-		cv::Mat image;
-		std::shared_ptr<ExifData> exifData;
-		if (!utility::isCharCompatible(path)) {
-			std::shared_ptr<std::vector<char>> buffer = utility::readFileIntoBuffer(path);
-			if (buffer->empty()) {
-				if (emitSignals) emit(readImageFinished(Image()));
-				return Image();
+		try {
+			cv::Mat image;
+			bool isPreviewImage;
+			Image result;
+			std::shared_ptr<ExifData> exifData;
+			if (!utility::isCharCompatible(path)) {
+				std::shared_ptr<std::vector<char>> buffer = utility::readFileIntoBuffer(path);
+				if (buffer->empty()) {
+					if (emitSignals) emit(readImageFinished(Image()));
+					return Image();
+				}
+				image = cv::imdecode(*buffer, cv::IMREAD_UNCHANGED);
+				exifData = std::shared_ptr<ExifData>(new ExifData(buffer));
+			} else {
+				image = cv::imread(path.toStdString(), cv::IMREAD_UNCHANGED);
+				exifData = std::shared_ptr<ExifData>(new ExifData(path, !this->exifIsRequired() && image.data));
 			}
-			image = cv::imdecode(*buffer, cv::IMREAD_UNCHANGED);
-			if (image.data) exifData = std::shared_ptr<ExifData>(new ExifData(buffer));
-		} else {
-			image = cv::imread(path.toStdString(), cv::IMREAD_UNCHANGED);
-			if (image.data) exifData = std::shared_ptr<ExifData>(new ExifData(path, !this->exifIsRequired()));
+			if (!image.data) {
+				exifData->join();
+				if (exifData->hasPreviewImage()) {
+					Exiv2::DataBuf const& previewImage = exifData->previewImage();
+					//use a mat instead of a vector as buffer to avoid having to copy the data
+					cv::Mat buffer(1, previewImage.size_, CV_8U, previewImage.pData_);
+					image = cv::imdecode(buffer, cv::IMREAD_UNCHANGED);
+					isPreviewImage = true;
+				}
+			}
+			if (image.data) {
+				QObject::connect(exifData.get(), SIGNAL(loadingFinished(ExifData*)), this, SLOT(reactToExifLoadingCompletion(ExifData*)));
+				//convert format
+				if (image.channels() == 3) {
+					cv::cvtColor(image, image, CV_BGR2RGB);
+				}
+				if (image.depth() == CV_16U) {
+					image.convertTo(image, CV_8U, 1.0 / 256.0);
+				} else if (image.depth() == CV_32F) {
+					image.convertTo(image, CV_8U, 256.0);
+				}
+				result = Image(image, exifData, isPreviewImage);
+			}
+			if (emitSignals) emit(readImageFinished(result));
+			return result;
+		} catch (...) {
+			return Image();
 		}
-		Image result;
-		if (image.data) {
-			QObject::connect(exifData.get(), SIGNAL(loadingFinished(ExifData*)), this, SLOT(reactToExifLoadingCompletion(ExifData*)));
-			//convert format
-			if (image.channels() == 3) {
-				cv::cvtColor(image, image, CV_BGR2RGB);
-			}
-			if (image.depth() == CV_16U) {
-				image.convertTo(image, CV_8U, 1.0/256.0);
-			} else if (image.depth() == CV_32F) {
-				image.convertTo(image, CV_8U, 256.0);
-			}
-			result = Image(image, exifData);
-		}
-		if (emitSignals) emit(readImageFinished(result));
-		return result;
 	}
 
 	void MainInterface::loadNextImage() {

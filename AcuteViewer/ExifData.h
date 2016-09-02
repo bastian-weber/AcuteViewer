@@ -38,7 +38,9 @@ namespace sv {
 		QString focalLength35mmEquivalent() const;
 		QString captureDate() const;
 		QString resolution() const;
+		Exiv2::DataBuf const& previewImage();
 		bool hasExif() const;
+		bool hasPreviewImage() const;
 		bool isReady() const;
 		bool isDeferred() const;
 		void join();
@@ -51,6 +53,8 @@ namespace sv {
 
 		//variables
 		Exiv2::ExifData exifData;
+		Exiv2::DataBuf preview;
+		bool previewAvailable = false;
 		std::thread thread;
 		QString cachedFilepath;
 		std::atomic<bool> ready{ false };
