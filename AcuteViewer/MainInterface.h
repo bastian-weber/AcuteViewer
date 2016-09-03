@@ -78,6 +78,8 @@ namespace sv {
 
 		//variables
 		const QString programTitle = "Acute Viewer";
+		const QStringList supportedExtensions = { "*.bmp", "*.dib", "*.jpeg", "*.jpg", "*.jpe", "*.jpeg", "*.jp2", "*.png", "*.webp", "*.pbm", "*.pgm", "*.ppm", "*.sr", "*.ras", "*.tiff", "*.tif" };
+		const QStringList partiallySupportedExtensions = { "*.arw", "*.dng", "*.psd"};
 		const int mouseHideDelay = 1000;
 		const int threadCleanUpInterval = 500;
 		const int eventProcessIntervalDuringWait = 16;
@@ -106,6 +108,9 @@ namespace sv {
 		//menus
 		QMenu* fileMenu;
 		QMenu* viewMenu;
+		QMenu* zoomMenu;
+		QMenu* rotationMenu;
+		QMenu* sharpeningMenu;
 		QMenu* backgroundColorMenu;
 		QMenu* slideshowMenu;
 		QMenu* applicationMenu;
@@ -135,6 +140,7 @@ namespace sv {
 		QAction* backgroundColorWhiteAction;
 		QAction* backgroundColorBlackAction;
 		QAction* backgroundColorGrayAction;
+		QAction* includePartiallySupportedFilesAction;
 		QAction* installAction;
 		QAction* uninstallAction;
 		QActionGroup* backgroundColorActionGroup;
@@ -177,6 +183,7 @@ namespace sv {
 		void toggleSmallImageUpscaling(bool value);
 		void toggleSharpening(bool value);
 		void toggleMenuBarAutoHide(bool value);
+		void togglePreviewOnlyFiles(bool value);
 		void showSharpeningOptions();
 		void updateSharpening();
 		void changeBackgroundColor(QAction* action);
