@@ -244,7 +244,7 @@ namespace sv {
 		this->zoomMenu = this->menuBar()->addMenu(tr("&Zoom"));
 		this->rotationMenu = this->menuBar()->addMenu(tr("&Rotation"));
 		this->sharpeningMenu = this->menuBar()->addMenu(tr("&Sharpening"));
-		this->slideshowMenu = this->menuBar()->addMenu(tr("&Slideshow"));
+		this->slideshowMenu = this->menuBar()->addMenu(tr("S&lideshow"));
 #ifdef Q_OS_WIN
 		this->applicationMenu = this->menuBar()->addMenu(tr("&Application"));
 		QObject::connect(this->applicationMenu, SIGNAL(aboutToShow()), this, SLOT(populateApplicationMenu()));
@@ -412,7 +412,7 @@ namespace sv {
 
 		this->zoomMenu->addSeparator();
 
-		this->zoomToFitAction = new QAction(tr("Zoo&m to Fit"), this);
+		this->zoomToFitAction = new QAction(tr("Zoom to &Fit"), this);
 		this->zoomToFitAction->setShortcut(Qt::CTRL + Qt::Key_0);
 		this->zoomToFitAction->setShortcutContext(Qt::ApplicationShortcut);
 		QObject::connect(this->zoomToFitAction, SIGNAL(triggered(bool)), this->imageView, SLOT(resetZoom()));
@@ -447,7 +447,7 @@ namespace sv {
 		this->rotationMenu->addAction(this->resetRotationAction);
 		this->addAction(this->resetRotationAction);
 
-		this->sharpeningAction = new QAction(tr("Sharpen Images After &Downsampling"), this);
+		this->sharpeningAction = new QAction(tr("&Sharpen Images After Downsampling"), this);
 		this->sharpeningAction->setCheckable(true);
 		this->sharpeningAction->setChecked(false);
 		this->sharpeningAction->setShortcut(Qt::Key_E);
