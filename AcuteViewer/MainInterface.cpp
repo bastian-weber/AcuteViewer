@@ -798,73 +798,98 @@ namespace sv {
 						QString iso = this->image.exif()->iso();
 						QString captureDate = this->image.exif()->captureDate();
 						//calculate the v coordinates for the lines
-						int cameraModelTopOffset = 30 + 2 * this->lineSpacing + 3 * metrics.height();
-						int lensTopOffset = 30 + 3 * this->lineSpacing + 4 * metrics.height();
-						int focalLengthTopOffset = 30 + 4 * this->lineSpacing + 5 * metrics.height();
-						int apertureAndSpeedTopOffset = 30 + 5 * this->lineSpacing + 6 * metrics.height();
-						int isoTopOffset = 30 + 6 * this->lineSpacing + 7 * metrics.height();
-						int dateTopOffset = 30 + 7 * this->lineSpacing + 8 * metrics.height();
 						int heightOfOneLine = this->lineSpacing + metrics.height();
-						if (cameraModel.isEmpty()) {
-							lensTopOffset -= heightOfOneLine;
-							focalLengthTopOffset -= heightOfOneLine;
-							apertureAndSpeedTopOffset -= heightOfOneLine;
-							isoTopOffset -= heightOfOneLine;
-							dateTopOffset -= heightOfOneLine;
-						}
-						if (lensModel.isEmpty()) {
-							focalLengthTopOffset -= heightOfOneLine;
-							apertureAndSpeedTopOffset -= heightOfOneLine;
-							isoTopOffset -= heightOfOneLine;
-							dateTopOffset -= heightOfOneLine;
-						}
-						if (focalLength.isEmpty() && equivalentFocalLength.isEmpty()) {
-							apertureAndSpeedTopOffset -= heightOfOneLine;
-							isoTopOffset -= heightOfOneLine;
-							dateTopOffset -= heightOfOneLine;
-						}
-						if (aperture.isEmpty() && speed.isEmpty()) {
-							isoTopOffset -= heightOfOneLine;
-							dateTopOffset -= heightOfOneLine;
-						}
-						if (iso.isEmpty() && exposureBias.isEmpty()) dateTopOffset -= heightOfOneLine;
+						int topOffset = 30 + 2 * this->lineSpacing + 3 * metrics.height();
+
+						//int cameraModelTopOffset = 30 + 2 * this->lineSpacing + 3 * metrics.height();
+						//int lensTopOffset = 30 + 3 * this->lineSpacing + 4 * metrics.height();
+						//int focalLengthTopOffset = 30 + 4 * this->lineSpacing + 5 * metrics.height();
+						//int apertureAndSpeedTopOffset = 30 + 5 * this->lineSpacing + 6 * metrics.height();
+						//int isoTopOffset = 30 + 6 * this->lineSpacing + 7 * metrics.height();
+						//int dateTopOffset = 30 + 7 * this->lineSpacing + 8 * metrics.height();
+						//int heightOfOneLine = this->lineSpacing + metrics.height();
+						//if (cameraModel.isEmpty()) {
+						//	lensTopOffset -= heightOfOneLine;
+						//	focalLengthTopOffset -= heightOfOneLine;
+						//	apertureAndSpeedTopOffset -= heightOfOneLine;
+						//	isoTopOffset -= heightOfOneLine;
+						//	dateTopOffset -= heightOfOneLine;
+						//}
+						//if (lensModel.isEmpty()) {
+						//	focalLengthTopOffset -= heightOfOneLine;
+						//	apertureAndSpeedTopOffset -= heightOfOneLine;
+						//	isoTopOffset -= heightOfOneLine;
+						//	dateTopOffset -= heightOfOneLine;
+						//}
+						//if (focalLength.isEmpty() && equivalentFocalLength.isEmpty()) {
+						//	apertureAndSpeedTopOffset -= heightOfOneLine;
+						//	isoTopOffset -= heightOfOneLine;
+						//	dateTopOffset -= heightOfOneLine;
+						//}
+						//if (aperture.isEmpty() && speed.isEmpty()) {
+						//	isoTopOffset -= heightOfOneLine;
+						//	dateTopOffset -= heightOfOneLine;
+						//}
+						//if (iso.isEmpty() && exposureBias.isEmpty()) dateTopOffset -= heightOfOneLine;
+
 						//draw the EXIF text (note \u2005 is a sixth of a quad)
-						if (!cameraModel.isEmpty()) canvas.drawText(QPoint(30, cameraModelTopOffset),
-																	cameraModel);
-						if (!lensModel.isEmpty()) canvas.drawText(QPoint(30, lensTopOffset),
-																  lensModel);
+						if (!cameraModel.isEmpty()) {
+							canvas.drawText(QPoint(30, topOffset),
+											cameraModel);
+							topOffset += heightOfOneLine;
+						}
+						if (!lensModel.isEmpty()) {
+							canvas.drawText(QPoint(30, topOffset),
+											lensModel);
+							topOffset += heightOfOneLine;
+						}
 						if (!focalLength.isEmpty() && !equivalentFocalLength.isEmpty()) {
-							canvas.drawText(QPoint(30, focalLengthTopOffset),
+							canvas.drawText(QPoint(30, topOffset),
 											QString::fromWCharArray(L"%1\u2006mm (\u2261 %2\u2006mm)").arg(focalLength).arg(equivalentFocalLength));
+							topOffset += heightOfOneLine;
 						} else if (!focalLength.isEmpty()) {
-							canvas.drawText(QPoint(30, focalLengthTopOffset),
+							canvas.drawText(QPoint(30, topOffset),
 											QString::fromWCharArray(L"%1\u2006mm").arg(focalLength));
+							topOffset += heightOfOneLine;
 						} else if (!equivalentFocalLength.isEmpty()) {
-							canvas.drawText(QPoint(30, focalLengthTopOffset),
+							canvas.drawText(QPoint(30, topOffset),
 											QString::fromWCharArray(L"%1\u2006mm (35\u2006mm equivalent)").arg(equivalentFocalLength));
+							topOffset += heightOfOneLine;
 						}
 						if (!speed.isEmpty() && !aperture.isEmpty()) {
-							canvas.drawText(QPoint(30, apertureAndSpeedTopOffset),
+							canvas.drawText(QPoint(30, topOffset),
 											QString::fromWCharArray(L"%1\u2006s @ f/%2").arg(speed).arg(aperture));
+							topOffset += heightOfOneLine;
 						} else if (!speed.isEmpty()) {
-							canvas.drawText(QPoint(30, apertureAndSpeedTopOffset),
+							canvas.drawText(QPoint(30, topOffset),
 											QString::fromWCharArray(L"%1\u2006s").arg(speed));
+							topOffset += heightOfOneLine;
 						} else if (!aperture.isEmpty()) {
-							canvas.drawText(QPoint(30, apertureAndSpeedTopOffset),
+							canvas.drawText(QPoint(30, topOffset),
 											QString("f/%1").arg(aperture));
+							topOffset += heightOfOneLine;
 						}
 						if (!iso.isEmpty() && !exposureBias.isEmpty()) {
-							canvas.drawText(QPoint(30, isoTopOffset),
+							canvas.drawText(QPoint(30, topOffset),
 											QString::fromWCharArray(L"ISO\u2006%1, %2\u2006EV").arg(iso).arg(exposureBias));
+							topOffset += heightOfOneLine;
 						} else if (!iso.isEmpty()) {
-							canvas.drawText(QPoint(30, isoTopOffset),
+							canvas.drawText(QPoint(30, topOffset),
 											QString::fromWCharArray(L"ISO\u2006%1").arg(iso));
+							topOffset += heightOfOneLine;
 						} else if (!exposureBias.isEmpty()) {
-							canvas.drawText(QPoint(30, isoTopOffset),
+							canvas.drawText(QPoint(30, topOffset),
 											QString::fromWCharArray(L"%1\u2006EV").arg(exposureBias));
+							topOffset += heightOfOneLine;
 						}
-						if (!captureDate.isEmpty()) canvas.drawText(QPoint(30, dateTopOffset),
-																	QString("%1").arg(captureDate));
+						if (!captureDate.isEmpty()) {
+							canvas.drawText(QPoint(30, topOffset),
+											QString("%1").arg(captureDate));
+							topOffset += heightOfOneLine;
+						}
+						if (this->image.isPreviewImage()) {
+							canvas.drawText(QPoint(30, topOffset), "[Preview Image]");
+						}
 					}
 				} else {
 					canvas.drawText(QPoint(30, 30 + 2 * this->lineSpacing + 3 * metrics.height()),
