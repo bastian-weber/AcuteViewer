@@ -231,7 +231,6 @@ namespace sv {
 				this->exifData = image->exifData();
 				Exiv2::PreviewManager previews(*image);
 				if (previews.getPreviewProperties().size() > 0) {
-					//std::cout << previews.getPreviewProperties().back().width_ << std::endl;
 					Exiv2::PreviewImage preview = previews.getPreviewImage(previews.getPreviewProperties().back());
 					this->preview = preview.copy();
 					this->previewAvailable = true;
