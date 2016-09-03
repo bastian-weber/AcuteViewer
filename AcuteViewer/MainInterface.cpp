@@ -515,19 +515,21 @@ namespace sv {
 	Image MainInterface::readImage(QString path, bool emitSignals) {
 		try {
 			cv::Mat image;
-			bool isPreviewImage;
+			bool isPreviewImage = false;
 			Image result;
 			std::shared_ptr<ExifData> exifData;
+			//for some types opencv imread will give a wrong result; in these cases force the use of exiv2 preview extraction
+			bool forcePreview = this->forcePreviewExtensions.contains(QFileInfo(path).suffix().toLower());
 			if (!utility::isCharCompatible(path)) {
 				std::shared_ptr<std::vector<char>> buffer = utility::readFileIntoBuffer(path);
 				if (buffer->empty()) {
 					if (emitSignals) emit(readImageFinished(Image()));
 					return Image();
 				}
-				image = cv::imdecode(*buffer, cv::IMREAD_UNCHANGED);
+				if(!forcePreview) image = cv::imdecode(*buffer, cv::IMREAD_UNCHANGED);
 				exifData = std::shared_ptr<ExifData>(new ExifData(buffer));
 			} else {
-				image = cv::imread(path.toStdString(), cv::IMREAD_UNCHANGED);
+				if (!forcePreview) image = cv::imread(path.toStdString(), cv::IMREAD_UNCHANGED);
 				exifData = std::shared_ptr<ExifData>(new ExifData(path, !this->exifIsRequired() && image.data));
 			}
 			if (!image.data) {
