@@ -203,8 +203,10 @@ namespace sv {
 	void MainInterface::wheelEvent(QWheelEvent * e) {
 		if (e->modifiers() == Qt::ShiftModifier) {
 			if (e->delta() > 0) {
+				this->userRotation -= 10;
 				this->imageView->rotateBy(-10);
 			} else if (e->delta() < 0) {
+				this->userRotation += 10;
 				this->imageView->rotateBy(10);
 			}
 		}
@@ -274,7 +276,7 @@ namespace sv {
 		this->includePartiallySupportedFilesAction = new QAction(tr("&Include Preview-Only Files in Directory List"), this);
 		this->includePartiallySupportedFilesAction->setCheckable(true);
 		this->includePartiallySupportedFilesAction->setChecked(true);
-		this->includePartiallySupportedFilesAction->setShortcut(Qt::Key_P);
+		this->includePartiallySupportedFilesAction->setShortcut(Qt::CTRL + Qt::Key_P);
 		this->includePartiallySupportedFilesAction->setShortcutContext(Qt::ApplicationShortcut);
 		QObject::connect(this->includePartiallySupportedFilesAction, SIGNAL(triggered(bool)), this, SLOT(togglePreviewOnlyFiles(bool)));
 		this->fileMenu->addAction(this->includePartiallySupportedFilesAction);
@@ -395,7 +397,7 @@ namespace sv {
 		this->enlargementAction = new QAction(tr("&Enlarge Smaller Images to Fit Window"), this);
 		this->enlargementAction->setCheckable(true);
 		this->enlargementAction->setChecked(false);
-		this->enlargementAction->setShortcut(Qt::Key_U);
+		this->enlargementAction->setShortcut(Qt::CTRL + Qt::Key_U);
 		this->enlargementAction->setShortcutContext(Qt::ApplicationShortcut);
 		QObject::connect(this->enlargementAction, SIGNAL(triggered(bool)), this, SLOT(toggleSmallImageUpscaling(bool)));
 		this->zoomMenu->addAction(this->enlargementAction);
@@ -404,7 +406,7 @@ namespace sv {
 		this->smoothingAction = new QAction(tr("Use &Smooth Interpolation when Enlarging"), this);
 		this->smoothingAction->setCheckable(true);
 		this->smoothingAction->setChecked(false);
-		this->smoothingAction->setShortcut(Qt::Key_S);
+		this->smoothingAction->setShortcut(Qt::CTRL + Qt::Key_S);
 		this->smoothingAction->setShortcutContext(Qt::ApplicationShortcut);
 		QObject::connect(this->smoothingAction, SIGNAL(triggered(bool)), this, SLOT(toggleEnglargmentInterpolationMethod(bool)));
 		this->zoomMenu->addAction(this->smoothingAction);
@@ -447,10 +449,21 @@ namespace sv {
 		this->rotationMenu->addAction(this->resetRotationAction);
 		this->addAction(this->resetRotationAction);
 
+		this->rotationMenu->addSeparator();
+
+		this->autoRotationAction = new QAction(tr("&Attempt to Automatically Rotate Images Correctly"), this);
+		this->autoRotationAction->setCheckable(true);
+		this->autoRotationAction->setChecked(true);
+		this->autoRotationAction->setShortcut(Qt::CTRL + Qt::Key_R);
+		this->autoRotationAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->autoRotationAction, SIGNAL(triggered(bool)), this, SLOT(toggleAutoRotation(bool)));
+		this->rotationMenu->addAction(this->autoRotationAction);
+		this->addAction(this->autoRotationAction);
+
 		this->sharpeningAction = new QAction(tr("&Sharpen Images After Downsampling"), this);
 		this->sharpeningAction->setCheckable(true);
 		this->sharpeningAction->setChecked(false);
-		this->sharpeningAction->setShortcut(Qt::Key_E);
+		this->sharpeningAction->setShortcut(Qt::CTRL + Qt::Key_E);
 		this->sharpeningAction->setShortcutContext(Qt::ApplicationShortcut);
 		QObject::connect(this->sharpeningAction, SIGNAL(triggered(bool)), this, SLOT(toggleSharpening(bool)));
 		this->sharpeningMenu->addAction(this->sharpeningAction);
@@ -509,7 +522,7 @@ namespace sv {
 	}
 
 	bool MainInterface::exifIsRequired() const {
-		return this->showInfoAction->isChecked();
+		return this->showInfoAction->isChecked() || this->autoRotationAction->isChecked();
 	}
 
 	Image MainInterface::readImage(QString path, bool emitSignals) {
@@ -718,12 +731,33 @@ namespace sv {
 		if (this->image.isValid()) {
 			this->currentImageUnreadable = false;
 			this->imageView->setImage(this->image.mat());
+			if (this->autoRotationAction->isChecked()) {
+				this->autoRotateImage();
+			}
 		} else {
 			this->currentImageUnreadable = true;
 			this->imageView->resetImage();
 		}
 		this->setWindowTitle(QString("%1 - %2 - %3 of %4").arg(this->currentFileInfo.fileName(),
 															   this->programTitle).arg(this->currentFileIndex + 1).arg(this->filesInDirectory.size()));
+	}
+
+	void MainInterface::autoRotateImage() {
+		if (this->image.isValid()) {
+			this->image.exif()->join();
+			if (this->image.exif()->hasExif()) {
+				long orientation = this->image.exif()->orientation();
+				this->imageView->setRotation(this->userRotation);
+				orientation = (orientation + 1) / 2;
+				if (orientation == 3) {
+					this->imageView->rotateBy(90);
+				} else if (orientation == 4) {
+					this->imageView->rotateBy(-90);
+				} else if (orientation == 2) {
+					this->imageView->rotateBy(180);
+				}
+			}
+		}
 	}
 
 	void MainInterface::enterFullscreen() {
@@ -931,6 +965,8 @@ namespace sv {
 		} else {
 			this->backgroundColorCustomAction->setChecked(true);
 		}
+		this->includePartiallySupportedFilesAction->setChecked(this->settings->value("includePreviewOnlyFiles", true).toBool());
+		this->autoRotationAction->setChecked(this->settings->value("autoRotateImages", true).toBool());
 	}
 
 	//============================================================================ PRIVATE SLOTS =============================================================================\\
@@ -1122,15 +1158,19 @@ namespace sv {
 	}
 
 	void MainInterface::rotateLeft() {
+		this->userRotation -= 90;
 		this->imageView->rotateLeft();
 	}
 
 	void MainInterface::rotateRight() {
+		this->userRotation += 90;
 		this->imageView->rotateRight();
 	}
 
 	void MainInterface::resetRotation() {
+		this->userRotation = 0;
 		this->imageView->setRotation(0);
+		if (this->autoRotationAction->isChecked()) this->autoRotateImage();
 	}
 
 	void MainInterface::zoomTo100() {
@@ -1289,6 +1329,15 @@ namespace sv {
 					this->backgroundColorWhiteAction->setChecked(true);
 				}
 			}
+		}
+	}
+
+	void MainInterface::toggleAutoRotation(bool value) {
+		this->settings->setValue("autoRotateImages", value);
+		if (value) {
+			this->autoRotateImage();
+		} else {
+			this->imageView->setRotation(userRotation);
 		}
 	}
 

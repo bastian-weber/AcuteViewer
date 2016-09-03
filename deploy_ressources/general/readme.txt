@@ -63,11 +63,11 @@ the last used settings. Hit Space again to stop the slideshow.
 GPU acceleration can be turned on and of. On some graphics cards, performance might be 
 better if you leave it turned off. There are also some options regarding how the images
 are displayed. It can be selected whether images that are smaller than the window shall
-be scaled up (U) and whether pixel values shall be smoothly interpolated when magnification
-is above 100% (S).
+be scaled up (Ctrl + U) and whether pixel values shall be smoothly interpolated when magnification
+is above 100% (Ctrl + S).
 
 There is also a post-resize sharpening filter available. This filter sharpens the image
-after it has been downscaled to fit the window's resolution and can be activated with E. 
+after it has been downscaled to fit the window's resolution and can be activated with Ctrl + E. 
 The options for the filter can be set in a dialog that is brought up with O. The filter
 is optimal for presentations, where you want to have the best possible viewing experience.
 This way the images do not have to be resized to screen resolution and sharpened
@@ -116,13 +116,13 @@ Image Rendering and Display Options
     Z Key                                       Toggle zoom level overlay on and off
     Ctrl + Shift + Left or Right Arrow Keys     Change the font size of the text overlay
     Ctrl + Shift + Up or Down Arrow Keys        Change the line spacing of the text overlay
-    U Key                                       Toggle option to upscale smaller images to 
+    Ctrl + U Key                                Toggle option to upscale smaller images to 
                                                 fit the window on and off
-    S Key                                       Toggle the use of a smooth interpolation 
+    Ctrl + S Key                                Toggle the use of a smooth interpolation 
                                                 method instead of nearest neighbour when 
                                                 enlarging above 100%
-    E Key                                       Toggle post-resize sharpening (effect)
-    O Key                                       Show sharpening options dialog
+    Ctrl + E Key                                Toggle post-resize sharpening (effect)
+    O Key                                Show sharpening options dialog
 
 Application Shortcuts
 
