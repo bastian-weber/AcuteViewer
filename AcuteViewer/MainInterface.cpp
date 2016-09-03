@@ -518,8 +518,8 @@ namespace sv {
 			bool isPreviewImage = false;
 			Image result;
 			std::shared_ptr<ExifData> exifData;
-			//for some types opencv imread will give a wrong result; in these cases force the use of exiv2 preview extraction
-			bool forcePreview = this->forcePreviewExtensions.contains(QFileInfo(path).suffix().toLower());
+			//for the images we know are not supported by opencv do not attempt to read them with opencv
+			bool forcePreview = this->partiallySupportedExtensions.contains(QString("*.") + QFileInfo(path).suffix().toLower());
 			if (!utility::isCharCompatible(path)) {
 				std::shared_ptr<std::vector<char>> buffer = utility::readFileIntoBuffer(path);
 				if (buffer->empty()) {
@@ -535,10 +535,7 @@ namespace sv {
 			if (!image.data) {
 				exifData->join();
 				if (exifData->hasPreviewImage()) {
-					Exiv2::DataBuf const& previewImage = exifData->previewImage();
-					//use a mat instead of a vector as buffer to avoid having to copy the data
-					cv::Mat buffer(1, previewImage.size_, CV_8U, previewImage.pData_);
-					image = cv::imdecode(buffer, cv::IMREAD_UNCHANGED);
+					image = exifData->largestReadablePreviewImage();
 					isPreviewImage = true;
 				}
 			}
@@ -800,37 +797,6 @@ namespace sv {
 						//calculate the v coordinates for the lines
 						int heightOfOneLine = this->lineSpacing + metrics.height();
 						int topOffset = 30 + 2 * this->lineSpacing + 3 * metrics.height();
-
-						//int cameraModelTopOffset = 30 + 2 * this->lineSpacing + 3 * metrics.height();
-						//int lensTopOffset = 30 + 3 * this->lineSpacing + 4 * metrics.height();
-						//int focalLengthTopOffset = 30 + 4 * this->lineSpacing + 5 * metrics.height();
-						//int apertureAndSpeedTopOffset = 30 + 5 * this->lineSpacing + 6 * metrics.height();
-						//int isoTopOffset = 30 + 6 * this->lineSpacing + 7 * metrics.height();
-						//int dateTopOffset = 30 + 7 * this->lineSpacing + 8 * metrics.height();
-						//int heightOfOneLine = this->lineSpacing + metrics.height();
-						//if (cameraModel.isEmpty()) {
-						//	lensTopOffset -= heightOfOneLine;
-						//	focalLengthTopOffset -= heightOfOneLine;
-						//	apertureAndSpeedTopOffset -= heightOfOneLine;
-						//	isoTopOffset -= heightOfOneLine;
-						//	dateTopOffset -= heightOfOneLine;
-						//}
-						//if (lensModel.isEmpty()) {
-						//	focalLengthTopOffset -= heightOfOneLine;
-						//	apertureAndSpeedTopOffset -= heightOfOneLine;
-						//	isoTopOffset -= heightOfOneLine;
-						//	dateTopOffset -= heightOfOneLine;
-						//}
-						//if (focalLength.isEmpty() && equivalentFocalLength.isEmpty()) {
-						//	apertureAndSpeedTopOffset -= heightOfOneLine;
-						//	isoTopOffset -= heightOfOneLine;
-						//	dateTopOffset -= heightOfOneLine;
-						//}
-						//if (aperture.isEmpty() && speed.isEmpty()) {
-						//	isoTopOffset -= heightOfOneLine;
-						//	dateTopOffset -= heightOfOneLine;
-						//}
-						//if (iso.isEmpty() && exposureBias.isEmpty()) dateTopOffset -= heightOfOneLine;
 
 						//draw the EXIF text (note \u2005 is a sixth of a quad)
 						if (!cameraModel.isEmpty()) {
