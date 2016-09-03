@@ -42,6 +42,7 @@ namespace sv {
 		QString focalLength35mmEquivalent() const;
 		QString captureDate() const;
 		QString resolution() const;
+		int orientation() const;
 		cv::Mat largestReadablePreviewImage();
 		bool hasExif() const;
 		bool hasPreviewImage() const;

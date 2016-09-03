@@ -160,6 +160,13 @@ namespace sv {
 		return resolution;
 	}
 
+	int ExifData::orientation() const {
+		if (this->hasValue("Exif.Image.Orientation")) {
+			return this->value("Exif.Image.Orientation")->toLong();
+		}
+		return -1;
+	}
+
 	cv::Mat ExifData::largestReadablePreviewImage() {
 		return this->preview;
 	}

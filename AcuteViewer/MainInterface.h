@@ -68,6 +68,7 @@ namespace sv {
 		void loadImage(QString path);
 		void loadImages(QStringList paths);
 		void displayImageIfOk();
+		void autoRotateImage();
 		void enterFullscreen();
 		void exitFullscreen();
 		void infoPaintFunction(QPainter& canvas);
@@ -100,6 +101,7 @@ namespace sv {
 		unsigned int fontSize;
 		unsigned int lineSpacing;
 		QColor const darkGray = QColor(30, 30, 30);
+		double userRotation = 0;
 
 		//widgets
 		hb::ImageView* imageView;
@@ -131,6 +133,7 @@ namespace sv {
 		QAction* rotateLeftAction;
 		QAction* rotateRightAction;
 		QAction* resetRotationAction;
+		QAction* autoRotationAction;
 		QAction* zoomTo100Action;
 		QAction* zoomToFitAction;
 		QAction* slideshowAction;
@@ -187,6 +190,7 @@ namespace sv {
 		void showSharpeningOptions();
 		void updateSharpening();
 		void changeBackgroundColor(QAction* action);
+		void toggleAutoRotation(bool value);
 	signals:
 		void readImageFinished(Image image);
 	};
