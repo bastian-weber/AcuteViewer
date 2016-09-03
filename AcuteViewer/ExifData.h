@@ -10,6 +10,10 @@
 //Qt
 #include <QtCore>
 
+//OpenCV
+#include <opencv2/core.hpp>
+#include <opencv2/imgcodecs.hpp>
+
 //Exiv2
 #include <exiv2.hpp>
 
@@ -38,7 +42,7 @@ namespace sv {
 		QString focalLength35mmEquivalent() const;
 		QString captureDate() const;
 		QString resolution() const;
-		Exiv2::DataBuf const& previewImage();
+		cv::Mat largestReadablePreviewImage();
 		bool hasExif() const;
 		bool hasPreviewImage() const;
 		bool isReady() const;
@@ -53,7 +57,7 @@ namespace sv {
 
 		//variables
 		Exiv2::ExifData exifData;
-		Exiv2::DataBuf preview;
+		cv::Mat preview;
 		bool previewAvailable = false;
 		std::thread thread;
 		QString cachedFilepath;

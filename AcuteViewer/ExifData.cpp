@@ -160,7 +160,7 @@ namespace sv {
 		return resolution;
 	}
 
-	Exiv2::DataBuf const& ExifData::previewImage() {
+	cv::Mat ExifData::largestReadablePreviewImage() {
 		return this->preview;
 	}
 
@@ -230,10 +230,18 @@ namespace sv {
 				image->readMetadata();
 				this->exifData = image->exifData();
 				Exiv2::PreviewManager previews(*image);
-				if (previews.getPreviewProperties().size() > 0) {
-					Exiv2::PreviewImage preview = previews.getPreviewImage(previews.getPreviewProperties().back());
-					this->preview = preview.copy();
-					this->previewAvailable = true;
+				Exiv2::PreviewPropertiesList list = previews.getPreviewProperties();
+				if (list.size() > 0) {
+					for (int i = list.size() - 1; i > -1; --i) {
+						Exiv2::PreviewImage preview = previews.getPreviewImage(list[i]);
+						//use a mat instead of a vector as buffer to avoid having to copy the data; const cast should be ok here because we only use the mat as buffer and do not modify it
+						cv::Mat buffer(1, preview.size(), CV_8U, const_cast<Exiv2::byte*>(preview.pData()));
+						this->preview = cv::imdecode(buffer, cv::IMREAD_UNCHANGED);
+						if (this->preview.data) {
+							this->previewAvailable = true;
+							break;
+						}
+					}
 				}
 			}
 			this->ready = true;
