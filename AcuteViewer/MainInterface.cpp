@@ -241,6 +241,9 @@ namespace sv {
 		QObject::connect(this->menuBar(), SIGNAL(triggered(QAction*)), this, SLOT(hideMenuBar(QAction*)));
 		this->fileMenu = this->menuBar()->addMenu(tr("&File"));
 		this->viewMenu = this->menuBar()->addMenu(tr("&View"));
+		this->zoomMenu = this->menuBar()->addMenu(tr("&Zoom"));
+		this->rotationMenu = this->menuBar()->addMenu(tr("&Rotation"));
+		this->sharpeningMenu = this->menuBar()->addMenu(tr("&Sharpening"));
 		this->slideshowMenu = this->menuBar()->addMenu(tr("&Slideshow"));
 #ifdef Q_OS_WIN
 		this->applicationMenu = this->menuBar()->addMenu(tr("&Application"));
@@ -265,6 +268,17 @@ namespace sv {
 		QObject::connect(this->refreshAction, SIGNAL(triggered()), this, SLOT(refresh()));
 		this->fileMenu->addAction(this->refreshAction);
 		this->addAction(this->refreshAction);
+
+		this->fileMenu->addSeparator();
+
+		this->includePartiallySupportedFilesAction = new QAction(tr("&Include Preview-Only Files in Directory List"), this);
+		this->includePartiallySupportedFilesAction->setCheckable(true);
+		this->includePartiallySupportedFilesAction->setChecked(true);
+		this->includePartiallySupportedFilesAction->setShortcut(Qt::Key_P);
+		this->includePartiallySupportedFilesAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->includePartiallySupportedFilesAction, SIGNAL(triggered(bool)), this, SLOT(togglePreviewOnlyFiles(bool)));
+		this->fileMenu->addAction(this->includePartiallySupportedFilesAction);
+		this->addAction(this->includePartiallySupportedFilesAction);
 
 		this->fileMenu->addSeparator();
 
@@ -299,103 +313,6 @@ namespace sv {
 		QObject::connect(this->zoomLevelAction, SIGNAL(triggered(bool)), this, SLOT(toggleZoomLevelOverlay(bool)));
 		this->viewMenu->addAction(this->zoomLevelAction);
 		this->addAction(this->zoomLevelAction);
-
-		this->viewMenu->addSeparator();
-
-		this->fullscreenAction = new QAction(tr("&Fullscreen"), this);
-		this->fullscreenAction->setCheckable(true);
-		this->fullscreenAction->setChecked(false);
-		this->fullscreenAction->setShortcut(Qt::Key_F);
-		this->fullscreenAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->fullscreenAction, SIGNAL(triggered(bool)), this, SLOT(toggleFullscreen()));
-		this->viewMenu->addAction(this->fullscreenAction);
-		this->addAction(this->fullscreenAction);
-
-		this->viewMenu->addSeparator();
-
-		this->rotateLeftAction = new QAction(tr("Rotate View &Left"), this);
-		this->rotateLeftAction->setShortcut(Qt::CTRL + Qt::Key_Left);
-		this->rotateLeftAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->rotateLeftAction, SIGNAL(triggered(bool)), this, SLOT(rotateLeft()));
-		this->viewMenu->addAction(this->rotateLeftAction);
-		this->addAction(this->rotateLeftAction);
-
-		this->rotateRightAction = new QAction(tr("Rotate &View Right"), this);
-		this->rotateRightAction->setShortcut(Qt::CTRL + Qt::Key_Right);
-		this->rotateRightAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->rotateRightAction, SIGNAL(triggered(bool)), this, SLOT(rotateRight()));
-		this->viewMenu->addAction(this->rotateRightAction);
-		this->addAction(this->rotateRightAction);
-
-		this->resetRotationAction = new QAction(tr("&Reset Rotation"), this);
-		this->resetRotationAction->setShortcut(Qt::SHIFT + Qt::Key_Escape);
-		this->resetRotationAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->resetRotationAction, SIGNAL(triggered(bool)), this, SLOT(resetRotation()));
-		this->viewMenu->addAction(this->resetRotationAction);
-		this->addAction(this->resetRotationAction);
-
-		this->zoomToFitAction = new QAction(tr("Zoo&m to Fit"), this);
-		this->zoomToFitAction->setShortcut(Qt::CTRL + Qt::Key_0);
-		this->zoomToFitAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->zoomToFitAction, SIGNAL(triggered(bool)), this->imageView, SLOT(resetZoom()));
-		this->viewMenu->addAction(this->zoomToFitAction);
-		this->addAction(this->zoomToFitAction);
-
-		this->zoomTo100Action = new QAction(tr("Zoom to &100%"), this);
-		this->zoomTo100Action->setShortcut(Qt::CTRL + Qt::ALT + Qt::Key_0);
-		this->zoomTo100Action->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->zoomTo100Action, SIGNAL(triggered(bool)), this, SLOT(zoomTo100()));
-		this->viewMenu->addAction(this->zoomTo100Action);
-		this->addAction(this->zoomTo100Action);
-
-		this->viewMenu->addSeparator();
-
-		this->enlargementAction = new QAction(tr("&Enlarge Smaller Images to Fit Window"), this);
-		this->enlargementAction->setCheckable(true);
-		this->enlargementAction->setChecked(false);
-		this->enlargementAction->setShortcut(Qt::Key_U);
-		this->enlargementAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->enlargementAction, SIGNAL(triggered(bool)), this, SLOT(toggleSmallImageUpscaling(bool)));
-		this->viewMenu->addAction(this->enlargementAction);
-		this->addAction(this->enlargementAction);
-
-		this->smoothingAction = new QAction(tr("Use &Smooth Interpolation when Enlarging"), this);
-		this->smoothingAction->setCheckable(true);
-		this->smoothingAction->setChecked(false);
-		this->smoothingAction->setShortcut(Qt::Key_S);
-		this->smoothingAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->smoothingAction, SIGNAL(triggered(bool)), this, SLOT(toggleEnglargmentInterpolationMethod(bool)));
-		this->viewMenu->addAction(this->smoothingAction);
-		this->addAction(this->smoothingAction);
-
-		this->sharpeningAction = new QAction(tr("Sharpen Images After &Downsampling"), this);
-		this->sharpeningAction->setCheckable(true);
-		this->sharpeningAction->setChecked(false);
-		this->sharpeningAction->setShortcut(Qt::Key_E);
-		this->sharpeningAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->sharpeningAction, SIGNAL(triggered(bool)), this, SLOT(toggleSharpening(bool)));
-		this->viewMenu->addAction(this->sharpeningAction);
-		this->addAction(this->sharpeningAction);
-
-		this->sharpeningOptionsAction = new QAction(tr("Sharpening &Options..."), this);
-		this->sharpeningOptionsAction->setShortcut(Qt::Key_O);
-		this->sharpeningOptionsAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->sharpeningOptionsAction, SIGNAL(triggered(bool)), this, SLOT(showSharpeningOptions()));
-		this->viewMenu->addAction(this->sharpeningOptionsAction);
-		this->addAction(this->sharpeningOptionsAction);
-
-		this->viewMenu->addSeparator();
-
-		this->menuBarAutoHideAction = new QAction(tr("&Always Show Menu Bar"), this);
-		this->menuBarAutoHideAction->setCheckable(true);
-		this->menuBarAutoHideAction->setChecked(false);
-		this->menuBarAutoHideAction->setShortcut(Qt::Key_M);
-		this->menuBarAutoHideAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->menuBarAutoHideAction, SIGNAL(triggered(bool)), this, SLOT(toggleMenuBarAutoHide(bool)));
-		this->viewMenu->addAction(this->menuBarAutoHideAction);
-		this->addAction(this->menuBarAutoHideAction);
-
-		this->viewMenu->addSeparator();
 
 		this->backgroundColorMenu = this->viewMenu->addMenu(tr("&Background Colour"));
 
@@ -441,6 +358,28 @@ namespace sv {
 
 		this->viewMenu->addSeparator();
 
+		this->fullscreenAction = new QAction(tr("&Fullscreen"), this);
+		this->fullscreenAction->setCheckable(true);
+		this->fullscreenAction->setChecked(false);
+		this->fullscreenAction->setShortcut(Qt::Key_F);
+		this->fullscreenAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->fullscreenAction, SIGNAL(triggered(bool)), this, SLOT(toggleFullscreen()));
+		this->viewMenu->addAction(this->fullscreenAction);
+		this->addAction(this->fullscreenAction);
+
+		this->viewMenu->addSeparator();
+
+		this->menuBarAutoHideAction = new QAction(tr("&Always Show Menu Bar"), this);
+		this->menuBarAutoHideAction->setCheckable(true);
+		this->menuBarAutoHideAction->setChecked(false);
+		this->menuBarAutoHideAction->setShortcut(Qt::Key_M);
+		this->menuBarAutoHideAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->menuBarAutoHideAction, SIGNAL(triggered(bool)), this, SLOT(toggleMenuBarAutoHide(bool)));
+		this->viewMenu->addAction(this->menuBarAutoHideAction);
+		this->addAction(this->menuBarAutoHideAction);
+
+		this->viewMenu->addSeparator();
+
 		this->gpuAction = new QAction(tr("&Use GPU Acceleration"), this);
 		this->gpuAction->setCheckable(true);
 		this->gpuAction->setChecked(this->imageView->getUseGpu());
@@ -452,6 +391,77 @@ namespace sv {
 		this->saveSizeAction = new QAction(tr("&Save Current Window Size and Position as Default"), this);
 		QObject::connect(this->saveSizeAction, SIGNAL(triggered(bool)), this, SLOT(saveWindowSize()));
 		this->viewMenu->addAction(this->saveSizeAction);
+
+		this->enlargementAction = new QAction(tr("&Enlarge Smaller Images to Fit Window"), this);
+		this->enlargementAction->setCheckable(true);
+		this->enlargementAction->setChecked(false);
+		this->enlargementAction->setShortcut(Qt::Key_U);
+		this->enlargementAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->enlargementAction, SIGNAL(triggered(bool)), this, SLOT(toggleSmallImageUpscaling(bool)));
+		this->zoomMenu->addAction(this->enlargementAction);
+		this->addAction(this->enlargementAction);
+
+		this->smoothingAction = new QAction(tr("Use &Smooth Interpolation when Enlarging"), this);
+		this->smoothingAction->setCheckable(true);
+		this->smoothingAction->setChecked(false);
+		this->smoothingAction->setShortcut(Qt::Key_S);
+		this->smoothingAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->smoothingAction, SIGNAL(triggered(bool)), this, SLOT(toggleEnglargmentInterpolationMethod(bool)));
+		this->zoomMenu->addAction(this->smoothingAction);
+		this->addAction(this->smoothingAction);
+
+		this->zoomMenu->addSeparator();
+
+		this->zoomToFitAction = new QAction(tr("Zoo&m to Fit"), this);
+		this->zoomToFitAction->setShortcut(Qt::CTRL + Qt::Key_0);
+		this->zoomToFitAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->zoomToFitAction, SIGNAL(triggered(bool)), this->imageView, SLOT(resetZoom()));
+		this->zoomMenu->addAction(this->zoomToFitAction);
+		this->addAction(this->zoomToFitAction);
+
+		this->zoomTo100Action = new QAction(tr("Zoom to &100%"), this);
+		this->zoomTo100Action->setShortcut(Qt::CTRL + Qt::ALT + Qt::Key_0);
+		this->zoomTo100Action->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->zoomTo100Action, SIGNAL(triggered(bool)), this, SLOT(zoomTo100()));
+		this->zoomMenu->addAction(this->zoomTo100Action);
+		this->addAction(this->zoomTo100Action);
+
+		this->rotateLeftAction = new QAction(tr("Rotate View &Left"), this);
+		this->rotateLeftAction->setShortcut(Qt::CTRL + Qt::Key_Left);
+		this->rotateLeftAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->rotateLeftAction, SIGNAL(triggered(bool)), this, SLOT(rotateLeft()));
+		this->rotationMenu->addAction(this->rotateLeftAction);
+		this->addAction(this->rotateLeftAction);
+
+		this->rotateRightAction = new QAction(tr("Rotate &View Right"), this);
+		this->rotateRightAction->setShortcut(Qt::CTRL + Qt::Key_Right);
+		this->rotateRightAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->rotateRightAction, SIGNAL(triggered(bool)), this, SLOT(rotateRight()));
+		this->rotationMenu->addAction(this->rotateRightAction);
+		this->addAction(this->rotateRightAction);
+
+		this->resetRotationAction = new QAction(tr("&Reset Rotation"), this);
+		this->resetRotationAction->setShortcut(Qt::SHIFT + Qt::Key_Escape);
+		this->resetRotationAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->resetRotationAction, SIGNAL(triggered(bool)), this, SLOT(resetRotation()));
+		this->rotationMenu->addAction(this->resetRotationAction);
+		this->addAction(this->resetRotationAction);
+
+		this->sharpeningAction = new QAction(tr("Sharpen Images After &Downsampling"), this);
+		this->sharpeningAction->setCheckable(true);
+		this->sharpeningAction->setChecked(false);
+		this->sharpeningAction->setShortcut(Qt::Key_E);
+		this->sharpeningAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->sharpeningAction, SIGNAL(triggered(bool)), this, SLOT(toggleSharpening(bool)));
+		this->sharpeningMenu->addAction(this->sharpeningAction);
+		this->addAction(this->sharpeningAction);
+
+		this->sharpeningOptionsAction = new QAction(tr("Sharpening &Options..."), this);
+		this->sharpeningOptionsAction->setShortcut(Qt::Key_O);
+		this->sharpeningOptionsAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->sharpeningOptionsAction, SIGNAL(triggered(bool)), this, SLOT(showSharpeningOptions()));
+		this->sharpeningMenu->addAction(this->sharpeningOptionsAction);
+		this->addAction(this->sharpeningOptionsAction);
 
 		this->slideshowAction = new QAction(tr("&Start Slideshow"), this);
 		this->slideshowAction->setEnabled(false);
@@ -646,8 +656,11 @@ namespace sv {
 		//if (directory != this->currentDirectory || this->noCurrentDir) {
 			this->currentDirectory = directory;
 			this->noCurrentDir = false;
-			QStringList filters;
+			QStringList filters = this->supportedExtensions;
 			filters << "*.bmp" << "*.dib" << "*.jpeg" << "*.jpg" << "*.jpe" << "*.jpeg" << "*.jp2" << "*.png" << "*.webp" << "*.pbm" << "*.pgm" << "*.ppm" << "*.sr" << "*.ras" << "*.tiff" << "*.tif";
+			if (this->includePartiallySupportedFilesAction->isChecked()) {
+				filters.append(this->partiallySupportedExtensions);
+			}
 			QStringList contents = directory.entryList(filters, QDir::Files);
 			QCollator collator;
 			collator.setNumericMode(true);
@@ -1194,10 +1207,16 @@ namespace sv {
 	}
 
 	void MainInterface::openDialog() {
+		QString supportedFiles = QString("Fully Supported Images (") + this->supportedExtensions.join(" ") + QString(")");
+		QStringList allTypes;
+		allTypes << this->supportedExtensions << this->partiallySupportedExtensions;
+		allTypes.sort();
+		QString partiallySupportedFiles = QString("All Supported Images (") + allTypes.join(" ") + QString(")");
+		QString filters = QString("All Files (*.*);; %1;; %2;;").arg(partiallySupportedFiles).arg(supportedFiles);
 		QStringList paths = QFileDialog::getOpenFileNames(this,
 														  tr("Open Config File"),
 														  this->settings->value("lastOpenPath", QDir::rootPath()).toString(),
-														  "All Files (*.*);; Image Files (*.bmp *.dib *.jpeg *.jpg *.jpe *.jpeg *.jp2 *.png *.webp *.pbm *.pgm *.ppm *.sr *.ras *.tiff *.tif);;");
+														  filters);
 
 		if (!paths.size() < 1) {
 			this->settings->setValue("lastOpenPath", QFileInfo(paths.at(0)).path());
@@ -1231,6 +1250,11 @@ namespace sv {
 		} else {
 			this->hideMenuBar();
 		}
+	}
+
+	void MainInterface::togglePreviewOnlyFiles(bool value) {
+		this->settings->setValue("includePreviewOnlyFiles", value);
+		this->refresh();
 	}
 
 	void MainInterface::showSharpeningOptions() {
