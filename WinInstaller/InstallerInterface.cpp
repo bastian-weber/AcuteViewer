@@ -106,6 +106,49 @@ namespace wi {
 		registryHklm.setValue("Classes/AcuteViewer.AssocFile.SR/.", "Sun Raster");
 		registryHklm.setValue("Classes/AcuteViewer.AssocFile.SR/DefaultIcon/.", icoPath.arg("sr"));
 		registryHklm.setValue("Classes/AcuteViewer.AssocFile.SR/shell/open/command/.", openCommand);
+		//partially supported filetypes
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.ARW/.", "Sony Alpha Raw");
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.ARW/DefaultIcon/.", icoPath.arg("arw"));
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.ARW/shell/open/command/.", openCommand);
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.CR2/.", "Canon Raw Version 2");
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.CR2/DefaultIcon/.", icoPath.arg("cr2"));
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.CR2/shell/open/command/.", openCommand);
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.CRW/.", "Canon Raw");
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.CRW/DefaultIcon/.", icoPath.arg("crw"));
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.CRW/shell/open/command/.", openCommand);
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.DNG/.", "Digital Negative");
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.DNG/DefaultIcon/.", icoPath.arg("dng"));
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.DNG/shell/open/command/.", openCommand);
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.MRW/.", "Minolta Raw");
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.MRW/DefaultIcon/.", icoPath.arg("mrw"));
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.MRW/shell/open/command/.", openCommand);
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.NEF/.", "Nikon Raw");
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.NEF/DefaultIcon/.", icoPath.arg("nef"));
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.NEF/shell/open/command/.", openCommand);
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.ORF/.", "Olympus Raw");
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.ORF/DefaultIcon/.", icoPath.arg("orf"));
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.ORF/shell/open/command/.", openCommand);
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.PEF/.", "Pentax Raw");
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.PEF/DefaultIcon/.", icoPath.arg("pef"));
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.PEF/shell/open/command/.", openCommand);
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.PSD/.", "Photoshop Document");
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.PSD/DefaultIcon/.", icoPath.arg("psd"));
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.PSD/shell/open/command/.", openCommand);
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.RAF/.", "Fuji Raw");
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.RAF/DefaultIcon/.", icoPath.arg("raf"));
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.RAF/shell/open/command/.", openCommand);
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.RW2/.", "Panasonic Raw");
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.RW2/DefaultIcon/.", icoPath.arg("rw2"));
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.RW2/shell/open/command/.", openCommand);
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.SR2/.", "Sony Raw");
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.SR2/DefaultIcon/.", icoPath.arg("sr2"));
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.SR2/shell/open/command/.", openCommand);
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.SRF/.", "Sony Raw");
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.SRF/DefaultIcon/.", icoPath.arg("srf"));
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.SRF/shell/open/command/.", openCommand);
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.SRW/.", "Samsung Raw");
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.SRW/DefaultIcon/.", icoPath.arg("srw"));
+		registryHklm.setValue("Classes/AcuteViewer.AssocFile.SRW/shell/open/command/.", openCommand);
 		//capabilities
 		registryHklm.setValue("Acute Viewer/Capabilities/ApplicationName", "Acute Viewer");
 		registryHklm.setValue("Acute Viewer/Capabilities/ApplicationDescription", "An image viewer featuring a minimal interface design and high-quality image display.");
@@ -132,6 +175,21 @@ namespace wi {
 		//sr, ras
 		registryHklm.setValue("Acute Viewer/Capabilities/FileAssociations/.sr", "AcuteViewer.AssocFile.SR");
 		registryHklm.setValue("Acute Viewer/Capabilities/FileAssociations/.ras", "AcuteViewer.AssocFile.SR");
+		//partially supported files
+		registryHklm.setValue("Acute Viewer/Capabilities/FileAssociations/.arw", "AcuteViewer.AssocFile.ARW");
+		registryHklm.setValue("Acute Viewer/Capabilities/FileAssociations/.cr2", "AcuteViewer.AssocFile.CR2");
+		registryHklm.setValue("Acute Viewer/Capabilities/FileAssociations/.crw", "AcuteViewer.AssocFile.CRW");
+		registryHklm.setValue("Acute Viewer/Capabilities/FileAssociations/.dng", "AcuteViewer.AssocFile.DNG");
+		registryHklm.setValue("Acute Viewer/Capabilities/FileAssociations/.mrw", "AcuteViewer.AssocFile.MRW");
+		registryHklm.setValue("Acute Viewer/Capabilities/FileAssociations/.nef", "AcuteViewer.AssocFile.NEF");
+		registryHklm.setValue("Acute Viewer/Capabilities/FileAssociations/.orf", "AcuteViewer.AssocFile.ORF");
+		registryHklm.setValue("Acute Viewer/Capabilities/FileAssociations/.pef", "AcuteViewer.AssocFile.PEF");
+		registryHklm.setValue("Acute Viewer/Capabilities/FileAssociations/.psd", "AcuteViewer.AssocFile.PSD");
+		registryHklm.setValue("Acute Viewer/Capabilities/FileAssociations/.raf", "AcuteViewer.AssocFile.RAF");
+		registryHklm.setValue("Acute Viewer/Capabilities/FileAssociations/.rw2", "AcuteViewer.AssocFile.RW2");
+		registryHklm.setValue("Acute Viewer/Capabilities/FileAssociations/.sr2", "AcuteViewer.AssocFile.SR2");
+		registryHklm.setValue("Acute Viewer/Capabilities/FileAssociations/.srf", "AcuteViewer.AssocFile.SRF");
+		registryHklm.setValue("Acute Viewer/Capabilities/FileAssociations/.srw", "AcuteViewer.AssocFile.SRW");
 		//register application
 		registryHklm.setValue("RegisteredApplications/Acute Viewer", "SOFTWARE\\Acute Viewer\\Capabilities");
 		//uninstallation entry
