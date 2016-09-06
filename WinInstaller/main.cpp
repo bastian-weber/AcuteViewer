@@ -21,6 +21,21 @@ namespace uninstallation {
 		registry.remove("Classes/AcuteViewer.AssocFile.WEBP");
 		registry.remove("Classes/AcuteViewer.AssocFile.PBM");
 		registry.remove("Classes/AcuteViewer.AssocFile.SR");
+		//partially supported files
+		registry.remove("Classes/AcuteViewer.AssocFile.ARW");
+		registry.remove("Classes/AcuteViewer.AssocFile.CR2");
+		registry.remove("Classes/AcuteViewer.AssocFile.CRW");
+		registry.remove("Classes/AcuteViewer.AssocFile.DNG");
+		registry.remove("Classes/AcuteViewer.AssocFile.MRW");
+		registry.remove("Classes/AcuteViewer.AssocFile.NEF");
+		registry.remove("Classes/AcuteViewer.AssocFile.ORF");
+		registry.remove("Classes/AcuteViewer.AssocFile.PEF");
+		registry.remove("Classes/AcuteViewer.AssocFile.PSD");
+		registry.remove("Classes/AcuteViewer.AssocFile.RAF");
+		registry.remove("Classes/AcuteViewer.AssocFile.RW2");
+		registry.remove("Classes/AcuteViewer.AssocFile.SR2");
+		registry.remove("Classes/AcuteViewer.AssocFile.SRF");
+		registry.remove("Classes/AcuteViewer.AssocFile.SRW");
 		//capabilities
 		registry.remove("Acute Viewer");
 		//application registration
@@ -69,6 +84,20 @@ namespace uninstallation {
 							"data/sr.ico",
 							"data/tif.ico",
 							"data/webp.ico",
+							"data/arw.ico",
+							"data/cr2.ico",
+							"data/crw.ico",
+							"data/dng.ico",
+							"data/mrw.ico",
+							"data/nef.ico",
+							"data/orf.ico",
+							"data/pef.ico",
+							"data/psd.ico",
+							"data/raf.ico",
+							"data/rw2.ico",
+							"data/sr2.ico",
+							"data/srf.ico",
+							"data/srw.ico",
 							"platforms/qminimal.dll",
 							"platforms/qminimald.dll",
 							"platforms/qminimald.pdb",
