@@ -533,7 +533,18 @@ namespace sv {
 			std::shared_ptr<ExifData> exifData;
 			//for the images we know are not supported by opencv do not attempt to read them with opencv
 			bool forcePreview = this->partiallySupportedExtensions.contains(QString("*.") + QFileInfo(path).suffix().toLower());
-			if (!utility::isCharCompatible(path)) {
+			bool isCharCompatible = utility::isCharCompatible(path);
+			bool shortPathAvailable = false;
+#ifdef Q_OS_WIN
+			if (!isCharCompatible) {
+				QString shortPath = utility::getShortPathname(path);
+				if (!shortPath.isEmpty()) {
+					path = shortPath;
+					isCharCompatible = true;
+				}
+			}
+#endif
+			if (!isCharCompatible) {
 				std::shared_ptr<std::vector<char>> buffer = utility::readFileIntoBuffer(path);
 				if (buffer->empty()) {
 					if (emitSignals) emit(readImageFinished(Image()));
