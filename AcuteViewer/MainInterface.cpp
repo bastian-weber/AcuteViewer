@@ -534,13 +534,20 @@ namespace sv {
 			//for the images we know are not supported by opencv do not attempt to read them with opencv
 			bool forcePreview = this->partiallySupportedExtensions.contains(QString("*.") + QFileInfo(path).suffix().toLower());
 			if (!utility::isCharCompatible(path)) {
-				std::shared_ptr<std::vector<char>> buffer = utility::readFileIntoBuffer(path);
-				if (buffer->empty()) {
-					if (emitSignals) emit(readImageFinished(Image()));
-					return Image();
-				}
-				if(!forcePreview) image = cv::imdecode(*buffer, cv::IMREAD_UNCHANGED);
-				exifData = std::shared_ptr<ExifData>(new ExifData(buffer));
+				//std::shared_ptr<std::vector<char>> buffer = utility::readFileIntoBuffer(path);
+				//if (buffer->empty()) {
+				//	if (emitSignals) emit(readImageFinished(Image()));
+				//	return Image();
+				//}
+				//if(!forcePreview) image = cv::imdecode(*buffer, cv::IMREAD_UNCHANGED);
+				//exifData = std::shared_ptr<ExifData>(new ExifData(buffer));
+				QFile file(path);
+				file.open(QIODevice::ReadOnly);
+				unsigned char * fileContent = file.map(0, file.size(), QFileDevice::MapPrivateOption);
+				cv::Mat matBuffer(1, file.size(), CV_8U, fileContent);
+				if (!forcePreview) image = cv::imdecode(matBuffer, cv::IMREAD_UNCHANGED);
+				//this must be changed
+				exifData = std::shared_ptr<ExifData>(new ExifData(path, !this->exifIsRequired() && image.data));
 			} else {
 				if (!forcePreview) image = cv::imread(path.toStdString(), cv::IMREAD_UNCHANGED);
 				exifData = std::shared_ptr<ExifData>(new ExifData(path, !this->exifIsRequired() && image.data));
