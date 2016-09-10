@@ -110,7 +110,7 @@ View Navigation
     Shift + Mouse Wheel                         Rotate view in steps of 10°  
     Ctrl + Left Arrow Key                       Rotate view 90° to the left
     Ctrl + Right Arrow Key                      Rotate view 90° to the right
-    Ctrl + R                                    Toggle EXIF-based image rotation
+    Ctrl + R Key                                Toggle EXIF-based image rotation
     Shift + Escape Key                          Reset view rotation
     Left Mouse button                           Double click to toggle full-screen mode
     F Key                                       Toggle full-screen mode
@@ -121,6 +121,7 @@ Browsing Images & Slideshow
     Up and Down Arrow keys                      Same as left and right arrow keys
     F5 Key                                      Reload the current image and refresh
                                                 the list of files in the current directory
+    Ctrl + P Key                                Toggle include preview images
     Space Key                                   Toggle slideshow play/pause
     Ctrl + Space Key                            Toggle slideshow play/pause; dialog will 
                                                 appear that lets you choose the slide 
@@ -130,10 +131,10 @@ Image Rendering and Display Options
 
     I Key                                       Toggle info and EXIF overlay on and off
     Z Key                                       Toggle zoom level overlay on and off
-    Ctrl + B                                    Set black background colour
-    Ctrl + W                                    Set white background colour
-    Ctrl + G                                    Set dark grey background colour
-    Ctrl + C                                    Set custom background colour
+    Ctrl + B Key                                Set black background colour
+    Ctrl + W Key                                Set white background colour
+    Ctrl + G Key                                Set dark grey background colour
+    Ctrl + C Key                                Set custom background colour
     Ctrl + Shift + Left or Right Arrow Keys     Change the font size of the text overlay
     Ctrl + Shift + Up or Down Arrow Keys        Change the line spacing of the text overlay
     Ctrl + U Key                                Toggle option to upscale smaller images to 
