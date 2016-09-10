@@ -16,9 +16,9 @@ FILESUBTYPE 0x0L
 			VALUE "FileDescription",  "Installs Acute Viewer on a Microsoft Windows system.\0"
 			VALUE "OriginalFilename", "WinInstaller.exe\0"
 			VALUE "ProductName",      "Acute Viewer Installer\0"
-			VALUE "ProductVersion",   "1.31\0"
+			VALUE "ProductVersion",   "1.4\0"
 			VALUE "CompanyName",	  "Bastian Weber\0"
-			VALUE "FileVersion",	  "1.31\0"
+			VALUE "FileVersion",	  "1.4\0"
 		}
 	}
 	BLOCK "VarFileInfo" {
