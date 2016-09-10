@@ -16,10 +16,10 @@ FILESUBTYPE 0x0L
 				VALUE "FileDescription",  "Acute Viewer\0"
 				VALUE "OriginalFilename", "AcuteViewer.exe\0"
 				VALUE "ProductName",      "Acute Viewer\0"
-				VALUE "ProductVersion",   "1.31\0"
+				VALUE "ProductVersion",   "1.4\0"
 				VALUE "CompanyName",	  "Bastian Weber\0"
 				VALUE "InternalName",	  "Acute Viewer\0"
-				VALUE "FileVersion",	  "1.31\0"
+				VALUE "FileVersion",	  "1.4\0"
 			}
 	}
 	BLOCK "VarFileInfo" {
