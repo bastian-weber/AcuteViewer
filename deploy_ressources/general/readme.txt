@@ -18,7 +18,14 @@ https://bitbucket.org/bastian_weber/acuteviewer
 
 ===== Supported Filetypes =====
 
-    Jpeg, Tif, Png, Bitmap, Jpeg 2000, WebP, Portable Image Format, Sun Raster
+    These filetypes are fully supported:
+        
+        Jpeg, Tif, Png, Bitmap, Jpeg 2000, WebP, Portable Image Format, Sun Raster
+
+    The following filetypes are partially supported, meaning AcuteViewer extracts
+    the preview image from the EXIF if available:
+        
+        Arw, Dng, Psd, Nef, Cr2, Crw, Mrw, Pef, Rw2, Sr2, Srf, Srw, Orf, Pgf, Raf
 
 ===== Controls =====
 
@@ -32,6 +39,10 @@ through the contents of the directory, but only through the images you opened. T
 for example, be used to compare a few particular images. However, this only works with
 images that are in the same directory.
 
+In the file menu, you can choose if preview-only images shall be included in the directory
+listing. This means that also images that are only displayed by extracting the contained
+preview image are included when scrolling through the directory content.
+
 Hitting F5 will cause the program to reload the current image and also refresh the
 current directory. You can do this to recognise images that have been added or removed
 to the directory in the meantime. If you opened multiple images then hitting F5 will
@@ -41,10 +52,14 @@ The scroll whel can be used for zooming. Right clicking or the shortcut Ctrl + A
 zooms to 100% magnification. Right clicking again or pressing Ctrl + 0 zooms out again.
 Holding down the middle mouse button (scroll wheel) and moving the mouse forward or
 backwards allows continuous zooming. The current zoom level can be displayed as an overlay.
-This overlay is toggled with the Z key.
+This overlay is toggled with the Z key. The background colour can be set to any arbitrary
+colour. Hit Ctrl + B for blakc, Ctrl + W for white, Ctrl + G for a dark grey and Ctrl + C
+for bringing up a colour picker to set a custom colour.
 
 The view can also be rotated. Please keep in mind that the image is never altered. The
-rotation only changes the way it is viewed. To reset the rotation, hit Shift + ESC.
+rotation only changes the way it is viewed. To reset the rotation, hit Shift + ESC. If
+EXIF-based rotation is enabled, the program rotates images automatically based on the
+EXIF information.
 
 Some of the image's EXIF data can be displayed as an overlay. This overlay can be toggled
 with the I key.
@@ -95,6 +110,7 @@ View Navigation
     Shift + Mouse Wheel                         Rotate view in steps of 10°  
     Ctrl + Left Arrow Key                       Rotate view 90° to the left
     Ctrl + Right Arrow Key                      Rotate view 90° to the right
+    Ctrl + R                                    Toggle EXIF-based image rotation
     Shift + Escape Key                          Reset view rotation
     Left Mouse button                           Double click to toggle full-screen mode
     F Key                                       Toggle full-screen mode
@@ -114,6 +130,10 @@ Image Rendering and Display Options
 
     I Key                                       Toggle info and EXIF overlay on and off
     Z Key                                       Toggle zoom level overlay on and off
+    Ctrl + B                                    Set black background colour
+    Ctrl + W                                    Set white background colour
+    Ctrl + G                                    Set dark grey background colour
+    Ctrl + C                                    Set custom background colour
     Ctrl + Shift + Left or Right Arrow Keys     Change the font size of the text overlay
     Ctrl + Shift + Up or Down Arrow Keys        Change the line spacing of the text overlay
     Ctrl + U Key                                Toggle option to upscale smaller images to 
@@ -122,7 +142,7 @@ Image Rendering and Display Options
                                                 method instead of nearest neighbour when 
                                                 enlarging above 100%
     Ctrl + E Key                                Toggle post-resize sharpening (effect)
-    O Key                                Show sharpening options dialog
+    O Key                                       Show sharpening options dialog
 
 Application Shortcuts
 
