@@ -1,5 +1,5 @@
-#ifndef SV_SHARPENINGDIALOG
-#define SV_SHARPENINGDIALOG
+#ifndef SV_HOTKEYDIALOG
+#define SV_HOTKEYDIALOG
 
 #include <iostream>
 #include <memory>
@@ -31,12 +31,14 @@ namespace sv {
 		int action2OldValue;
 		//widgets
 		QVBoxLayout* mainLayout;
+		QGroupBox* globalGroupBox;
+		QVBoxLayout* globalGroupBoxLayout;
 		QFormLayout* formLayout1;
 		QFormLayout* formLayout2;
 		QGroupBox* groupBox1;
 		QGroupBox* groupBox2;
-		QLineEdit* lineEdit1;
-		QLineEdit* lineEdit2;
+		QKeySequenceEdit* keySequenceEdit1;
+		QKeySequenceEdit* keySequenceEdit2;
 		QButtonGroup* buttonGroup1;
 		QButtonGroup* buttonGroup2;
 		QRadioButton* binRadioButton1;
@@ -47,8 +49,8 @@ namespace sv {
 		QRadioButton* copyRadioButton2;
 		QLineEdit* folderLineEdit1;
 		QLineEdit* folderLineEdit2;
-		QLineEdit* chooseButton1;
-		QLineEdit* chooseButton2;
+		QPushButton* chooseButton1;
+		QPushButton* chooseButton2;
 		QHBoxLayout* buttonLayout;
 		QPushButton* okButton;
 		QPushButton* cancelButton;
