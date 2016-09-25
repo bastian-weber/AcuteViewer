@@ -49,6 +49,8 @@ namespace sv {
 		QRadioButton* copyRadioButton2;
 		QLineEdit* folderLineEdit1;
 		QLineEdit* folderLineEdit2;
+		QCompleter* completer1;
+		QCompleter* completer2;
 		QPushButton* chooseButton1;
 		QPushButton* chooseButton2;
 		QHBoxLayout* buttonLayout;
@@ -59,6 +61,8 @@ namespace sv {
 	private slots:
 		void updateHotkeySettings();
 		void reactToCancelButtonClick();
+		void reactToCheckboxChange();
+		void selectFolder();
 	};
 }
 #endif
