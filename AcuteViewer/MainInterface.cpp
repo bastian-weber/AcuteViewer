@@ -240,6 +240,10 @@ namespace sv {
 		QObject::connect(this->sharpeningDialog, SIGNAL(sharpeningParametersChanged()), this, SLOT(updateSharpening()));
 		QObject::connect(this->sharpeningDialog, SIGNAL(dialogClosed()), this, SLOT(enableAutomaticMouseHide()));
 
+		this->hotkeyDialog = new HotkeyDialog(settings, this);
+		this->hotkeyDialog->setWindowModality(Qt::WindowModal);
+		QObject::connect(this->sharpeningDialog, SIGNAL(finished(int)), this, SLOT(enableAutomaticMouseHide()));
+
 		QObject::connect(this->menuBar(), SIGNAL(triggered(QAction*)), this, SLOT(hideMenuBar(QAction*)));
 		this->fileMenu = this->menuBar()->addMenu(tr("&File"));
 		this->viewMenu = this->menuBar()->addMenu(tr("&View"));
@@ -270,6 +274,13 @@ namespace sv {
 		QObject::connect(this->refreshAction, SIGNAL(triggered()), this, SLOT(refresh()));
 		this->fileMenu->addAction(this->refreshAction);
 		this->addAction(this->refreshAction);
+
+		this->hotkeyOptionsAction = new QAction(tr("&Hotkey Options..."), this);
+		//this->hotkeyOptionsAction->setShortcut(Qt::Key_F5);
+		//this->hotkeyOptionsAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->hotkeyOptionsAction, SIGNAL(triggered()), this, SLOT(showHotkeyDialog()));
+		this->fileMenu->addAction(this->hotkeyOptionsAction);
+		//this->addAction(this->hotkeyOptionsAction);
 
 		this->fileMenu->addSeparator();
 
@@ -977,6 +988,11 @@ namespace sv {
 		}
 	}
 
+	void MainInterface::showHotkeyDialog() {
+		this->disableAutomaticMouseHide();
+		this->hotkeyDialog->show();
+	}
+
 	void MainInterface::nextSlide() {
 		this->loadNextImage();
 		if (!settings->value("slideshowLoop", false).toBool() && this->currentFileIndex == (this->filesInDirectory.size() - 1)) {
@@ -1034,7 +1050,7 @@ namespace sv {
 	}
 
 	void MainInterface::enableAutomaticMouseHide() {
-		if (this->isFullScreen() && !this->menuBar()->isVisible() && !this->slideshowDialog->isVisible() && !this->sharpeningDialog->isVisible()) {
+		if (this->isFullScreen() && !this->menuBar()->isVisible() && !this->slideshowDialog->isVisible() && !this->sharpeningDialog->isVisible() && !this->hotkeyDialog->isVisible()) {
 			this->mouseHideTimer->start(this->mouseHideDelay);
 		}
 	}

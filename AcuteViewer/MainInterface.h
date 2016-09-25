@@ -16,6 +16,7 @@
 #include "ImageView.h"
 #include "SlideshowDialog.h"
 #include "SharpeningDialog.h"
+#include "HotkeyDialog.h"
 
 namespace sv {
 
@@ -107,6 +108,7 @@ namespace sv {
 		hb::ImageView* imageView;
 		SlideshowDialog* slideshowDialog;
 		SharpeningDialog* sharpeningDialog;
+		HotkeyDialog* hotkeyDialog;
 		//menus
 		QMenu* fileMenu;
 		QMenu* viewMenu;
@@ -120,6 +122,7 @@ namespace sv {
 		QAction* quitAction;
 		QAction* openAction;
 		QAction* refreshAction;
+		QAction* hotkeyOptionsAction;
 		QAction* resetSettingsAction;
 		QAction* showInfoAction;
 		QAction* smoothingAction;
@@ -154,6 +157,7 @@ namespace sv {
 	private slots:
 		void nextSlide();
 		void refresh();
+		void showHotkeyDialog();
 		void cleanUpThreads();
 		void quit();
 		void saveWindowSize();
