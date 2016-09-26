@@ -62,6 +62,7 @@ namespace sv {
 		void updateHotkeySettings();
 		void reactToCancelButtonClick();
 		void reactToCheckboxChange();
+		void verifyChanges();
 		void selectFolder();
 	};
 }
