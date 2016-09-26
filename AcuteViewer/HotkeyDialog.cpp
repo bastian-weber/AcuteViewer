@@ -13,6 +13,7 @@ namespace sv {
 		//first hotkey
 
 		this->keySequenceEdit1 = new QKeySequenceEdit(this);
+		QObject::connect(this->keySequenceEdit1, SIGNAL(keySequenceChanged(QKeySequence)), this, SLOT(verifyChanges()));
 		this->binRadioButton1 = new QRadioButton(tr("Move to recycle bin"), this);
 		this->moveRadioButton1 = new QRadioButton(tr("Move to folder..."), this);
 		this->copyRadioButton1 = new QRadioButton(tr("Copy to folder..."), this);
@@ -21,8 +22,10 @@ namespace sv {
 		this->buttonGroup1->addButton(moveRadioButton1, 1);
 		this->buttonGroup1->addButton(copyRadioButton1, 2);
 		QObject::connect(this->buttonGroup1, SIGNAL(buttonClicked(int)), this, SLOT(reactToCheckboxChange()));
+		QObject::connect(this->buttonGroup1, SIGNAL(buttonClicked(int)), this, SLOT(verifyChanges()));
 		this->folderLineEdit1 = new QLineEdit(this);
 		this->folderLineEdit1->setMinimumWidth(250);
+		QObject::connect(this->folderLineEdit1, SIGNAL(textChanged(QString)), this, SLOT(verifyChanges()));
 		this->completer1 = new QCompleter(this);
 		QDirModel* dirModel1 = new QDirModel(completer1);
 		dirModel1->setFilter(QDir::Dirs | QDir::NoDotAndDotDot);
@@ -44,10 +47,12 @@ namespace sv {
 		this->groupBox1 = new QGroupBox(tr("Hotkey 1"), this);
 		this->groupBox1->setCheckable(true);
 		this->groupBox1->setLayout(this->formLayout1);
+		QObject::connect(this->groupBox1, SIGNAL(toggled(bool)), this, SLOT(verifyChanges()));
 
 		//second hotkey
 
 		this->keySequenceEdit2 = new QKeySequenceEdit(this);
+		QObject::connect(this->keySequenceEdit2, SIGNAL(keySequenceChanged(QKeySequence)), this, SLOT(verifyChanges()));
 		this->binRadioButton2 = new QRadioButton(tr("Move to recycle bin"), this);
 		this->moveRadioButton2 = new QRadioButton(tr("Move to folder..."), this);
 		this->copyRadioButton2 = new QRadioButton(tr("Copy to folder..."), this);
@@ -56,8 +61,10 @@ namespace sv {
 		this->buttonGroup2->addButton(moveRadioButton2, 1);
 		this->buttonGroup2->addButton(copyRadioButton2, 2);
 		QObject::connect(this->buttonGroup2, SIGNAL(buttonClicked(int)), this, SLOT(reactToCheckboxChange()));
+		QObject::connect(this->buttonGroup2, SIGNAL(buttonClicked(int)), this, SLOT(verifyChanges()));
 		this->folderLineEdit2 = new QLineEdit(this);
 		this->folderLineEdit2->setMinimumWidth(250);
+		QObject::connect(this->folderLineEdit2, SIGNAL(textChanged(QString)), this, SLOT(verifyChanges()));
 		this->completer2 = new QCompleter(this);
 		QDirModel* dirModel2 = new QDirModel(completer2);
 		dirModel2->setFilter(QDir::Dirs | QDir::NoDotAndDotDot);
@@ -79,6 +86,7 @@ namespace sv {
 		this->groupBox2 = new QGroupBox(tr("Hotkey 2"), this);
 		this->groupBox2->setCheckable(true);
 		this->groupBox2->setLayout(this->formLayout2);
+		QObject::connect(this->groupBox2, SIGNAL(toggled(bool)), this, SLOT(verifyChanges()));
 
 		this->globalGroupBoxLayout = new QVBoxLayout;
 		this->globalGroupBoxLayout->addWidget(groupBox1);
@@ -87,10 +95,10 @@ namespace sv {
 		this->globalGroupBox = new QGroupBox(tr("Enable Hotkeys"), this);
 		this->globalGroupBox->setCheckable(true);
 		this->globalGroupBox->setLayout(this->globalGroupBoxLayout);
+		QObject::connect(this->globalGroupBox, SIGNAL(toggled(bool)), this, SLOT(verifyChanges()));
 
 		this->okButton = new QPushButton(tr("Ok"), this);
 		QObject::connect(this->okButton, SIGNAL(clicked()), this, SLOT(reactToOkButtonClick()));
-		QObject::connect(this->okButton, SIGNAL(clicked()), this, SLOT(accept()));
 		this->cancelButton = new QPushButton(tr("Cancel"), this);
 		QObject::connect(this->cancelButton, SIGNAL(clicked()), this, SLOT(reactToCancelButtonClick()));
 		QObject::connect(this->cancelButton, SIGNAL(clicked()), this, SLOT(reject()));
@@ -111,18 +119,27 @@ namespace sv {
 	//============================================================================== PROTECTED ==============================================================================\\
 
 	void HotkeyDialog::showEvent(QShowEvent* event) {
-		//this->strengthSpinBox->blockSignals(true);
-		//this->strengthSpinBox->setValue(settings->value("sharpeningStrength", 0.5).toDouble());
-		//this->strengthSpinBox->blockSignals(false);
-		//sharpeningStrengthOldValue = this->strengthSpinBox->value();
-		//this->radiusSpinBox->blockSignals(true);
-		//this->radiusSpinBox->setValue(settings->value("sharpeningRadius", 1).toDouble());
-		//this->radiusSpinBox->blockSignals(false);
-		//sharpeningRadiusOldValue = this->radiusSpinBox->value();
-		//this->sharpeningCheckbox->blockSignals(true);
-		//this->sharpeningCheckbox->setChecked(settings->value("sharpenImagesAfterDownscale", false).toBool());
-		//this->sharpeningCheckbox->blockSignals(false);
-		//enableSharpeningOldValue = this->sharpeningCheckbox->isChecked();
+		{
+			this->keySequenceEdit1->setKeySequence(this->settings->value("hotkey1Shortcut", QKeySequence(Qt::Key_Delete)).value<QKeySequence>());
+			this->buttonGroup1->button(this->settings->value("hotkey1Action", 0).toInt())->setChecked(true);
+			QDir dir(this->settings->value("hotkey1Folder", QDir::rootPath()).toString());
+			QString path = QDir::rootPath();
+			if (dir.exists()) path = QDir::cleanPath(dir.absolutePath());
+			this->folderLineEdit1->setText(path);
+		}
+
+		{
+			this->keySequenceEdit2->setKeySequence(this->settings->value("hotkey2Shortcut", QKeySequence(Qt::Key_Enter)).value<QKeySequence>());
+			this->buttonGroup2->button(this->settings->value("hotkey2Action", 0).toInt())->setChecked(true);
+			QDir dir(this->settings->value("hotkey2Folder", QDir::rootPath()).toString());
+			QString path = QDir::rootPath();
+			if (dir.exists()) path = QDir::cleanPath(dir.absolutePath());
+			this->folderLineEdit2->setText(path);
+		}
+		this->globalGroupBox->setChecked(this->settings->value("enableHotkeys", true).toBool());
+		this->groupBox1->setChecked(this->settings->value("enableHotkey1", true).toBool());
+		this->groupBox2->setChecked(this->settings->value("enableHotkey2", false).toBool());
+		this->reactToCheckboxChange();
 	}
 
 	//=============================================================================== PRIVATE ===============================================================================\\
@@ -131,8 +148,29 @@ namespace sv {
 	//============================================================================ PRIVATE SLOTS =============================================================================\\
 
 	void HotkeyDialog::reactToOkButtonClick() {
-		//settings->setValue("sharpeningStrength", this->strengthSpinBox->value());
-		//settings->setValue("sharpeningRadius", this->radiusSpinBox->value());
+		if (this->groupBox1->isChecked() && this->groupBox2->isChecked() && this->keySequenceEdit1->keySequence() == this->keySequenceEdit2->keySequence()) {
+			return;
+		}
+		settings->setValue("enableHotkeys", this->globalGroupBox->isChecked());
+		if (this->globalGroupBox->isChecked()) {
+			settings->setValue("enableHotkey1", this->groupBox1->isChecked());
+			settings->setValue("enableHotkey2", this->groupBox2->isChecked());
+			if (this->groupBox1->isChecked()) {
+				settings->setValue("hotkey1Shortcut", this->keySequenceEdit1->keySequence());
+				settings->setValue("hotkey1Action", this->buttonGroup1->checkedId());
+				if (this->buttonGroup1->checkedId() != 0) {
+					settings->setValue("hotkey1Folder", this->folderLineEdit1->text());
+				}
+			}
+			if (this->groupBox2->isChecked()) {
+				settings->setValue("hotkey2Shortcut", this->keySequenceEdit2->keySequence());
+				settings->setValue("hotkey2Action", this->buttonGroup2->checkedId());
+				if (this->buttonGroup2->checkedId() != 0) {
+					settings->setValue("hotkey2Folder", this->folderLineEdit2->text());
+				}
+			}
+		}
+		this->accept();
 	}
 
 	void HotkeyDialog::updateHotkeySettings() {
@@ -151,16 +189,31 @@ namespace sv {
 		if (this->buttonGroup1->checkedId() == 0) {
 			this->folderLineEdit1->setEnabled(false);
 			this->chooseButton1->setEnabled(false);
-		} else {
+		} else if (this->groupBox1->isChecked()) {
 			this->folderLineEdit1->setEnabled(true);
 			this->chooseButton1->setEnabled(true);
 		}
 		if (this->buttonGroup2->checkedId() == 0) {
 			this->folderLineEdit2->setEnabled(false);
 			this->chooseButton2->setEnabled(false);
-		} else {
+		} else if (this->groupBox2->isChecked()) {
 			this->folderLineEdit2->setEnabled(true);
 			this->chooseButton2->setEnabled(true);
+		}
+	}
+
+	void HotkeyDialog::verifyChanges() {
+		this->okButton->setEnabled(true);
+		if (this->globalGroupBox->isChecked()) {
+			if (this->groupBox1->isChecked() && this->groupBox2->isChecked() && this->keySequenceEdit1->keySequence() == this->keySequenceEdit2->keySequence()) {
+				this->okButton->setEnabled(false);
+			}
+			if (this->groupBox1->isChecked() && this->buttonGroup1->checkedId() != 0 && !QDir(this->folderLineEdit1->text()).exists()) {
+				this->okButton->setEnabled(false);
+			}
+			if (this->groupBox2->isChecked() && this->buttonGroup2->checkedId() != 0 && !QDir(this->folderLineEdit2->text()).exists()) {
+				this->okButton->setEnabled(false);
+			}
 		}
 	}
 
