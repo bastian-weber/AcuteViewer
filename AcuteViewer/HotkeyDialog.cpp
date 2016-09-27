@@ -114,11 +114,27 @@ namespace sv {
 
 		this->setLayout(this->mainLayout);
 		this->layout()->setSizeConstraint(QLayout::SetFixedSize);
+
+		this->loadSettings();
 	}
 
 	//============================================================================== PROTECTED ==============================================================================\\
 
 	void HotkeyDialog::showEvent(QShowEvent* event) {
+		this->enableHotkeysOldValue = this->globalGroupBox->isChecked();
+		this->enableHotkey1OldValue = this->groupBox1->isChecked();
+		this->enableHotkey2OldValue = this->groupBox2->isChecked();
+		this->keySequence1OldValue = this->keySequenceEdit1->keySequence();
+		this->keySequence2OldValue = this->keySequenceEdit2->keySequence();
+		this->action1OldValue = this->buttonGroup1->checkedId();
+		this->action2OldValue = this->buttonGroup2->checkedId();
+		this->folder1OldValue = this->folderLineEdit1->text();
+		this->folder2OldValue = this->folderLineEdit2->text();
+	}
+
+	//=============================================================================== PRIVATE ===============================================================================\\
+
+	void HotkeyDialog::loadSettings() {
 		{
 			this->keySequenceEdit1->setKeySequence(this->settings->value("hotkey1Shortcut", QKeySequence(Qt::Key_Delete)).value<QKeySequence>());
 			this->buttonGroup1->button(this->settings->value("hotkey1Action", 0).toInt())->setChecked(true);
@@ -141,9 +157,6 @@ namespace sv {
 		this->groupBox2->setChecked(this->settings->value("enableHotkey2", false).toBool());
 		this->reactToCheckboxChange();
 	}
-
-	//=============================================================================== PRIVATE ===============================================================================\\
-
 
 	//============================================================================ PRIVATE SLOTS =============================================================================\\
 
@@ -173,16 +186,17 @@ namespace sv {
 		this->accept();
 	}
 
-	void HotkeyDialog::updateHotkeySettings() {
-		//this->settings->setValue("sharpenImagesAfterDownscale", this->sharpeningCheckbox->isChecked());
-		//this->settings->setValue("sharpeningStrength", this->strengthSpinBox->value());
-		//this->settings->setValue("sharpeningRadius", this->radiusSpinBox->value());
-	}
-
 	void HotkeyDialog::reactToCancelButtonClick() {
-		//this->settings->setValue("sharpenImagesAfterDownscale", this->enableSharpeningOldValue);
-		//this->settings->setValue("sharpeningStrength", this->sharpeningStrengthOldValue);
-		//this->settings->setValue("sharpeningRadius", this->sharpeningRadiusOldValue);
+		this->keySequenceEdit1->setKeySequence(this->keySequence1OldValue);
+		this->keySequenceEdit2->setKeySequence(this->keySequence2OldValue);
+		this->buttonGroup1->button(this->action1OldValue)->setChecked(true);
+		this->buttonGroup2->button(this->action2OldValue)->setChecked(true);
+		this->folderLineEdit1->setText(this->folder1OldValue);
+		this->folderLineEdit2->setText(this->folder2OldValue);
+		this->groupBox1->setChecked(this->enableHotkey1OldValue);
+		this->groupBox2->setChecked(this->enableHotkey2OldValue);
+		this->globalGroupBox->setChecked(this->enableHotkeysOldValue);
+		this->reactToCheckboxChange();
 	}
 
 	void HotkeyDialog::reactToCheckboxChange() {
