@@ -19,7 +19,7 @@ namespace sv {
 		void showEvent(QShowEvent* event);
 	private:
 		//functions
-
+		void loadSettings();
 		//variables
 		std::shared_ptr<QSettings> settings;
 		bool enableHotkeysOldValue;
@@ -29,6 +29,8 @@ namespace sv {
 		QKeySequence keySequence2OldValue;
 		int action1OldValue;
 		int action2OldValue;
+		QString folder1OldValue;
+		QString folder2OldValue;
 		//widgets
 		QVBoxLayout* mainLayout;
 		QGroupBox* globalGroupBox;
@@ -59,7 +61,6 @@ namespace sv {
 	private slots:
 		void reactToOkButtonClick();
 	private slots:
-		void updateHotkeySettings();
 		void reactToCancelButtonClick();
 		void reactToCheckboxChange();
 		void verifyChanges();
