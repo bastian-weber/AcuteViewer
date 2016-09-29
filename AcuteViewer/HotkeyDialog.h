@@ -15,6 +15,15 @@ namespace sv {
 		Q_OBJECT
 	public:
 		HotkeyDialog(std::shared_ptr<QSettings> settings, QWidget* parent = 0);
+		bool getHotkeysEnabled();
+		bool getHotkey1Enabled();
+		bool getHotkey2Enabled();
+		QKeySequence const& getKeySequence1();
+		QKeySequence const& getKeySequence2();
+		int getAction1();
+		int getAction2();
+		QString const& getFolder1();
+		QString const& getFolder2();
 	protected:
 		void showEvent(QShowEvent* event);
 	private:
@@ -61,7 +70,7 @@ namespace sv {
 	private slots:
 		void reactToOkButtonClick();
 	private slots:
-		void reactToCancelButtonClick();
+		void resetChanges();
 		void reactToCheckboxChange();
 		void verifyChanges();
 		void selectFolder();

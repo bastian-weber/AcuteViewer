@@ -100,8 +100,9 @@ namespace sv {
 		this->okButton = new QPushButton(tr("Ok"), this);
 		QObject::connect(this->okButton, SIGNAL(clicked()), this, SLOT(reactToOkButtonClick()));
 		this->cancelButton = new QPushButton(tr("Cancel"), this);
-		QObject::connect(this->cancelButton, SIGNAL(clicked()), this, SLOT(reactToCancelButtonClick()));
 		QObject::connect(this->cancelButton, SIGNAL(clicked()), this, SLOT(reject()));
+
+		QObject::connect(this, SIGNAL(rejected()), this, SLOT(resetChanges()));
 
 		this->buttonLayout = new QHBoxLayout();
 		this->buttonLayout->addStretch(1);
@@ -186,7 +187,7 @@ namespace sv {
 		this->accept();
 	}
 
-	void HotkeyDialog::reactToCancelButtonClick() {
+	void HotkeyDialog::resetChanges() {
 		this->keySequenceEdit1->setKeySequence(this->keySequence1OldValue);
 		this->keySequenceEdit2->setKeySequence(this->keySequence2OldValue);
 		this->buttonGroup1->button(this->action1OldValue)->setChecked(true);
@@ -237,6 +238,42 @@ namespace sv {
 		if (!path.isEmpty()) {
 			(QObject::sender() == this->chooseButton1) ? this->folderLineEdit1->setText(path) : this->folderLineEdit2->setText(path);
 		}
+	}
+
+	bool HotkeyDialog::getHotkeysEnabled() {
+		return this->globalGroupBox->isChecked();
+	}
+
+	bool HotkeyDialog::getHotkey1Enabled() {
+		return this->groupBox1->isChecked();
+	}
+
+	bool HotkeyDialog::getHotkey2Enabled() {
+		return this->groupBox2->isChecked();
+	}
+
+	QKeySequence const & HotkeyDialog::getKeySequence1() {
+		return this->keySequenceEdit1->keySequence();
+	}
+
+	QKeySequence const & HotkeyDialog::getKeySequence2() {
+		return this->keySequenceEdit2->keySequence();
+	}
+
+	int HotkeyDialog::getAction1() {
+		return this->buttonGroup1->checkedId();
+	}
+
+	int HotkeyDialog::getAction2() {
+		return this->buttonGroup2->checkedId();
+	}
+
+	QString const & HotkeyDialog::getFolder1() {
+		return this->folderLineEdit1->text();
+	}
+
+	QString const & HotkeyDialog::getFolder2() {
+		return this->folderLineEdit2->text();
 	}
 
 }
