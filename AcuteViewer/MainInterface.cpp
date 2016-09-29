@@ -233,16 +233,17 @@ namespace sv {
 
 		this->slideshowDialog = new SlideshowDialog(settings, this);
 		this->slideshowDialog->setWindowModality(Qt::WindowModal);
-		QObject::connect(this->slideshowDialog, SIGNAL(dialogConfirmed()), this, SLOT(startSlideshow()));
-		QObject::connect(this->slideshowDialog, SIGNAL(dialogClosed()), this, SLOT(enableAutomaticMouseHide()));
+		QObject::connect(this->slideshowDialog, SIGNAL(accepted()), this, SLOT(startSlideshow()));
+		QObject::connect(this->slideshowDialog, SIGNAL(finished(int)), this, SLOT(enableAutomaticMouseHide()));
 
 		this->sharpeningDialog = new SharpeningDialog(settings, this);
 		QObject::connect(this->sharpeningDialog, SIGNAL(sharpeningParametersChanged()), this, SLOT(updateSharpening()));
-		QObject::connect(this->sharpeningDialog, SIGNAL(dialogClosed()), this, SLOT(enableAutomaticMouseHide()));
+		QObject::connect(this->sharpeningDialog, SIGNAL(finished(int)), this, SLOT(enableAutomaticMouseHide()));
 
 		this->hotkeyDialog = new HotkeyDialog(settings, this);
 		this->hotkeyDialog->setWindowModality(Qt::WindowModal);
-		QObject::connect(this->sharpeningDialog, SIGNAL(finished(int)), this, SLOT(enableAutomaticMouseHide()));
+		QObject::connect(this->hotkeyDialog, SIGNAL(finished(int)), this, SLOT(enableAutomaticMouseHide()));
+		QObject::connect(this->hotkeyDialog, SIGNAL(finished(int)), this, SLOT(updateCustomHotkeys()));
 
 		QObject::connect(this->menuBar(), SIGNAL(triggered(QAction*)), this, SLOT(hideMenuBar(QAction*)));
 		this->fileMenu = this->menuBar()->addMenu(tr("&File"));
@@ -501,6 +502,20 @@ namespace sv {
 		this->slideshowNoDialogAction->setShortcutContext(Qt::ApplicationShortcut);
 		QObject::connect(this->slideshowNoDialogAction, SIGNAL(triggered()), this, SLOT(toggleSlideshowNoDialog()));
 		this->addAction(this->slideshowNoDialogAction);
+
+		this->customAction1 = new QAction(this);
+		this->customAction1->setEnabled(this->hotkeyDialog->getHotkey1Enabled() && this->hotkeyDialog->getHotkeysEnabled());
+		this->customAction1->setShortcut(this->hotkeyDialog->getKeySequence1());
+		this->customAction1->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->customAction1, SIGNAL(triggered()), this, SLOT(triggerCustomAction1()));
+		this->addAction(this->customAction1);
+
+		this->customAction2 = new QAction(this);
+		this->customAction2->setEnabled(this->hotkeyDialog->getHotkey2Enabled() && this->hotkeyDialog->getHotkeysEnabled());
+		this->customAction2->setShortcut(this->hotkeyDialog->getKeySequence2());
+		this->customAction2->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->customAction2, SIGNAL(triggered()), this, SLOT(triggerCustomAction2()));
+		this->addAction(this->customAction2);
 
 		//mouse hide timer in fullscreen
 		this->mouseHideTimer = new QTimer(this);
@@ -1355,6 +1370,21 @@ namespace sv {
 		} else {
 			this->imageView->setRotation(userRotation);
 		}
+	}
+
+	void MainInterface::triggerCustomAction1() {
+		std::cout << "Action1" << std::endl;
+	}
+
+	void MainInterface::triggerCustomAction2() { 
+		std::cout << "Action2" << std::endl;
+	}
+
+	void MainInterface::updateCustomHotkeys() {
+		this->customAction1->setEnabled(this->hotkeyDialog->getHotkeysEnabled() && this->hotkeyDialog->getHotkey1Enabled());
+		this->customAction2->setEnabled(this->hotkeyDialog->getHotkeysEnabled() && this->hotkeyDialog->getHotkey2Enabled());
+		this->customAction1->setShortcut(this->hotkeyDialog->getKeySequence1());
+		this->customAction2->setShortcut(this->hotkeyDialog->getKeySequence2());
 	}
 
 }

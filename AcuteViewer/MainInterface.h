@@ -149,6 +149,8 @@ namespace sv {
 		QAction* includePartiallySupportedFilesAction;
 		QAction* installAction;
 		QAction* uninstallAction;
+		QAction* customAction1;
+		QAction* customAction2;
 		QActionGroup* backgroundColorActionGroup;
 		//timer
 		QTimer* mouseHideTimer;
@@ -195,6 +197,9 @@ namespace sv {
 		void updateSharpening();
 		void changeBackgroundColor(QAction* action);
 		void toggleAutoRotation(bool value);
+		void triggerCustomAction1();
+		void triggerCustomAction2();
+		void updateCustomHotkeys();
 	signals:
 		void readImageFinished(Image image);
 	};
