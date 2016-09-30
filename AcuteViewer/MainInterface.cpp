@@ -1433,7 +1433,17 @@ namespace sv {
 		if (!this->loading) {
 			this->loading = true;
 			if (this->hotkeyDialog->getAction1() == 0) {
-				this->removeCurrentImageFromList();
+				QString filepath = this->getFullImagePath(this->currentFileIndex);
+				if (QFileInfo(filepath).exists()) {
+					bool result = utility::moveFileToRecycleBin(filepath);
+					this->removeCurrentImageFromList();
+				} else {
+					QMessageBox::critical(this, 
+										  tr("File Not Found"), 
+										  tr("The file could not be deleted because it no longer exists."), 
+										  QMessageBox::StandardButton::Close, 
+										  QMessageBox::StandardButton::Close);
+				}
 			} else if (this->hotkeyDialog->getAction1() == 1) {
 				//move
 			} else if (this->hotkeyDialog->getAction1() == 2) {
