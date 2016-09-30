@@ -1438,11 +1438,19 @@ namespace sv {
 					if (utility::moveFileToRecycleBin(filepath)) {
 						this->removeCurrentImageFromList();
 					} else {
+#ifdef Q_OS_WIN
 						QMessageBox::critical(this, 
 											  tr("File Not Deleted"), 
 											  tr("The file could not be deleted. Please check that you have the required permissions and that the path length does not exceed MAX_PATH."), 
 											  QMessageBox::StandardButton::Close, 
 											  QMessageBox::StandardButton::Close);
+#else
+						QMessageBox::critical(this,
+											  tr("File Not Deleted"),
+											  tr("The file could not be deleted. Please check that you have the required permissions. It might also be that your trash folder is not at the default location."),
+											  QMessageBox::StandardButton::Close,
+											  QMessageBox::StandardButton::Close);
+#endif
 					}
 
 				} else {
