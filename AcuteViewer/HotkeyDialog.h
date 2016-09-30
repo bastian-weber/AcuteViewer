@@ -18,12 +18,12 @@ namespace sv {
 		bool getHotkeysEnabled();
 		bool getHotkey1Enabled();
 		bool getHotkey2Enabled();
-		QKeySequence const& getKeySequence1();
-		QKeySequence const& getKeySequence2();
+		QKeySequence getKeySequence1();
+		QKeySequence getKeySequence2();
 		int getAction1();
 		int getAction2();
-		QString const& getFolder1();
-		QString const& getFolder2();
+		QString getFolder1();
+		QString getFolder2();
 	protected:
 		void showEvent(QShowEvent* event);
 	private:
