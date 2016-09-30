@@ -81,10 +81,13 @@ namespace utility {
 
 		return true;
 #elif defined Q_OS_LINUX
-		QString home = qgetenv("XDG_DATA_HOME");
+		QString home = qgetenv("XDG_DATA_HOME").constData();
+		QString user = qgetenv("HOME").constData();
+		if(home.isEmpty()) home = user.append("/.local/share");
 		QDir trash(home);
 		if (!trash.exists()) return false;
 		if (!trash.cd("Trash")) return false;
+		if (!trash.cd("files")) return false;
 		QDir file(filepath);
 		file.rename(filepath, trash.absoluteFilePath(QFileInfo(filepath).fileName()));
 		return true;
