@@ -80,6 +80,14 @@ namespace utility {
 		if (result != 0) return false;
 
 		return true;
+#elif defined Q_OS_LINUX
+		QString home = qgetenv("XDG_DATA_HOME");
+		QDir trash(home);
+		if (!trash.exists()) return false;
+		if (!trash.cd("Trash")) return false;
+		QDir file(filepath);
+		file.rename(filepath, trash.absoluteFilePath(QFileInfo(filepath).fileName()));
+		return true;
 #endif
 		return false;
 	}
