@@ -252,11 +252,11 @@ namespace sv {
 		return this->groupBox2->isChecked();
 	}
 
-	QKeySequence const & HotkeyDialog::getKeySequence1() {
+	QKeySequence HotkeyDialog::getKeySequence1() {
 		return this->keySequenceEdit1->keySequence();
 	}
 
-	QKeySequence const & HotkeyDialog::getKeySequence2() {
+	QKeySequence HotkeyDialog::getKeySequence2() {
 		return this->keySequenceEdit2->keySequence();
 	}
 
@@ -268,11 +268,11 @@ namespace sv {
 		return this->buttonGroup2->checkedId();
 	}
 
-	QString const & HotkeyDialog::getFolder1() {
+	QString HotkeyDialog::getFolder1() {
 		return this->folderLineEdit1->text();
 	}
 
-	QString const & HotkeyDialog::getFolder2() {
+	QString HotkeyDialog::getFolder2() {
 		return this->folderLineEdit2->text();
 	}
 
