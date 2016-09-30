@@ -626,6 +626,8 @@ namespace sv {
 			}
 			lock.unlock();
 			this->displayImageIfOk();
+		} else {
+			lock.unlock();
 		}
 		this->loading = false;
 		this->cleanUpThreads();
@@ -657,6 +659,8 @@ namespace sv {
 			}
 			lock.unlock();
 			this->displayImageIfOk();
+		} else {
+			lock.unlock();
 		}
 		this->loading = false;
 		this->cleanUpThreads();
@@ -670,12 +674,66 @@ namespace sv {
 	}
 
 	size_t MainInterface::nextFileIndex() const {
+		if (this->filesInDirectory.size() <= 0) return 0;
 		return (this->currentFileIndex + 1) % this->filesInDirectory.size();
 	}
 
 	size_t MainInterface::previousFileIndex() const {
+		if (this->filesInDirectory.size() <= 0) return 0;
 		if (this->currentFileIndex <= 0) return this->filesInDirectory.size() - 1;
 		return (this->currentFileIndex - 1) % this->filesInDirectory.size();
+	}
+
+	void MainInterface::removeCurrentImageFromList() {
+		std::unique_lock<std::mutex> lock(this->threadDeletionMutex);
+
+		if (this->filesInDirectory.size() != 0) {
+			this->filesInDirectory.remove(this->currentFileIndex);
+			if (this->filesInDirectory.size() <= 0) {
+				lock.unlock();
+				this->cleanUpThreads();
+				this->reset();
+				return;
+			}
+			if (this->currentFileIndex >= this->filesInDirectory.size()) this->currentFileIndex = this->filesInDirectory.size() - 1;
+			this->currentThreadName = this->filesInDirectory[this->currentFileIndex];
+			if (this->threads.find(this->filesInDirectory[this->currentFileIndex]) == this->threads.end()) {
+				return;
+			}
+			this->waitForThreadToFinish(this->currentThread());
+			//calling this function although the exif might not be set to deferred loading is no problem (it checks internally)
+			if (this->exifIsRequired() && this->currentThread().get().isValid()) this->currentThread().get().exif()->startLoading();
+			this->image = this->currentThread().get();
+			this->currentFileInfo = QFileInfo(this->getFullImagePath(this->currentFileIndex));
+
+			//start loading next and previous image
+			if (this->threads.find(this->filesInDirectory[this->nextFileIndex()]) == this->threads.end()) {
+				this->threads[this->filesInDirectory[this->nextFileIndex()]] = std::async(std::launch::async,
+																						  &MainInterface::readImage,
+																						  this,
+																						  this->getFullImagePath(this->nextFileIndex()),
+																						  false);
+			}
+			if (this->threads.find(this->filesInDirectory[this->previousFileIndex()]) == this->threads.end()) {
+				this->threads[this->filesInDirectory[this->previousFileIndex()]] = std::async(std::launch::async,
+																							  &MainInterface::readImage,
+																							  this,
+																							  this->getFullImagePath(this->previousFileIndex()),
+																							  false);
+			}
+			lock.unlock();
+			this->displayImageIfOk();
+		} else {
+			lock.unlock();
+		}
+		this->cleanUpThreads();
+	}
+
+	void MainInterface::reset() {
+		this->imageView->resetImage();
+		this->image = sv::Image();
+		this->filesInDirectory.clear();
+		this->setWindowTitle(this->programTitle);
 	}
 
 	QString MainInterface::getFullImagePath(size_t index) const {
@@ -1024,8 +1082,7 @@ namespace sv {
 				int index = this->filesInDirectory.indexOf(it->first);
 				//see if the thread has finished loading
 				//also the exif should have finished loading to prevent blocking, check if it's valid first to not derefence an invalid pointer
-				if (index != -1
-					&& index != this->currentFileIndex
+				if (index != this->currentFileIndex
 					&& index != previousIndex
 					&& index != nextIndex
 					&& it->second.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready
@@ -1373,7 +1430,17 @@ namespace sv {
 	}
 
 	void MainInterface::triggerCustomAction1() {
-		std::cout << "Action1" << std::endl;
+		if (!this->loading) {
+			this->loading = true;
+			if (this->hotkeyDialog->getAction1() == 0) {
+				this->removeCurrentImageFromList();
+			} else if (this->hotkeyDialog->getAction1() == 1) {
+				//move
+			} else if (this->hotkeyDialog->getAction1() == 2) {
+				//copy
+			}
+			this->loading = false;
+		}
 	}
 
 	void MainInterface::triggerCustomAction2() { 
