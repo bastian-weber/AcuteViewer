@@ -2,7 +2,7 @@
 
 namespace utility {
 
-	std::shared_ptr<std::vector<char>> readFileIntoBuffer(QString const& path) {
+	std::shared_ptr<std::vector<char>> readFileIntoBuffer(QString const & path) {
 		////some Qt code that also does the trick
 		//QFile file(path);
 		//std::vector<char> buffer;
@@ -40,7 +40,7 @@ namespace utility {
 		return buffer;
 	}
 
-	bool isCharCompatible(QString const& string) {
+	bool isCharCompatible(QString const & string) {
 #ifdef Q_OS_WIN
 		bool isCharCompatible = true;
 		for (QString::ConstIterator i = string.begin(); i != string.end(); ++i) {
@@ -51,4 +51,37 @@ namespace utility {
 		return true;
 #endif
 	}
+
+	bool moveFileToRecycleBin(QString const & filepath) {
+#ifdef Q_OS_WIN
+		if (!QFileInfo(filepath).exists()) return false;
+		QString nativePath = QDir::toNativeSeparators(filepath);
+
+		if (filepath.length() > MAX_PATH) return false;
+		wchar_t* doubleNullTerminatedPath = new wchar_t[MAX_PATH + 2];
+		wcscpy(doubleNullTerminatedPath, nativePath.toStdWString().c_str());
+		memcpy(doubleNullTerminatedPath + nativePath.length() + 1, L"\0\0", 2);
+
+		SHFILEOPSTRUCTW operation;
+		operation.wFunc = FO_DELETE;
+		operation.pFrom = doubleNullTerminatedPath;
+		operation.fFlags = FOF_ALLOWUNDO | FOF_SILENT | FOF_NOCONFIRMATION;
+
+		//without values below defined, operation will crash on Windows XP
+		operation.hNameMappings = NULL;
+		operation.lpszProgressTitle = NULL;
+		operation.fAnyOperationsAborted = FALSE;
+		operation.hwnd = NULL;
+		operation.pTo = NULL;
+
+		int result = SHFileOperationW(&operation);
+		std::cout << result << std::endl;
+		delete[] doubleNullTerminatedPath;
+		if (result != 0) return false;
+
+		return true;
+#endif
+		return false;
+	}
+
 }
