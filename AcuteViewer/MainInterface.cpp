@@ -1435,8 +1435,16 @@ namespace sv {
 			if (this->hotkeyDialog->getAction1() == 0) {
 				QString filepath = this->getFullImagePath(this->currentFileIndex);
 				if (QFileInfo(filepath).exists()) {
-					bool result = utility::moveFileToRecycleBin(filepath);
-					this->removeCurrentImageFromList();
+					if (utility::moveFileToRecycleBin(filepath)) {
+						this->removeCurrentImageFromList();
+					} else {
+						QMessageBox::critical(this, 
+											  tr("File Not Deleted"), 
+											  tr("The file could not be deleted. Please check that you have the required permissions and that the path length does not exceed MAX_PATH."), 
+											  QMessageBox::StandardButton::Close, 
+											  QMessageBox::StandardButton::Close);
+					}
+
 				} else {
 					QMessageBox::critical(this, 
 										  tr("File Not Found"), 
