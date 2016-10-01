@@ -79,6 +79,9 @@ namespace sv {
 		void changeFontSizeBy(int value);
 		void changeLineSpacingBy(int value);
 		void loadSettings();
+		void deleteCurrentImage(bool askForConfirmation = false);
+		void moveCurrentImage(QString const & newFolder, bool askForConfirmation = false);
+		void copyCurrentImage(QString const & newFolder, bool askForConfirmation = false);
 
 		//variables
 		const QString programTitle = "Acute Viewer";

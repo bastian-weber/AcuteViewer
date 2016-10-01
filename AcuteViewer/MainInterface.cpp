@@ -1053,6 +1053,82 @@ namespace sv {
 		this->autoRotationAction->setChecked(this->settings->value("autoRotateImages", true).toBool());
 	}
 
+	void MainInterface::deleteCurrentImage(bool askForConfirmation) {
+		if (askForConfirmation) {
+			QMessageBox msgBox;
+			msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+			msgBox.setWindowTitle(tr("Delete File"));
+			msgBox.setText(tr("Please confirm that you want to delete this file."));
+			msgBox.setButtonText(QMessageBox::Yes, tr("Delete"));
+			msgBox.setButtonText(QMessageBox::No, tr("Do not Delete"));
+			msgBox.setIcon(QMessageBox::Question);
+			if (msgBox.exec() == QMessageBox::No) return;
+		}
+
+		QString filepath = this->getFullImagePath(this->currentFileIndex);
+		if (QFileInfo(filepath).exists()) {
+			if (utility::moveFileToRecycleBin(filepath)) {
+				this->removeCurrentImageFromList();
+			} else {
+#ifdef Q_OS_WIN
+				QMessageBox::critical(this,
+									  tr("File Not Deleted"),
+									  tr("The file could not be deleted. Please check that you have the required permissions and that the path length does not exceed MAX_PATH."),
+									  QMessageBox::StandardButton::Close,
+									  QMessageBox::StandardButton::Close);
+#else
+				QMessageBox::critical(this,
+									  tr("File Not Deleted"),
+									  tr("The file could not be deleted. Please check that you have the required permissions. It might also be that your trash folder is not at the default location."),
+									  QMessageBox::StandardButton::Close,
+									  QMessageBox::StandardButton::Close);
+#endif
+			}
+
+		} else {
+			QMessageBox::critical(this,
+								  tr("File Not Found"),
+								  tr("The file could not be deleted because it no longer exists."),
+								  QMessageBox::StandardButton::Close,
+								  QMessageBox::StandardButton::Close);
+		}
+	}
+
+	void MainInterface::moveCurrentImage(QString const & newFolder, bool askForConfirmation) {
+		if (askForConfirmation) {
+			QMessageBox msgBox;
+			msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+			msgBox.setWindowTitle(tr("Move File"));
+			msgBox.setText(tr("Please confirm that you want to move this file to the folder you specified."));
+			msgBox.setButtonText(QMessageBox::Yes, tr("Move"));
+			msgBox.setButtonText(QMessageBox::No, tr("Do not Move"));
+			msgBox.setIcon(QMessageBox::Question);
+			if (msgBox.exec() == QMessageBox::No) return;
+		}
+		QString oldPath = this->getFullImagePath(this->currentFileIndex);
+		QString newPath = QDir(newFolder).absoluteFilePath(this->filesInDirectory[this->currentFileIndex]);
+		if (utility::moveFile(oldPath, newPath, false, this)) {
+			this->removeCurrentImageFromList();
+		}
+	}
+
+	void MainInterface::copyCurrentImage(QString const & newFolder, bool askForConfirmation) {
+		if (askForConfirmation) {
+			QMessageBox msgBox;
+			msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+			msgBox.setWindowTitle(tr("Copy File"));
+			msgBox.setText(tr("Please confirm that you want to copy this file to the folder you specified."));
+			msgBox.setButtonText(QMessageBox::Yes, tr("Copy"));
+			msgBox.setButtonText(QMessageBox::No, tr("Do not Copy"));
+			msgBox.setIcon(QMessageBox::Question);
+			if (msgBox.exec() == QMessageBox::No) return;
+		}
+		QString oldPath = this->getFullImagePath(this->currentFileIndex);
+		QString newPath = QDir(newFolder).absoluteFilePath(this->filesInDirectory[this->currentFileIndex]);
+		utility::copyFile(oldPath, newPath, false, this);
+
+	}
+
 	//============================================================================ PRIVATE SLOTS =============================================================================\\
 
 	void MainInterface::refresh() {
@@ -1430,40 +1506,14 @@ namespace sv {
 	}
 
 	void MainInterface::triggerCustomAction1() {
-		if (!this->loading) {
+		if (this->filesInDirectory.size() > 0 && !this->loading) {
 			this->loading = true;
 			if (this->hotkeyDialog->getAction1() == 0) {
-				QString filepath = this->getFullImagePath(this->currentFileIndex);
-				if (QFileInfo(filepath).exists()) {
-					if (utility::moveFileToRecycleBin(filepath)) {
-						this->removeCurrentImageFromList();
-					} else {
-#ifdef Q_OS_WIN
-						QMessageBox::critical(this, 
-											  tr("File Not Deleted"), 
-											  tr("The file could not be deleted. Please check that you have the required permissions and that the path length does not exceed MAX_PATH."), 
-											  QMessageBox::StandardButton::Close, 
-											  QMessageBox::StandardButton::Close);
-#else
-						QMessageBox::critical(this,
-											  tr("File Not Deleted"),
-											  tr("The file could not be deleted. Please check that you have the required permissions. It might also be that your trash folder is not at the default location."),
-											  QMessageBox::StandardButton::Close,
-											  QMessageBox::StandardButton::Close);
-#endif
-					}
-
-				} else {
-					QMessageBox::critical(this, 
-										  tr("File Not Found"), 
-										  tr("The file could not be deleted because it no longer exists."), 
-										  QMessageBox::StandardButton::Close, 
-										  QMessageBox::StandardButton::Close);
-				}
+				this->deleteCurrentImage();
 			} else if (this->hotkeyDialog->getAction1() == 1) {
-				//move
+				this->moveCurrentImage(this->hotkeyDialog->getFolder1());
 			} else if (this->hotkeyDialog->getAction1() == 2) {
-				//copy
+				this->copyCurrentImage(this->hotkeyDialog->getFolder1());
 			}
 			this->loading = false;
 		}

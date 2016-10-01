@@ -75,7 +75,6 @@ namespace utility {
 		operation.pTo = NULL;
 
 		int result = SHFileOperationW(&operation);
-		std::cout << result << std::endl;
 		delete[] doubleNullTerminatedPath;
 		if (result != 0) return false;
 
@@ -88,11 +87,90 @@ namespace utility {
 		if (!trash.exists()) return false;
 		if (!trash.cd("Trash")) return false;
 		if (!trash.cd("files")) return false;
-		QDir file(filepath);
-		file.rename(filepath, trash.absoluteFilePath(QFileInfo(filepath).fileName()));
+		QFile::rename(filepath, trash.absoluteFilePath(QFileInfo(filepath).fileName()));
 		return true;
 #endif
 		return false;
+	}
+
+	bool moveFile(QString const & oldPath, QString const & newPath, bool silent, QWidget * parent) {
+		if (!QFile::exists(oldPath)) {
+			if (!silent) QMessageBox::critical(parent,
+											   QObject::tr("File Not Found"),
+											   QObject::tr("The file \"%1\" could not be moved because it no longer exists.").arg(QFileInfo(oldPath).fileName()),
+											   QMessageBox::StandardButton::Close,
+											   QMessageBox::StandardButton::Close);
+			return false;
+		}
+		if (QFile::exists(newPath)) {
+			if (!silent) {
+				QMessageBox msgBox;
+				msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+				msgBox.setWindowTitle(QObject::tr("File Already Exists"));
+				msgBox.setText(QObject::tr("There is already a file with the name \"%1\" in the destination folder. If you move the file nevertheless, the existing one will be overwritten.").arg(QFileInfo(oldPath).fileName()));
+				msgBox.setButtonText(QMessageBox::Yes, QObject::tr("Overwrite"));
+				msgBox.setButtonText(QMessageBox::No, QObject::tr("Cancel"));
+				msgBox.setIcon(QMessageBox::Question);
+				if (msgBox.exec() == QMessageBox::No) return false;
+			}
+			if (!QFile::remove(newPath)) {
+				if (!silent) QMessageBox::critical(parent,
+												   QObject::tr("File Not Moved"),
+												   QObject::tr("The file \"%1\" could not be moved. Please check that you have the required permissions.").arg(QFileInfo(oldPath).fileName()),
+												   QMessageBox::StandardButton::Close,
+												   QMessageBox::StandardButton::Close);
+				return false;
+			}
+		}
+		if (!QFile::rename(oldPath, newPath)) {
+			if (!silent) QMessageBox::critical(parent,
+											   QObject::tr("File Not Moved"),
+											   QObject::tr("The file \"%1\" could not be moved. Please check that you have the required permissions.").arg(QFileInfo(oldPath).fileName()),
+											   QMessageBox::StandardButton::Close,
+											   QMessageBox::StandardButton::Close);
+			return false;
+		}
+		return true;
+	}
+
+	bool copyFile(QString const & oldPath, QString const & newPath, bool silent, QWidget * parent) {
+		if (!QFile::exists(oldPath)) {
+			if (!silent) QMessageBox::critical(parent,
+											  QObject::tr("File Not Found"),
+											  QObject::tr("The file \"%1\" could not be copied because it no longer exists.").arg(QFileInfo(oldPath).fileName()),
+											  QMessageBox::StandardButton::Close,
+											  QMessageBox::StandardButton::Close);
+			return false;
+		}
+		if (QFile::exists(newPath)) {
+			if (!silent) {
+				QMessageBox msgBox;
+				msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+				msgBox.setWindowTitle(QObject::tr("File Already Exists"));
+				msgBox.setText(QObject::tr("There is already a file with the name \"%1\" in the destination folder. If you copy the file nevertheless, the existing one will be overwritten.").arg(QFileInfo(oldPath).fileName()));
+				msgBox.setButtonText(QMessageBox::Yes, QObject::tr("Overwrite"));
+				msgBox.setButtonText(QMessageBox::No, QObject::tr("Cancel"));
+				msgBox.setIcon(QMessageBox::Question);
+				if (msgBox.exec() == QMessageBox::No) return false;
+			}
+			if (!QFile::remove(newPath)) {
+				if (!silent) QMessageBox::critical(parent,
+												  QObject::tr("File Not Copied"),
+												  QObject::tr("The file \"%1\" could not be copied. Please check that you have the required permissions.").arg(QFileInfo(oldPath).fileName()),
+												  QMessageBox::StandardButton::Close,
+												  QMessageBox::StandardButton::Close);
+				return false;
+			}
+		}
+		if (!QFile::copy(oldPath, newPath)) {
+			if (!silent) QMessageBox::critical(parent,
+											  QObject::tr("File Not Copied"),
+											   QObject::tr("The file \"%1\" could not be copied. Please check that you have the required permissions.").arg(QFileInfo(oldPath).fileName()),
+											  QMessageBox::StandardButton::Close,
+											  QMessageBox::StandardButton::Close);
+			return false;
+		}
+		return true;
 	}
 
 }
