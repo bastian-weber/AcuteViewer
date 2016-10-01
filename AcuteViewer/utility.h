@@ -5,10 +5,10 @@
 #include <fstream>
 #include <memory>
 
-#include <iostream>
-
 //Qt
 #include <QtCore>
+#include <QtGui>
+#include <QtWidgets>
 
 //Windows
 #ifdef Q_OS_WIN
@@ -22,6 +22,10 @@ namespace utility {
 	bool isCharCompatible(QString const& string);
 
 	bool moveFileToRecycleBin(QString const & filepath);
+
+	bool moveFile(QString const & oldPath, QString const & newPath, bool silent = false, QWidget * parent = 0);
+
+	bool copyFile(QString const & oldPath, QString const & newPath, bool silent = false, QWidget * parent = 0);
 
 }
 
