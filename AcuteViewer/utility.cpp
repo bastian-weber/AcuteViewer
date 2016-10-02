@@ -102,6 +102,14 @@ namespace utility {
 											   QMessageBox::StandardButton::Close);
 			return false;
 		}
+		if (!QDir(QFileInfo(newPath).path()).exists()) {
+			if (!silent) QMessageBox::critical(parent,
+											   QObject::tr("Destination Not Found"),
+											   QObject::tr("The file \"%1\" could not be copied because the destination folder does not exist.").arg(QFileInfo(oldPath).fileName()),
+											   QMessageBox::StandardButton::Close,
+											   QMessageBox::StandardButton::Close);
+			return false;
+		}
 		if (QFile::exists(newPath)) {
 			if (!silent) {
 				QMessageBox msgBox;
@@ -139,6 +147,14 @@ namespace utility {
 			if (!silent) QMessageBox::critical(parent,
 											  QObject::tr("File Not Found"),
 											  QObject::tr("The file \"%1\" could not be copied because it no longer exists.").arg(QFileInfo(oldPath).fileName()),
+											  QMessageBox::StandardButton::Close,
+											  QMessageBox::StandardButton::Close);
+			return false;
+		}
+		if (!QDir(QFileInfo(newPath).path()).exists()) {
+			if (!silent) QMessageBox::critical(parent,
+											  QObject::tr("Destination Not Found"),
+											  QObject::tr("The file \"%1\" could not be copied because the destination folder does not exist.").arg(QFileInfo(oldPath).fileName()),
 											  QMessageBox::StandardButton::Close,
 											  QMessageBox::StandardButton::Close);
 			return false;

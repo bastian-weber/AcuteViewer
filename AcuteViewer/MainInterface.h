@@ -127,6 +127,7 @@ namespace sv {
 		QAction* quitAction;
 		QAction* openAction;
 		QAction* refreshAction;
+		QAction* fileActionAction;
 		QAction* hotkeyOptionsAction;
 		QAction* resetSettingsAction;
 		QAction* showInfoAction;
