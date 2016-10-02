@@ -24,6 +24,8 @@ namespace sv {
 		int getAction2();
 		QString getFolder1();
 		QString getFolder2();
+		bool getIncludeSidecarFiles();
+		bool getShowConfirmation();
 	protected:
 		void showEvent(QShowEvent* event);
 	private:
@@ -40,14 +42,20 @@ namespace sv {
 		int action2OldValue;
 		QString folder1OldValue;
 		QString folder2OldValue;
+		bool sidecarFilesOldValue;
+		bool confirmationOldValue;
 		//widgets
 		QVBoxLayout* mainLayout;
 		QGroupBox* globalGroupBox;
 		QVBoxLayout* globalGroupBoxLayout;
 		QFormLayout* formLayout1;
 		QFormLayout* formLayout2;
+		QVBoxLayout* optionsLayout;
 		QGroupBox* groupBox1;
 		QGroupBox* groupBox2;
+		QGroupBox* optionsGroupBox;
+		QCheckBox* sidecarFileCheckBox;
+		QCheckBox* confirmationCheckBox;
 		QKeySequenceEdit* keySequenceEdit1;
 		QKeySequenceEdit* keySequenceEdit2;
 		QButtonGroup* buttonGroup1;

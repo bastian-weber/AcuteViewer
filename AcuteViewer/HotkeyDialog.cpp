@@ -97,6 +97,17 @@ namespace sv {
 		this->globalGroupBox->setLayout(this->globalGroupBoxLayout);
 		QObject::connect(this->globalGroupBox, SIGNAL(toggled(bool)), this, SLOT(verifyChanges()));
 
+		this->sidecarFileCheckBox = new QCheckBox(tr("Include Sidecar Files in Action"), this);
+		this->sidecarFileCheckBox->setToolTip(tr("If this is checked, sidecar files will be included in whatever action is performed. Sidecar files are files with the same name but a different extension, for example XMP files."));
+		this->confirmationCheckBox = new QCheckBox(tr("Ask for Confirmation Before Performing an Action"), this);
+
+		this->optionsLayout = new QVBoxLayout;
+		this->optionsLayout->addWidget(this->sidecarFileCheckBox);
+		this->optionsLayout->addWidget(this->confirmationCheckBox);
+
+		this->optionsGroupBox = new QGroupBox(tr("Options"), this);
+		this->optionsGroupBox->setLayout(this->optionsLayout);
+
 		this->okButton = new QPushButton(tr("Ok"), this);
 		QObject::connect(this->okButton, SIGNAL(clicked()), this, SLOT(reactToOkButtonClick()));
 		this->cancelButton = new QPushButton(tr("Cancel"), this);
@@ -111,6 +122,7 @@ namespace sv {
 
 		this->mainLayout = new QVBoxLayout();
 		this->mainLayout->addWidget(this->globalGroupBox);
+		this->mainLayout->addWidget(this->optionsGroupBox);
 		this->mainLayout->addLayout(this->buttonLayout);
 
 		this->setLayout(this->mainLayout);
@@ -131,6 +143,8 @@ namespace sv {
 		this->action2OldValue = this->buttonGroup2->checkedId();
 		this->folder1OldValue = this->folderLineEdit1->text();
 		this->folder2OldValue = this->folderLineEdit2->text();
+		this->sidecarFilesOldValue = this->sidecarFileCheckBox->isChecked();
+		this->confirmationOldValue = this->confirmationCheckBox->isChecked();
 	}
 
 	//=============================================================================== PRIVATE ===============================================================================\\
@@ -156,6 +170,8 @@ namespace sv {
 		this->globalGroupBox->setChecked(this->settings->value("enableHotkeys", true).toBool());
 		this->groupBox1->setChecked(this->settings->value("enableHotkey1", true).toBool());
 		this->groupBox2->setChecked(this->settings->value("enableHotkey2", false).toBool());
+		this->sidecarFileCheckBox->setChecked(this->settings->value("includeSidecarFiles", false).toBool());
+		this->confirmationCheckBox->setChecked(this->settings->value("showActionConfirmation", false).toBool());
 		this->reactToCheckboxChange();
 	}
 
@@ -184,6 +200,8 @@ namespace sv {
 				}
 			}
 		}
+		settings->setValue("includeSidecarFiles", this->sidecarFileCheckBox->isChecked());
+		settings->setValue("showActionConfirmation", this->confirmationCheckBox->isChecked());
 		this->accept();
 	}
 
@@ -197,6 +215,8 @@ namespace sv {
 		this->groupBox1->setChecked(this->enableHotkey1OldValue);
 		this->groupBox2->setChecked(this->enableHotkey2OldValue);
 		this->globalGroupBox->setChecked(this->enableHotkeysOldValue);
+		this->sidecarFileCheckBox->setChecked(this->sidecarFilesOldValue);
+		this->confirmationCheckBox->setChecked(this->confirmationOldValue);
 		this->reactToCheckboxChange();
 	}
 
@@ -274,6 +294,14 @@ namespace sv {
 
 	QString HotkeyDialog::getFolder2() {
 		return this->folderLineEdit2->text();
+	}
+
+	bool HotkeyDialog::getIncludeSidecarFiles() {
+		return this->sidecarFileCheckBox->isChecked();
+	}
+
+	bool HotkeyDialog::getShowConfirmation() {
+		return this->confirmationCheckBox->isChecked();
 	}
 
 }

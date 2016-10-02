@@ -1053,10 +1053,11 @@ namespace sv {
 		this->autoRotationAction->setChecked(this->settings->value("autoRotateImages", true).toBool());
 	}
 
-	void MainInterface::deleteCurrentImage(bool askForConfirmation) {
+	void MainInterface::deleteCurrentImage(bool askForConfirmation, bool includeSidecarFiles) {
 		if (askForConfirmation) {
 			QMessageBox msgBox;
 			msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+			msgBox.setDefaultButton(QMessageBox::No);
 			msgBox.setWindowTitle(tr("Delete File"));
 			msgBox.setText(tr("Please confirm that you want to delete this file."));
 			msgBox.setButtonText(QMessageBox::Yes, tr("Delete"));
@@ -1068,6 +1069,20 @@ namespace sv {
 		QString filepath = this->getFullImagePath(this->currentFileIndex);
 		if (QFileInfo(filepath).exists()) {
 			if (utility::moveFileToRecycleBin(filepath)) {
+				if (includeSidecarFiles) {
+					QStringList filters;
+					filters << QString("%1.*").arg(QFileInfo(filepath).baseName());
+					QStringList contents = this->currentDirectory.entryList(filters, QDir::Files);
+					for (QString const & file : contents) {
+						if (!utility::moveFileToRecycleBin(this->currentDirectory.absoluteFilePath(file))) {
+							QMessageBox::critical(this,
+												  tr("Sidecar File Not Deleted"),
+												  tr("The sidecar file %1 could not be deleted. Please check that you have the required permissions and that the path length does not exceed MAX_PATH.").arg(file),
+												  QMessageBox::StandardButton::Close,
+												  QMessageBox::StandardButton::Close);
+						}
+					}
+				}
 				this->removeCurrentImageFromList();
 			} else {
 #ifdef Q_OS_WIN
@@ -1094,10 +1109,11 @@ namespace sv {
 		}
 	}
 
-	void MainInterface::moveCurrentImage(QString const & newFolder, bool askForConfirmation) {
+	void MainInterface::moveCurrentImage(QString const & newFolder, bool askForConfirmation, bool includeSidecarFiles) {
 		if (askForConfirmation) {
 			QMessageBox msgBox;
 			msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+			msgBox.setDefaultButton(QMessageBox::No);
 			msgBox.setWindowTitle(tr("Move File"));
 			msgBox.setText(tr("Please confirm that you want to move this file to the folder you specified."));
 			msgBox.setButtonText(QMessageBox::Yes, tr("Move"));
@@ -1105,17 +1121,33 @@ namespace sv {
 			msgBox.setIcon(QMessageBox::Question);
 			if (msgBox.exec() == QMessageBox::No) return;
 		}
+		QDir dir = QDir(newFolder);
 		QString oldPath = this->getFullImagePath(this->currentFileIndex);
-		QString newPath = QDir(newFolder).absoluteFilePath(this->filesInDirectory[this->currentFileIndex]);
+		QString newPath = dir.absoluteFilePath(this->filesInDirectory[this->currentFileIndex]);
 		if (utility::moveFile(oldPath, newPath, false, this)) {
+			if (includeSidecarFiles) {
+				QStringList filters;
+				filters << QString("%1.*").arg(QFileInfo(oldPath).baseName());
+				QStringList contents = this->currentDirectory.entryList(filters, QDir::Files);
+				for (QString const & file : contents) {
+					if (!utility::moveFile(this->currentDirectory.absoluteFilePath(file), dir.absoluteFilePath(file), true, this)) {
+						QMessageBox::critical(this,
+											  tr("Sidecar File Not Moved"),
+											  tr("The sidecar file %1 could not be deleted. Please check that you have the required permissions and that the path length does not exceed MAX_PATH.").arg(file),
+											  QMessageBox::StandardButton::Close,
+											  QMessageBox::StandardButton::Close);
+					}
+				}
+			}
 			this->removeCurrentImageFromList();
 		}
 	}
 
-	void MainInterface::copyCurrentImage(QString const & newFolder, bool askForConfirmation) {
+	void MainInterface::copyCurrentImage(QString const & newFolder, bool askForConfirmation, bool includeSidecarFiles) {
 		if (askForConfirmation) {
 			QMessageBox msgBox;
 			msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+			msgBox.setDefaultButton(QMessageBox::No);
 			msgBox.setWindowTitle(tr("Copy File"));
 			msgBox.setText(tr("Please confirm that you want to copy this file to the folder you specified."));
 			msgBox.setButtonText(QMessageBox::Yes, tr("Copy"));
@@ -1123,9 +1155,25 @@ namespace sv {
 			msgBox.setIcon(QMessageBox::Question);
 			if (msgBox.exec() == QMessageBox::No) return;
 		}
+		QDir dir = QDir(newFolder);
 		QString oldPath = this->getFullImagePath(this->currentFileIndex);
-		QString newPath = QDir(newFolder).absoluteFilePath(this->filesInDirectory[this->currentFileIndex]);
-		utility::copyFile(oldPath, newPath, false, this);
+		QString newPath = dir.absoluteFilePath(this->filesInDirectory[this->currentFileIndex]);
+		if (utility::copyFile(oldPath, newPath, false, this)) {
+			if (includeSidecarFiles) {
+				QStringList filters;
+				filters << QString("%1.*").arg(QFileInfo(oldPath).baseName());
+				QStringList contents = this->currentDirectory.entryList(filters, QDir::Files);
+				for (QString const & file : contents) {
+					if (!utility::copyFile(this->currentDirectory.absoluteFilePath(file), dir.absoluteFilePath(file), true, this)) {
+						QMessageBox::critical(this,
+											  tr("Sidecar File Not Copied"),
+											  tr("The sidecar file %1 could not be copied. Please check that you have the required permissions and that the path length does not exceed MAX_PATH.").arg(file),
+											  QMessageBox::StandardButton::Close,
+											  QMessageBox::StandardButton::Close);
+					}
+				}
+			}
+		}
 
 	}
 
@@ -1509,18 +1557,28 @@ namespace sv {
 		if (this->filesInDirectory.size() > 0 && !this->loading) {
 			this->loading = true;
 			if (this->hotkeyDialog->getAction1() == 0) {
-				this->deleteCurrentImage();
+				this->deleteCurrentImage(this->hotkeyDialog->getShowConfirmation(), this->hotkeyDialog->getIncludeSidecarFiles());
 			} else if (this->hotkeyDialog->getAction1() == 1) {
-				this->moveCurrentImage(this->hotkeyDialog->getFolder1());
+				this->moveCurrentImage(this->hotkeyDialog->getFolder1(), this->hotkeyDialog->getShowConfirmation(), this->hotkeyDialog->getIncludeSidecarFiles());
 			} else if (this->hotkeyDialog->getAction1() == 2) {
-				this->copyCurrentImage(this->hotkeyDialog->getFolder1());
+				this->copyCurrentImage(this->hotkeyDialog->getFolder1(), this->hotkeyDialog->getShowConfirmation(), this->hotkeyDialog->getIncludeSidecarFiles());
 			}
 			this->loading = false;
 		}
 	}
 
 	void MainInterface::triggerCustomAction2() { 
-		std::cout << "Action2" << std::endl;
+		if (this->filesInDirectory.size() > 0 && !this->loading) {
+			this->loading = true;
+			if (this->hotkeyDialog->getAction2() == 0) {
+				this->deleteCurrentImage(this->hotkeyDialog->getShowConfirmation(), this->hotkeyDialog->getIncludeSidecarFiles());
+			} else if (this->hotkeyDialog->getAction2() == 1) {
+				this->moveCurrentImage(this->hotkeyDialog->getFolder2(), this->hotkeyDialog->getShowConfirmation(), this->hotkeyDialog->getIncludeSidecarFiles());
+			} else if (this->hotkeyDialog->getAction2() == 2) {
+				this->copyCurrentImage(this->hotkeyDialog->getFolder2(), this->hotkeyDialog->getShowConfirmation(), this->hotkeyDialog->getIncludeSidecarFiles());
+			}
+			this->loading = false;
+		}
 	}
 
 	void MainInterface::updateCustomHotkeys() {
