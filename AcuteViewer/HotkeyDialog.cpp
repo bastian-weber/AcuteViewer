@@ -111,9 +111,8 @@ namespace sv {
 		this->okButton = new QPushButton(tr("Ok"), this);
 		QObject::connect(this->okButton, SIGNAL(clicked()), this, SLOT(reactToOkButtonClick()));
 		this->cancelButton = new QPushButton(tr("Cancel"), this);
+		QObject::connect(this->cancelButton, SIGNAL(clicked()), this, SLOT(resetChanges()));
 		QObject::connect(this->cancelButton, SIGNAL(clicked()), this, SLOT(reject()));
-
-		QObject::connect(this, SIGNAL(rejected()), this, SLOT(resetChanges()));
 
 		this->buttonLayout = new QHBoxLayout();
 		this->buttonLayout->addStretch(1);
@@ -129,11 +128,27 @@ namespace sv {
 		this->layout()->setSizeConstraint(QLayout::SetFixedSize);
 
 		this->loadSettings();
+		this->saveState();
 	}
 
-	//============================================================================== PROTECTED ==============================================================================\\
+	//=============================================================================== PRIVATE ===============================================================================\\
 
-	void HotkeyDialog::showEvent(QShowEvent* event) {
+	void HotkeyDialog::loadSettings() {
+		this->keySequenceEdit1->setKeySequence(this->settings->value("hotkey1Shortcut", QKeySequence(Qt::Key_Delete)).value<QKeySequence>());
+		this->buttonGroup1->button(this->settings->value("hotkey1Action", 0).toInt())->setChecked(true);
+		this->folderLineEdit1->setText(this->settings->value("hotkey1Folder", QDir::rootPath()).toString());
+		this->keySequenceEdit2->setKeySequence(this->settings->value("hotkey2Shortcut", QKeySequence(Qt::Key_Enter)).value<QKeySequence>());
+		this->buttonGroup2->button(this->settings->value("hotkey2Action", 0).toInt())->setChecked(true);
+		this->folderLineEdit2->setText(this->settings->value("hotkey2Folder", QDir::rootPath()).toString());
+		this->globalGroupBox->setChecked(this->settings->value("enableHotkeys", true).toBool());
+		this->groupBox1->setChecked(this->settings->value("enableHotkey1", true).toBool());
+		this->groupBox2->setChecked(this->settings->value("enableHotkey2", false).toBool());
+		this->sidecarFileCheckBox->setChecked(this->settings->value("includeSidecarFiles", false).toBool());
+		this->confirmationCheckBox->setChecked(this->settings->value("showActionConfirmation", true).toBool());
+		this->reactToCheckboxChange();
+	}
+
+	void HotkeyDialog::saveState() {
 		this->enableHotkeysOldValue = this->globalGroupBox->isChecked();
 		this->enableHotkey1OldValue = this->groupBox1->isChecked();
 		this->enableHotkey2OldValue = this->groupBox2->isChecked();
@@ -147,61 +162,25 @@ namespace sv {
 		this->confirmationOldValue = this->confirmationCheckBox->isChecked();
 	}
 
-	//=============================================================================== PRIVATE ===============================================================================\\
-
-	void HotkeyDialog::loadSettings() {
-		{
-			this->keySequenceEdit1->setKeySequence(this->settings->value("hotkey1Shortcut", QKeySequence(Qt::Key_Delete)).value<QKeySequence>());
-			this->buttonGroup1->button(this->settings->value("hotkey1Action", 0).toInt())->setChecked(true);
-			QDir dir(this->settings->value("hotkey1Folder", QDir::rootPath()).toString());
-			QString path = QDir::rootPath();
-			if (dir.exists()) path = QDir::cleanPath(dir.absolutePath());
-			this->folderLineEdit1->setText(path);
-		}
-
-		{
-			this->keySequenceEdit2->setKeySequence(this->settings->value("hotkey2Shortcut", QKeySequence(Qt::Key_Enter)).value<QKeySequence>());
-			this->buttonGroup2->button(this->settings->value("hotkey2Action", 0).toInt())->setChecked(true);
-			QDir dir(this->settings->value("hotkey2Folder", QDir::rootPath()).toString());
-			QString path = QDir::rootPath();
-			if (dir.exists()) path = QDir::cleanPath(dir.absolutePath());
-			this->folderLineEdit2->setText(path);
-		}
-		this->globalGroupBox->setChecked(this->settings->value("enableHotkeys", true).toBool());
-		this->groupBox1->setChecked(this->settings->value("enableHotkey1", true).toBool());
-		this->groupBox2->setChecked(this->settings->value("enableHotkey2", false).toBool());
-		this->sidecarFileCheckBox->setChecked(this->settings->value("includeSidecarFiles", false).toBool());
-		this->confirmationCheckBox->setChecked(this->settings->value("showActionConfirmation", false).toBool());
-		this->reactToCheckboxChange();
-	}
-
 	//============================================================================ PRIVATE SLOTS =============================================================================\\
 
 	void HotkeyDialog::reactToOkButtonClick() {
-		if (this->groupBox1->isChecked() && this->groupBox2->isChecked() && this->keySequenceEdit1->keySequence() == this->keySequenceEdit2->keySequence()) {
+		if (!this->verifyChanges()) {
+			if (!this->isVisible()) this->show();
 			return;
 		}
 		settings->setValue("enableHotkeys", this->globalGroupBox->isChecked());
-		if (this->globalGroupBox->isChecked()) {
-			settings->setValue("enableHotkey1", this->groupBox1->isChecked());
-			settings->setValue("enableHotkey2", this->groupBox2->isChecked());
-			if (this->groupBox1->isChecked()) {
-				settings->setValue("hotkey1Shortcut", this->keySequenceEdit1->keySequence());
-				settings->setValue("hotkey1Action", this->buttonGroup1->checkedId());
-				if (this->buttonGroup1->checkedId() != 0) {
-					settings->setValue("hotkey1Folder", this->folderLineEdit1->text());
-				}
-			}
-			if (this->groupBox2->isChecked()) {
-				settings->setValue("hotkey2Shortcut", this->keySequenceEdit2->keySequence());
-				settings->setValue("hotkey2Action", this->buttonGroup2->checkedId());
-				if (this->buttonGroup2->checkedId() != 0) {
-					settings->setValue("hotkey2Folder", this->folderLineEdit2->text());
-				}
-			}
-		}
+		settings->setValue("enableHotkey1", this->groupBox1->isChecked());
+		settings->setValue("enableHotkey2", this->groupBox2->isChecked());
+		settings->setValue("hotkey1Shortcut", this->keySequenceEdit1->keySequence());
+		settings->setValue("hotkey1Action", this->buttonGroup1->checkedId());
+		settings->setValue("hotkey1Folder", this->folderLineEdit1->text());
+		settings->setValue("hotkey2Shortcut", this->keySequenceEdit2->keySequence());
+		settings->setValue("hotkey2Action", this->buttonGroup2->checkedId());
+		settings->setValue("hotkey2Folder", this->folderLineEdit2->text());
 		settings->setValue("includeSidecarFiles", this->sidecarFileCheckBox->isChecked());
 		settings->setValue("showActionConfirmation", this->confirmationCheckBox->isChecked());
+		this->saveState();
 		this->accept();
 	}
 
@@ -237,19 +216,34 @@ namespace sv {
 		}
 	}
 
-	void HotkeyDialog::verifyChanges() {
+	bool HotkeyDialog::verifyChanges() {
+		QPalette redPalette;
+		redPalette.setColor(QPalette::Text, Qt::red);
+		bool result = true;
 		this->okButton->setEnabled(true);
+		this->keySequenceEdit1->setPalette(QPalette());
+		this->keySequenceEdit2->setPalette(QPalette());
+		this->folderLineEdit1->setPalette(QPalette());
+		this->folderLineEdit2->setPalette(QPalette());
 		if (this->globalGroupBox->isChecked()) {
 			if (this->groupBox1->isChecked() && this->groupBox2->isChecked() && this->keySequenceEdit1->keySequence() == this->keySequenceEdit2->keySequence()) {
+				this->keySequenceEdit1->setPalette(redPalette);
+				this->keySequenceEdit2->setPalette(redPalette);
 				this->okButton->setEnabled(false);
+				result = false;
 			}
 			if (this->groupBox1->isChecked() && this->buttonGroup1->checkedId() != 0 && !QDir(this->folderLineEdit1->text()).exists()) {
+				this->folderLineEdit1->setPalette(redPalette);
 				this->okButton->setEnabled(false);
+				result = false;
 			}
 			if (this->groupBox2->isChecked() && this->buttonGroup2->checkedId() != 0 && !QDir(this->folderLineEdit2->text()).exists()) {
+				this->folderLineEdit2->setPalette(redPalette);
 				this->okButton->setEnabled(false);
+				result = false;
 			}
 		}
+		return result;
 	}
 
 	void HotkeyDialog::selectFolder() {
@@ -302,6 +296,11 @@ namespace sv {
 
 	bool HotkeyDialog::getShowConfirmation() {
 		return this->confirmationCheckBox->isChecked();
+	}
+
+	void HotkeyDialog::setHotkeysEnabled(bool value) {
+		this->globalGroupBox->setChecked(value);
+		this->reactToOkButtonClick();
 	}
 
 }

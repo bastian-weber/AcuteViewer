@@ -276,12 +276,23 @@ namespace sv {
 		this->fileMenu->addAction(this->refreshAction);
 		this->addAction(this->refreshAction);
 
+		this->fileMenu->addSeparator();
+
+		this->fileActionAction = new QAction(tr("&Enable File Action Hotkeys"), this);
+		this->fileActionAction->setCheckable(true);
+		this->fileActionAction->setChecked(false);
+		this->fileActionAction->setShortcut(Qt::CTRL + Qt::Key_H);
+		this->fileActionAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->fileActionAction, SIGNAL(triggered(bool)), this->hotkeyDialog, SLOT(setHotkeysEnabled(bool)));
+		this->fileMenu->addAction(this->fileActionAction);
+		this->addAction(this->fileActionAction);
+
 		this->hotkeyOptionsAction = new QAction(tr("&Hotkey Options..."), this);
-		//this->hotkeyOptionsAction->setShortcut(Qt::Key_F5);
-		//this->hotkeyOptionsAction->setShortcutContext(Qt::ApplicationShortcut);
+		this->hotkeyOptionsAction->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_O);
+		this->hotkeyOptionsAction->setShortcutContext(Qt::ApplicationShortcut);
 		QObject::connect(this->hotkeyOptionsAction, SIGNAL(triggered()), this, SLOT(showHotkeyDialog()));
 		this->fileMenu->addAction(this->hotkeyOptionsAction);
-		//this->addAction(this->hotkeyOptionsAction);
+		this->addAction(this->hotkeyOptionsAction);
 
 		this->fileMenu->addSeparator();
 
@@ -1021,6 +1032,7 @@ namespace sv {
 		this->fontSize = this->settings->value("fontSize", 14).toUInt();
 		if (this->fontSize < 1) this->fontSize == 1;
 		this->lineSpacing = this->settings->value("lineSpacing", 10).toUInt();
+		this->fileActionAction->setChecked(this->settings->value("enableHotkeys", true).toBool());
 		this->showInfoAction->setChecked(this->settings->value("showImageInfo", false).toBool());
 		this->zoomLevelAction->setChecked(this->settings->value("showZoomLevel", false).toBool());
 		this->enlargementAction->setChecked(this->settings->value("enlargeSmallImages", false).toBool());
@@ -1582,6 +1594,7 @@ namespace sv {
 	}
 
 	void MainInterface::updateCustomHotkeys() {
+		this->fileActionAction->setChecked(this->hotkeyDialog->getHotkeysEnabled());
 		this->customAction1->setEnabled(this->hotkeyDialog->getHotkeysEnabled() && this->hotkeyDialog->getHotkey1Enabled());
 		this->customAction2->setEnabled(this->hotkeyDialog->getHotkeysEnabled() && this->hotkeyDialog->getHotkey2Enabled());
 		this->customAction1->setShortcut(this->hotkeyDialog->getKeySequence1());

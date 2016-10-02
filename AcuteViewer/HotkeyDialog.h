@@ -26,11 +26,12 @@ namespace sv {
 		QString getFolder2();
 		bool getIncludeSidecarFiles();
 		bool getShowConfirmation();
-	protected:
-		void showEvent(QShowEvent* event);
+	public slots:
+		void setHotkeysEnabled(bool value);
 	private:
 		//functions
 		void loadSettings();
+		void saveState();
 		//variables
 		std::shared_ptr<QSettings> settings;
 		bool enableHotkeysOldValue;
@@ -80,7 +81,7 @@ namespace sv {
 	private slots:
 		void resetChanges();
 		void reactToCheckboxChange();
-		void verifyChanges();
+		bool verifyChanges();
 		void selectFolder();
 	};
 }
