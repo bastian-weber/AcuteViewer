@@ -16,6 +16,7 @@
 #include "ImageView.h"
 #include "SlideshowDialog.h"
 #include "SharpeningDialog.h"
+#include "HotkeyDialog.h"
 
 namespace sv {
 
@@ -64,6 +65,8 @@ namespace sv {
 		template <typename T> void waitForThreadToFinish(std::shared_future<T> const& thread, bool indicateLoading = true);
 		size_t nextFileIndex() const;
 		size_t previousFileIndex() const;
+		void removeCurrentImageFromList();
+		void reset();
 		QString getFullImagePath(size_t index) const;
 		void loadImage(QString path);
 		void loadImages(QStringList paths);
@@ -76,6 +79,9 @@ namespace sv {
 		void changeFontSizeBy(int value);
 		void changeLineSpacingBy(int value);
 		void loadSettings();
+		void deleteCurrentImage(bool askForConfirmation = false, bool includeSidecarFiles = false);
+		void moveCurrentImage(QString const & newFolder, bool askForConfirmation = false, bool includeSidecarFiles = false);
+		void copyCurrentImage(QString const & newFolder, bool askForConfirmation = false, bool includeSidecarFiles = false);
 
 		//variables
 		const QString programTitle = "Acute Viewer";
@@ -107,6 +113,7 @@ namespace sv {
 		hb::ImageView* imageView;
 		SlideshowDialog* slideshowDialog;
 		SharpeningDialog* sharpeningDialog;
+		HotkeyDialog* hotkeyDialog;
 		//menus
 		QMenu* fileMenu;
 		QMenu* viewMenu;
@@ -120,6 +127,8 @@ namespace sv {
 		QAction* quitAction;
 		QAction* openAction;
 		QAction* refreshAction;
+		QAction* fileActionAction;
+		QAction* hotkeyOptionsAction;
 		QAction* resetSettingsAction;
 		QAction* showInfoAction;
 		QAction* smoothingAction;
@@ -146,6 +155,8 @@ namespace sv {
 		QAction* includePartiallySupportedFilesAction;
 		QAction* installAction;
 		QAction* uninstallAction;
+		QAction* customAction1;
+		QAction* customAction2;
 		QActionGroup* backgroundColorActionGroup;
 		//timer
 		QTimer* mouseHideTimer;
@@ -154,6 +165,7 @@ namespace sv {
 	private slots:
 		void nextSlide();
 		void refresh();
+		void showHotkeyDialog();
 		void cleanUpThreads();
 		void quit();
 		void saveWindowSize();
@@ -191,6 +203,9 @@ namespace sv {
 		void updateSharpening();
 		void changeBackgroundColor(QAction* action);
 		void toggleAutoRotation(bool value);
+		void triggerCustomAction1();
+		void triggerCustomAction2();
+		void updateCustomHotkeys();
 	signals:
 		void readImageFinished(Image image);
 	};

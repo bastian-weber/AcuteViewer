@@ -27,11 +27,9 @@ namespace sv {
 		this->okButton = new QPushButton(tr("&Ok"), this);
 		this->okButton->setDefault(true);
 		QObject::connect(this->okButton, SIGNAL(clicked()), this, SLOT(reactToOkButtonClick()));
-		QObject::connect(this->okButton, SIGNAL(clicked()), this, SIGNAL(dialogClosed()));
 
 		this->cancelButton = new QPushButton(tr("&Cancel"), this);
-		QObject::connect(this->cancelButton, SIGNAL(clicked()), this, SLOT(close()));
-		QObject::connect(this->cancelButton, SIGNAL(clicked()), this, SIGNAL(dialogClosed()));
+		QObject::connect(this->cancelButton, SIGNAL(clicked()), this, SLOT(reject()));
 
 		this->buttonLayout = new QHBoxLayout();
 		this->buttonLayout->addStretch(1);
@@ -67,7 +65,7 @@ namespace sv {
 	void SlideshowDialog::reactToOkButtonClick() {
 		settings->setValue("slideshowLoop", this->loopCheckbox->isChecked());
 		settings->setValue("slideDelay", this->timeSpinBox->value());
-		emit(dialogConfirmed());
+		this->accept();
 		this->close();
 	}
 
