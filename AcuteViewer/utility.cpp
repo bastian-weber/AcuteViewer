@@ -106,6 +106,7 @@ namespace utility {
 			if (!silent) {
 				QMessageBox msgBox;
 				msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+				msgBox.setDefaultButton(QMessageBox::No);
 				msgBox.setWindowTitle(QObject::tr("File Already Exists"));
 				msgBox.setText(QObject::tr("There is already a file with the name \"%1\" in the destination folder. If you move the file nevertheless, the existing one will be overwritten.").arg(QFileInfo(oldPath).fileName()));
 				msgBox.setButtonText(QMessageBox::Yes, QObject::tr("Overwrite"));
@@ -146,6 +147,7 @@ namespace utility {
 			if (!silent) {
 				QMessageBox msgBox;
 				msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+				msgBox.setDefaultButton(QMessageBox::No);
 				msgBox.setWindowTitle(QObject::tr("File Already Exists"));
 				msgBox.setText(QObject::tr("There is already a file with the name \"%1\" in the destination folder. If you copy the file nevertheless, the existing one will be overwritten.").arg(QFileInfo(oldPath).fileName()));
 				msgBox.setButtonText(QMessageBox::Yes, QObject::tr("Overwrite"));
