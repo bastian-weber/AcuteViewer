@@ -33,9 +33,6 @@ namespace sv {
 		QPushButton* cancelButton;
 	private slots:
 		void reactToOkButtonClick();
-	signals:
-		void dialogConfirmed();
-		void dialogClosed();
 	};
 }
 #endif

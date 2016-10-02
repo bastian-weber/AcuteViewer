@@ -233,12 +233,17 @@ namespace sv {
 
 		this->slideshowDialog = new SlideshowDialog(settings, this);
 		this->slideshowDialog->setWindowModality(Qt::WindowModal);
-		QObject::connect(this->slideshowDialog, SIGNAL(dialogConfirmed()), this, SLOT(startSlideshow()));
-		QObject::connect(this->slideshowDialog, SIGNAL(dialogClosed()), this, SLOT(enableAutomaticMouseHide()));
+		QObject::connect(this->slideshowDialog, SIGNAL(accepted()), this, SLOT(startSlideshow()));
+		QObject::connect(this->slideshowDialog, SIGNAL(finished(int)), this, SLOT(enableAutomaticMouseHide()));
 
 		this->sharpeningDialog = new SharpeningDialog(settings, this);
 		QObject::connect(this->sharpeningDialog, SIGNAL(sharpeningParametersChanged()), this, SLOT(updateSharpening()));
-		QObject::connect(this->sharpeningDialog, SIGNAL(dialogClosed()), this, SLOT(enableAutomaticMouseHide()));
+		QObject::connect(this->sharpeningDialog, SIGNAL(finished(int)), this, SLOT(enableAutomaticMouseHide()));
+
+		this->hotkeyDialog = new HotkeyDialog(settings, this);
+		this->hotkeyDialog->setWindowModality(Qt::WindowModal);
+		QObject::connect(this->hotkeyDialog, SIGNAL(finished(int)), this, SLOT(enableAutomaticMouseHide()));
+		QObject::connect(this->hotkeyDialog, SIGNAL(finished(int)), this, SLOT(updateCustomHotkeys()));
 
 		QObject::connect(this->menuBar(), SIGNAL(triggered(QAction*)), this, SLOT(hideMenuBar(QAction*)));
 		this->fileMenu = this->menuBar()->addMenu(tr("&File"));
@@ -270,6 +275,24 @@ namespace sv {
 		QObject::connect(this->refreshAction, SIGNAL(triggered()), this, SLOT(refresh()));
 		this->fileMenu->addAction(this->refreshAction);
 		this->addAction(this->refreshAction);
+
+		this->fileMenu->addSeparator();
+
+		this->fileActionAction = new QAction(tr("&Enable File Action Hotkeys"), this);
+		this->fileActionAction->setCheckable(true);
+		this->fileActionAction->setChecked(false);
+		this->fileActionAction->setShortcut(Qt::CTRL + Qt::Key_H);
+		this->fileActionAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->fileActionAction, SIGNAL(triggered(bool)), this->hotkeyDialog, SLOT(setHotkeysEnabled(bool)));
+		this->fileMenu->addAction(this->fileActionAction);
+		this->addAction(this->fileActionAction);
+
+		this->hotkeyOptionsAction = new QAction(tr("&Hotkey Options..."), this);
+		this->hotkeyOptionsAction->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_O);
+		this->hotkeyOptionsAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->hotkeyOptionsAction, SIGNAL(triggered()), this, SLOT(showHotkeyDialog()));
+		this->fileMenu->addAction(this->hotkeyOptionsAction);
+		this->addAction(this->hotkeyOptionsAction);
 
 		this->fileMenu->addSeparator();
 
@@ -491,6 +514,20 @@ namespace sv {
 		QObject::connect(this->slideshowNoDialogAction, SIGNAL(triggered()), this, SLOT(toggleSlideshowNoDialog()));
 		this->addAction(this->slideshowNoDialogAction);
 
+		this->customAction1 = new QAction(this);
+		this->customAction1->setEnabled(this->hotkeyDialog->getHotkey1Enabled() && this->hotkeyDialog->getHotkeysEnabled());
+		this->customAction1->setShortcut(this->hotkeyDialog->getKeySequence1());
+		this->customAction1->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->customAction1, SIGNAL(triggered()), this, SLOT(triggerCustomAction1()));
+		this->addAction(this->customAction1);
+
+		this->customAction2 = new QAction(this);
+		this->customAction2->setEnabled(this->hotkeyDialog->getHotkey2Enabled() && this->hotkeyDialog->getHotkeysEnabled());
+		this->customAction2->setShortcut(this->hotkeyDialog->getKeySequence2());
+		this->customAction2->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(this->customAction2, SIGNAL(triggered()), this, SLOT(triggerCustomAction2()));
+		this->addAction(this->customAction2);
+
 		//mouse hide timer in fullscreen
 		this->mouseHideTimer = new QTimer(this);
 		QObject::connect(this->mouseHideTimer, SIGNAL(timeout()), this, SLOT(hideMouse()));
@@ -600,6 +637,8 @@ namespace sv {
 			}
 			lock.unlock();
 			this->displayImageIfOk();
+		} else {
+			lock.unlock();
 		}
 		this->loading = false;
 		this->cleanUpThreads();
@@ -631,6 +670,8 @@ namespace sv {
 			}
 			lock.unlock();
 			this->displayImageIfOk();
+		} else {
+			lock.unlock();
 		}
 		this->loading = false;
 		this->cleanUpThreads();
@@ -644,12 +685,66 @@ namespace sv {
 	}
 
 	size_t MainInterface::nextFileIndex() const {
+		if (this->filesInDirectory.size() <= 0) return 0;
 		return (this->currentFileIndex + 1) % this->filesInDirectory.size();
 	}
 
 	size_t MainInterface::previousFileIndex() const {
+		if (this->filesInDirectory.size() <= 0) return 0;
 		if (this->currentFileIndex <= 0) return this->filesInDirectory.size() - 1;
 		return (this->currentFileIndex - 1) % this->filesInDirectory.size();
+	}
+
+	void MainInterface::removeCurrentImageFromList() {
+		std::unique_lock<std::mutex> lock(this->threadDeletionMutex);
+
+		if (this->filesInDirectory.size() != 0) {
+			this->filesInDirectory.remove(this->currentFileIndex);
+			if (this->filesInDirectory.size() <= 0) {
+				lock.unlock();
+				this->cleanUpThreads();
+				this->reset();
+				return;
+			}
+			if (this->currentFileIndex >= this->filesInDirectory.size()) this->currentFileIndex = this->filesInDirectory.size() - 1;
+			this->currentThreadName = this->filesInDirectory[this->currentFileIndex];
+			if (this->threads.find(this->filesInDirectory[this->currentFileIndex]) == this->threads.end()) {
+				return;
+			}
+			this->waitForThreadToFinish(this->currentThread());
+			//calling this function although the exif might not be set to deferred loading is no problem (it checks internally)
+			if (this->exifIsRequired() && this->currentThread().get().isValid()) this->currentThread().get().exif()->startLoading();
+			this->image = this->currentThread().get();
+			this->currentFileInfo = QFileInfo(this->getFullImagePath(this->currentFileIndex));
+
+			//start loading next and previous image
+			if (this->threads.find(this->filesInDirectory[this->nextFileIndex()]) == this->threads.end()) {
+				this->threads[this->filesInDirectory[this->nextFileIndex()]] = std::async(std::launch::async,
+																						  &MainInterface::readImage,
+																						  this,
+																						  this->getFullImagePath(this->nextFileIndex()),
+																						  false);
+			}
+			if (this->threads.find(this->filesInDirectory[this->previousFileIndex()]) == this->threads.end()) {
+				this->threads[this->filesInDirectory[this->previousFileIndex()]] = std::async(std::launch::async,
+																							  &MainInterface::readImage,
+																							  this,
+																							  this->getFullImagePath(this->previousFileIndex()),
+																							  false);
+			}
+			lock.unlock();
+			this->displayImageIfOk();
+		} else {
+			lock.unlock();
+		}
+		this->cleanUpThreads();
+	}
+
+	void MainInterface::reset() {
+		this->imageView->resetImage();
+		this->image = sv::Image();
+		this->filesInDirectory.clear();
+		this->setWindowTitle(this->programTitle);
 	}
 
 	QString MainInterface::getFullImagePath(size_t index) const {
@@ -937,6 +1032,7 @@ namespace sv {
 		this->fontSize = this->settings->value("fontSize", 14).toUInt();
 		if (this->fontSize < 1) this->fontSize == 1;
 		this->lineSpacing = this->settings->value("lineSpacing", 10).toUInt();
+		this->fileActionAction->setChecked(this->settings->value("enableHotkeys", true).toBool());
 		this->showInfoAction->setChecked(this->settings->value("showImageInfo", false).toBool());
 		this->zoomLevelAction->setChecked(this->settings->value("showZoomLevel", false).toBool());
 		this->enlargementAction->setChecked(this->settings->value("enlargeSmallImages", false).toBool());
@@ -969,12 +1065,141 @@ namespace sv {
 		this->autoRotationAction->setChecked(this->settings->value("autoRotateImages", true).toBool());
 	}
 
+	void MainInterface::deleteCurrentImage(bool askForConfirmation, bool includeSidecarFiles) {
+		if (askForConfirmation) {
+			QMessageBox msgBox;
+			msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+			msgBox.setDefaultButton(QMessageBox::No);
+			msgBox.setWindowTitle(tr("Delete File"));
+			msgBox.setText(tr("Please confirm that you want to delete this file."));
+			msgBox.setButtonText(QMessageBox::Yes, tr("Delete"));
+			msgBox.setButtonText(QMessageBox::No, tr("Do not Delete"));
+			msgBox.setIcon(QMessageBox::Question);
+			if (msgBox.exec() == QMessageBox::No) return;
+		}
+
+		QString filepath = this->getFullImagePath(this->currentFileIndex);
+		if (QFileInfo(filepath).exists()) {
+			if (utility::moveFileToRecycleBin(filepath)) {
+				if (includeSidecarFiles) {
+					QStringList filters;
+					filters << QString("%1.*").arg(QFileInfo(filepath).baseName());
+					QStringList contents = this->currentDirectory.entryList(filters, QDir::Files);
+					for (QString const & file : contents) {
+						if (!utility::moveFileToRecycleBin(this->currentDirectory.absoluteFilePath(file))) {
+							QMessageBox::critical(this,
+												  tr("Sidecar File Not Deleted"),
+												  tr("The sidecar file %1 could not be deleted. Please check that you have the required permissions and that the path length does not exceed MAX_PATH.").arg(file),
+												  QMessageBox::StandardButton::Close,
+												  QMessageBox::StandardButton::Close);
+						}
+					}
+				}
+				this->removeCurrentImageFromList();
+			} else {
+#ifdef Q_OS_WIN
+				QMessageBox::critical(this,
+									  tr("File Not Deleted"),
+									  tr("The file could not be deleted. Please check that you have the required permissions and that the path length does not exceed MAX_PATH."),
+									  QMessageBox::StandardButton::Close,
+									  QMessageBox::StandardButton::Close);
+#else
+				QMessageBox::critical(this,
+									  tr("File Not Deleted"),
+									  tr("The file could not be deleted. Please check that you have the required permissions. It might also be that your trash folder is not at the default location."),
+									  QMessageBox::StandardButton::Close,
+									  QMessageBox::StandardButton::Close);
+#endif
+			}
+
+		} else {
+			QMessageBox::critical(this,
+								  tr("File Not Found"),
+								  tr("The file could not be deleted because it no longer exists."),
+								  QMessageBox::StandardButton::Close,
+								  QMessageBox::StandardButton::Close);
+		}
+	}
+
+	void MainInterface::moveCurrentImage(QString const & newFolder, bool askForConfirmation, bool includeSidecarFiles) {
+		if (askForConfirmation) {
+			QMessageBox msgBox;
+			msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+			msgBox.setDefaultButton(QMessageBox::No);
+			msgBox.setWindowTitle(tr("Move File"));
+			msgBox.setText(tr("Please confirm that you want to move this file to the folder you specified."));
+			msgBox.setButtonText(QMessageBox::Yes, tr("Move"));
+			msgBox.setButtonText(QMessageBox::No, tr("Do not Move"));
+			msgBox.setIcon(QMessageBox::Question);
+			if (msgBox.exec() == QMessageBox::No) return;
+		}
+		QDir dir = QDir(newFolder);
+		QString oldPath = this->getFullImagePath(this->currentFileIndex);
+		QString newPath = dir.absoluteFilePath(this->filesInDirectory[this->currentFileIndex]);
+		if (utility::moveFile(oldPath, newPath, false, this)) {
+			if (includeSidecarFiles) {
+				QStringList filters;
+				filters << QString("%1.*").arg(QFileInfo(oldPath).baseName());
+				QStringList contents = this->currentDirectory.entryList(filters, QDir::Files);
+				for (QString const & file : contents) {
+					if (!utility::moveFile(this->currentDirectory.absoluteFilePath(file), dir.absoluteFilePath(file), true, this)) {
+						QMessageBox::critical(this,
+											  tr("Sidecar File Not Moved"),
+											  tr("The sidecar file %1 could not be deleted. Please check that you have the required permissions and that the path length does not exceed MAX_PATH.").arg(file),
+											  QMessageBox::StandardButton::Close,
+											  QMessageBox::StandardButton::Close);
+					}
+				}
+			}
+			this->removeCurrentImageFromList();
+		}
+	}
+
+	void MainInterface::copyCurrentImage(QString const & newFolder, bool askForConfirmation, bool includeSidecarFiles) {
+		if (askForConfirmation) {
+			QMessageBox msgBox;
+			msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+			msgBox.setDefaultButton(QMessageBox::No);
+			msgBox.setWindowTitle(tr("Copy File"));
+			msgBox.setText(tr("Please confirm that you want to copy this file to the folder you specified."));
+			msgBox.setButtonText(QMessageBox::Yes, tr("Copy"));
+			msgBox.setButtonText(QMessageBox::No, tr("Do not Copy"));
+			msgBox.setIcon(QMessageBox::Question);
+			if (msgBox.exec() == QMessageBox::No) return;
+		}
+		QDir dir = QDir(newFolder);
+		QString oldPath = this->getFullImagePath(this->currentFileIndex);
+		QString newPath = dir.absoluteFilePath(this->filesInDirectory[this->currentFileIndex]);
+		if (utility::copyFile(oldPath, newPath, false, this)) {
+			if (includeSidecarFiles) {
+				QStringList filters;
+				filters << QString("%1.*").arg(QFileInfo(oldPath).baseName());
+				QStringList contents = this->currentDirectory.entryList(filters, QDir::Files);
+				for (QString const & file : contents) {
+					if (!utility::copyFile(this->currentDirectory.absoluteFilePath(file), dir.absoluteFilePath(file), true, this)) {
+						QMessageBox::critical(this,
+											  tr("Sidecar File Not Copied"),
+											  tr("The sidecar file %1 could not be copied. Please check that you have the required permissions and that the path length does not exceed MAX_PATH.").arg(file),
+											  QMessageBox::StandardButton::Close,
+											  QMessageBox::StandardButton::Close);
+					}
+				}
+			}
+		}
+
+	}
+
 	//============================================================================ PRIVATE SLOTS =============================================================================\\
 
 	void MainInterface::refresh() {
 		if (this->currentFileIndex >= 0 && this->filesInDirectory.size() > 0) {
 			this->loadImage(this->getFullImagePath(this->currentFileIndex));
 		}
+	}
+
+	void MainInterface::showHotkeyDialog() {
+		this->disableAutomaticMouseHide();
+		this->hotkeyDialog->show();
 	}
 
 	void MainInterface::nextSlide() {
@@ -993,8 +1218,7 @@ namespace sv {
 				int index = this->filesInDirectory.indexOf(it->first);
 				//see if the thread has finished loading
 				//also the exif should have finished loading to prevent blocking, check if it's valid first to not derefence an invalid pointer
-				if (index != -1
-					&& index != this->currentFileIndex
+				if (index != this->currentFileIndex
 					&& index != previousIndex
 					&& index != nextIndex
 					&& it->second.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready
@@ -1034,7 +1258,7 @@ namespace sv {
 	}
 
 	void MainInterface::enableAutomaticMouseHide() {
-		if (this->isFullScreen() && !this->menuBar()->isVisible() && !this->slideshowDialog->isVisible() && !this->sharpeningDialog->isVisible()) {
+		if (this->isFullScreen() && !this->menuBar()->isVisible() && !this->slideshowDialog->isVisible() && !this->sharpeningDialog->isVisible() && !this->hotkeyDialog->isVisible()) {
 			this->mouseHideTimer->start(this->mouseHideDelay);
 		}
 	}
@@ -1339,6 +1563,42 @@ namespace sv {
 		} else {
 			this->imageView->setRotation(userRotation);
 		}
+	}
+
+	void MainInterface::triggerCustomAction1() {
+		if (this->filesInDirectory.size() > 0 && !this->loading) {
+			this->loading = true;
+			if (this->hotkeyDialog->getAction1() == 0) {
+				this->deleteCurrentImage(this->hotkeyDialog->getShowConfirmation(), this->hotkeyDialog->getIncludeSidecarFiles());
+			} else if (this->hotkeyDialog->getAction1() == 1) {
+				this->moveCurrentImage(this->hotkeyDialog->getFolder1(), this->hotkeyDialog->getShowConfirmation(), this->hotkeyDialog->getIncludeSidecarFiles());
+			} else if (this->hotkeyDialog->getAction1() == 2) {
+				this->copyCurrentImage(this->hotkeyDialog->getFolder1(), this->hotkeyDialog->getShowConfirmation(), this->hotkeyDialog->getIncludeSidecarFiles());
+			}
+			this->loading = false;
+		}
+	}
+
+	void MainInterface::triggerCustomAction2() { 
+		if (this->filesInDirectory.size() > 0 && !this->loading) {
+			this->loading = true;
+			if (this->hotkeyDialog->getAction2() == 0) {
+				this->deleteCurrentImage(this->hotkeyDialog->getShowConfirmation(), this->hotkeyDialog->getIncludeSidecarFiles());
+			} else if (this->hotkeyDialog->getAction2() == 1) {
+				this->moveCurrentImage(this->hotkeyDialog->getFolder2(), this->hotkeyDialog->getShowConfirmation(), this->hotkeyDialog->getIncludeSidecarFiles());
+			} else if (this->hotkeyDialog->getAction2() == 2) {
+				this->copyCurrentImage(this->hotkeyDialog->getFolder2(), this->hotkeyDialog->getShowConfirmation(), this->hotkeyDialog->getIncludeSidecarFiles());
+			}
+			this->loading = false;
+		}
+	}
+
+	void MainInterface::updateCustomHotkeys() {
+		this->fileActionAction->setChecked(this->hotkeyDialog->getHotkeysEnabled());
+		this->customAction1->setEnabled(this->hotkeyDialog->getHotkeysEnabled() && this->hotkeyDialog->getHotkey1Enabled());
+		this->customAction2->setEnabled(this->hotkeyDialog->getHotkeysEnabled() && this->hotkeyDialog->getHotkey2Enabled());
+		this->customAction1->setShortcut(this->hotkeyDialog->getKeySequence1());
+		this->customAction2->setShortcut(this->hotkeyDialog->getKeySequence2());
 	}
 
 }

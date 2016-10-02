@@ -49,12 +49,10 @@ namespace sv {
 		this->formLayout->addRow(this->sharpeningCheckbox);
 		this->okButton = new QPushButton(tr("&Ok"), this);
 		QObject::connect(this->okButton, SIGNAL(clicked()), this, SLOT(reactToOkButtonClick()));
-		QObject::connect(this->okButton, SIGNAL(clicked()), this, SIGNAL(dialogClosed()));
 
 		this->cancelButton = new QPushButton(tr("&Cancel"), this);
 		QObject::connect(this->cancelButton, SIGNAL(clicked()), this, SLOT(reactToCancelButtonClick()));
-		QObject::connect(this->cancelButton, SIGNAL(clicked()), this, SIGNAL(dialogClosed()));
-		QObject::connect(this->cancelButton, SIGNAL(clicked()), this, SLOT(close()));
+		QObject::connect(this->cancelButton, SIGNAL(clicked()), this, SLOT(reject()));
 
 		this->buttonLayout = new QHBoxLayout();
 		this->buttonLayout->addStretch(1);
@@ -109,7 +107,7 @@ namespace sv {
 	void SharpeningDialog::reactToOkButtonClick() {
 		settings->setValue("sharpeningStrength", this->strengthSpinBox->value());
 		settings->setValue("sharpeningRadius", this->radiusSpinBox->value());
-		this->close();
+		this->accept();
 	}
 
 	void SharpeningDialog::updateSharpeningSettings() {
