@@ -17,6 +17,7 @@
 #include "SlideshowDialog.h"
 #include "SharpeningDialog.h"
 #include "HotkeyDialog.h"
+#include "AboutDialog.h"
 
 namespace sv {
 
@@ -114,6 +115,7 @@ namespace sv {
 		SlideshowDialog* slideshowDialog;
 		SharpeningDialog* sharpeningDialog;
 		HotkeyDialog* hotkeyDialog;
+		AboutDialog* aboutDialog;
 		//menus
 		QMenu* fileMenu;
 		QMenu* viewMenu;
@@ -155,6 +157,7 @@ namespace sv {
 		QAction* includePartiallySupportedFilesAction;
 		QAction* installAction;
 		QAction* uninstallAction;
+		QAction* aboutAction;
 		QAction* customAction1;
 		QAction* customAction2;
 		QActionGroup* backgroundColorActionGroup;

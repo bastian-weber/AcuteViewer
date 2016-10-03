@@ -245,6 +245,9 @@ namespace sv {
 		QObject::connect(this->hotkeyDialog, SIGNAL(finished(int)), this, SLOT(enableAutomaticMouseHide()));
 		QObject::connect(this->hotkeyDialog, SIGNAL(finished(int)), this, SLOT(updateCustomHotkeys()));
 
+		this->aboutDialog = new AboutDialog(settings, this);
+		this->aboutDialog->setWindowModality(Qt::WindowModal);
+
 		QObject::connect(this->menuBar(), SIGNAL(triggered(QAction*)), this, SLOT(hideMenuBar(QAction*)));
 		this->fileMenu = this->menuBar()->addMenu(tr("&File"));
 		this->viewMenu = this->menuBar()->addMenu(tr("&View"));
@@ -252,14 +255,19 @@ namespace sv {
 		this->rotationMenu = this->menuBar()->addMenu(tr("&Rotation"));
 		this->sharpeningMenu = this->menuBar()->addMenu(tr("&Sharpening"));
 		this->slideshowMenu = this->menuBar()->addMenu(tr("S&lideshow"));
-#ifdef Q_OS_WIN
+
 		this->applicationMenu = this->menuBar()->addMenu(tr("&Application"));
+#ifdef Q_OS_WIN
 		QObject::connect(this->applicationMenu, SIGNAL(aboutToShow()), this, SLOT(populateApplicationMenu()));
 		this->installAction = new QAction(tr("&Install"), this);
 		QObject::connect(this->installAction, SIGNAL(triggered()), this, SLOT(runInstaller()));
 		this->uninstallAction = new QAction(tr("&Uninstall"), this);
 		QObject::connect(this->uninstallAction, SIGNAL(triggered()), this, SLOT(runUninstaller()));
 #endif
+
+		this->aboutAction = new QAction(tr("&About"), this);
+		QObject::connect(this->aboutAction, SIGNAL(triggered()), this->aboutDialog, SLOT(show()));
+		this->applicationMenu->addAction(aboutAction);
 
 		this->openAction = new QAction(tr("&Open File"), this);
 		this->openAction->setShortcut(QKeySequence::Open);
@@ -1284,9 +1292,9 @@ namespace sv {
 		this->applicationMenu->removeAction(installAction);
 		this->applicationMenu->removeAction(uninstallAction);
 		if (applicationIsInstalled()) {
-			this->applicationMenu->addAction(this->uninstallAction);
+			this->applicationMenu->insertAction(this->aboutAction, this->uninstallAction);
 		} else {
-			this->applicationMenu->addAction(this->installAction);
+			this->applicationMenu->insertAction(this->aboutAction, this->installAction);
 		}
 
 	}

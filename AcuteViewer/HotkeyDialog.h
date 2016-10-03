@@ -78,7 +78,6 @@ namespace sv {
 		QPushButton* cancelButton;
 	private slots:
 		void reactToOkButtonClick();
-	private slots:
 		void resetChanges();
 		void reactToCheckboxChange();
 		bool verifyChanges();
