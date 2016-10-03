@@ -7,7 +7,7 @@ set(OPENCV_MODULES_ACUTE_VIEWER "opencv_core" "opencv_highgui" "opencv_imgproc" 
 set(OPENCV_MODULES_WININSTALLER)
 
 #Qt modules
-set(QT_MODULES_ACUTE_VIEWER "Qt5::Core" "Qt5::Gui" "Qt5::Widgets")
+set(QT_MODULES_ACUTE_VIEWER "Qt5::Core" "Qt5::Gui" "Qt5::Widgets" "Qt5::Network")
 set(QT_MODULES_WININSTALLER "Qt5::Core" "Qt5::Gui" "Qt5::Widgets")
 #these modules will only be linked on windows
 #set(QT_MODULES_ACUTE_VIEWER_WIN "Qt5::WinExtras")
