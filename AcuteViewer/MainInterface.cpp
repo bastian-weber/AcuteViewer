@@ -266,8 +266,11 @@ namespace sv {
 #endif
 
 		this->aboutAction = new QAction(tr("&About"), this);
+		this->aboutAction->setShortcut(Qt::Key_F1);
+		this->aboutAction->setShortcutContext(Qt::ApplicationShortcut);
 		QObject::connect(this->aboutAction, SIGNAL(triggered()), this->aboutDialog, SLOT(show()));
 		this->applicationMenu->addAction(aboutAction);
+		this->addAction(this->aboutAction);
 
 		this->openAction = new QAction(tr("&Open File"), this);
 		this->openAction->setShortcut(QKeySequence::Open);

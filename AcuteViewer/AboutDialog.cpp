@@ -5,7 +5,7 @@ namespace sv {
 	AboutDialog::AboutDialog(std::shared_ptr<QSettings> settings, QWidget* parent)
 		: settings(settings),
 		QDialog(parent) {
-		this->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
+		this->setSizeGripEnabled(false);
 		this->setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
 		this->setFixedWidth(400);
@@ -20,6 +20,7 @@ namespace sv {
 		this->infoLabel = new QLabel;
 		this->infoLabel->setTextFormat(Qt::RichText);
 		this->infoLabel->setWordWrap(true);
+		this->infoLabel->setText(this->infoString.arg(this->getInstalledVersion(), "Latest Version: Loading..."));
 
 		this->downloadButton = new QPushButton(tr("Download Now"), this);
 		this->downloadButton->setVisible(false);
@@ -46,7 +47,7 @@ namespace sv {
 
 	void AboutDialog::showEvent(QShowEvent * e) {
 		this->downloadButton->setVisible(false);
-		this->infoLabel->setText(this->infoString.arg(this->getInstalledVersion(), "Loading..."));
+		this->infoLabel->setText(this->infoString.arg(this->getInstalledVersion(), "Latest Version: Loading..."));
 		QNetworkRequest request;
 		request.setUrl(QUrl("http://true-contrast.de/avv.txt"));
 		this->infoDocumentReply = network->get(request);
@@ -78,7 +79,7 @@ namespace sv {
 			this->infoReplyParts = response.split("\\\\\\\\\\");
 			infoDocumentReply->deleteLater();
 			if (this->infoReplyParts.size() >= 4) {
-				this->infoLabel->setText(this->infoString.arg(this->getInstalledVersion(), this->infoReplyParts.at(1).arg(this->infoReplyParts.at(0))));
+				//this->infoLabel->setText(this->infoString.arg(this->getInstalledVersion(), this->infoReplyParts.at(1).arg(this->infoReplyParts.at(0))));
 				QStringList version = this->infoReplyParts.at(0).split('.');
 				if (version.at(0).toInt() > this->majorVersion || (version.at(1).toInt() > this->minorVersion && version.at(0).toInt() >= this->majorVersion)) {
 					this->downloadButton->setVisible(true);
