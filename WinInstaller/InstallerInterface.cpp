@@ -198,7 +198,7 @@ namespace wi {
 		registryHklm.setValue("Microsoft/Windows/CurrentVersion/Uninstall/AcuteViewer/DisplayIcon", QString("\"%1\"").arg(QDir::toNativeSeparators(QDir(installPath).absoluteFilePath("data/icon.ico"))));
 		registryHklm.setValue("Microsoft/Windows/CurrentVersion/Uninstall/AcuteViewer/EstimatedSize", 108544);
 		registryHklm.setValue("Microsoft/Windows/CurrentVersion/Uninstall/AcuteViewer/Publisher", "Bastian Weber");
-		registryHklm.setValue("Microsoft/Windows/CurrentVersion/Uninstall/AcuteViewer/DisplayVersion", "1.4");
+		registryHklm.setValue("Microsoft/Windows/CurrentVersion/Uninstall/AcuteViewer/DisplayVersion", QString("%1.%2").arg(AV_MAJOR_VERSION).arg(AV_MINOR_VERSION));
 		registryHklm.setValue("Microsoft/Windows/CurrentVersion/Uninstall/AcuteViewer/NoModify", "1");
 		registryHklm.setValue("Microsoft/Windows/CurrentVersion/Uninstall/AcuteViewer/NoRepair", "1");
 		//set friendly app name
