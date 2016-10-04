@@ -8,6 +8,8 @@ namespace sv {
 		this->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
 		this->setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
+		this->setMinimumHeight(300);
+
 		this->setWindowTitle(tr("Hotkey Options"));
 
 		//first hotkey
