@@ -25,7 +25,9 @@ namespace sv {
 		std::shared_ptr<QSettings> settings;
 		QNetworkAccessManager* network;
 		QNetworkReply* infoDocumentReply;
+		QStringList infoReplyParts;
 		QString infoString;
+
 		int majorVersion;
 		int minorVersion;
 
@@ -37,6 +39,7 @@ namespace sv {
 		QPushButton* closeButton;
 	private slots:
 		void processInfoFile();
+		void downloadUpdate();
 	};
 }
 #endif
