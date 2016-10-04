@@ -38,6 +38,10 @@ project(${PROJECT_NAME})
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
+#set version information
+add_definitions(-DAV_MAJOR_VERSION=1)
+add_definitions(-DAV_MINOR_VERSION=5)
+
 file(GLOB SOURCEFILES_ACUTE_VIEWER "./AcuteViewer/*.h"  "./AcuteViewer/*.hpp"  "./AcuteViewer/*.cpp")
 file(GLOB SOURCEFILES_WININSTALLER "./WinInstaller/*.h"  "./WinInstaller/*.hpp"  "./WinInstaller/*.cpp")
 

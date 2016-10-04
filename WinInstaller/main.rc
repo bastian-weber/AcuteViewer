@@ -1,3 +1,7 @@
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
+#define VERSION_NUMBER TOSTRING(AV_MAJOR_VERSION) "." TOSTRING(AV_MINOR_VERSION) "\0"
+
 IDI_ICON1 ICON DISCARDABLE "deploy_ressources/general/data/icon_installer.ico"
 1 VERSIONINFO
 FILEVERSION    0, 5, 0, 0
@@ -16,9 +20,9 @@ FILESUBTYPE 0x0L
 			VALUE "FileDescription",  "Installs Acute Viewer on a Microsoft Windows system.\0"
 			VALUE "OriginalFilename", "WinInstaller.exe\0"
 			VALUE "ProductName",      "Acute Viewer Installer\0"
-			VALUE "ProductVersion",   "1.4\0"
+			VALUE "ProductVersion",   VERSION_NUMBER
 			VALUE "CompanyName",	  "Bastian Weber\0"
-			VALUE "FileVersion",	  "1.4\0"
+			VALUE "FileVersion",	  VERSION_NUMBER
 		}
 	}
 	BLOCK "VarFileInfo" {

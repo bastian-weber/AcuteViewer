@@ -20,11 +20,14 @@ namespace sv {
 		void showEvent(QShowEvent* e);
 	private:
 		//functions
-
+		QString getInstalledVersion();
 		//variables
 		std::shared_ptr<QSettings> settings;
 		QNetworkAccessManager* network;
 		QNetworkReply* infoDocumentReply;
+		QString infoString;
+		int majorVersion;
+		int minorVersion;
 
 		//widgets
 		QVBoxLayout* mainLayout;

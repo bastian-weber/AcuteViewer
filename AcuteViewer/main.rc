@@ -1,3 +1,7 @@
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
+#define VERSION_NUMBER TOSTRING(AV_MAJOR_VERSION) "." TOSTRING(AV_MINOR_VERSION) "\0"
+
 IDI_ICON1               ICON    DISCARDABLE     "deploy_ressources/general/data/icon.ico"
 1 VERSIONINFO
 FILEVERSION    0, 5, 0, 0
@@ -16,10 +20,10 @@ FILESUBTYPE 0x0L
 				VALUE "FileDescription",  "Acute Viewer\0"
 				VALUE "OriginalFilename", "AcuteViewer.exe\0"
 				VALUE "ProductName",      "Acute Viewer\0"
-				VALUE "ProductVersion",   "1.4\0"
+				VALUE "ProductVersion",	  VERSION_NUMBER
 				VALUE "CompanyName",	  "Bastian Weber\0"
 				VALUE "InternalName",	  "Acute Viewer\0"
-				VALUE "FileVersion",	  "1.4\0"
+				VALUE "FileVersion",	  VERSION_NUMBER
 			}
 	}
 	BLOCK "VarFileInfo" {
