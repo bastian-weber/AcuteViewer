@@ -793,7 +793,7 @@ namespace sv {
 		this->clearThreads();
 		this->threads[filename] = std::async(std::launch::async, &MainInterface::readImage, this, path, true);
 		this->setWindowTitle(this->windowTitle() + QString(tr(" - Loading...")));
-		this->paintLoadingHint = true;
+		this->statusHint = tr("Loading...");
 		this->imageView->update();
 	}
 
@@ -829,7 +829,7 @@ namespace sv {
 		this->clearThreads();
 		this->threads[filename] = std::async(std::launch::async, &MainInterface::readImage, this, path, true);
 		this->setWindowTitle(this->windowTitle() + QString(tr(" - Loading...")));
-		this->paintLoadingHint = true;
+		this->statusHint = tr("Loading...");
 		this->imageView->update();
 	}
 
@@ -900,7 +900,7 @@ namespace sv {
 		canvas.setBackground(base);
 		canvas.setBackgroundMode(Qt::OpaqueMode);
 		QFontMetrics metrics(font);
-		if (this->currentImageUnreadable && !this->paintLoadingHint) {
+		if (this->currentImageUnreadable && this->statusHint.isEmpty()) {
 			QString message = tr("This file could not be read:");
 			canvas.drawText(QPoint((canvas.device()->width() - metrics.width(message)) / 2.0, canvas.device()->height() / 2.0 - 0.5*this->lineSpacing),
 							message);
@@ -908,10 +908,9 @@ namespace sv {
 								   canvas.device()->height() / 2.0 + 0.5*this->lineSpacing + metrics.height()),
 							this->currentFileInfo.fileName());
 		}
-		if (this->paintLoadingHint) {
-			QString message = tr("Loading...");
-			canvas.drawText(QPoint((canvas.device()->width() - metrics.width(message)) / 2.0, canvas.device()->height() / 2.0 + 0.5*metrics.height()),
-							message);
+		if (!this->statusHint.isEmpty()) {
+			canvas.drawText(QPoint((canvas.device()->width() - metrics.width(this->statusHint)) / 2.0, canvas.device()->height() / 2.0 + 0.5*metrics.height()),
+							this->statusHint);
 		}
 		if (this->showInfoAction->isChecked() && this->imageView->getImageAssigned()) {
 			//draw current filename
@@ -1440,7 +1439,7 @@ namespace sv {
 		this->image = image;
 		//calling this function although the exif might not be set to deferred loading is no problem (it checks internally)
 		if (this->exifIsRequired() && this->currentThread().get().isValid()) this->currentThread().get().exif()->startLoading();
-		this->paintLoadingHint = false;
+		this->statusHint = QString();
 		this->displayImageIfOk();
 		if (this->filesInDirectory.size() != 0) {
 			//preload next and previous image in background
@@ -1580,13 +1579,21 @@ namespace sv {
 		if (this->filesInDirectory.size() > 0 && !this->loading) {
 			this->loading = true;
 			if (this->hotkeyDialog->getAction1() == 0) {
+				this->statusHint = tr("Deleting...");
+				this->update();
 				this->deleteCurrentImage(this->hotkeyDialog->getShowConfirmation(), this->hotkeyDialog->getIncludeSidecarFiles());
 			} else if (this->hotkeyDialog->getAction1() == 1) {
+				this->statusHint = tr("Moving...");
+				this->update();
 				this->moveCurrentImage(this->hotkeyDialog->getFolder1(), this->hotkeyDialog->getShowConfirmation(), this->hotkeyDialog->getIncludeSidecarFiles());
 			} else if (this->hotkeyDialog->getAction1() == 2) {
+				this->statusHint = tr("Copying...");
+				this->update();
 				this->copyCurrentImage(this->hotkeyDialog->getFolder1(), this->hotkeyDialog->getShowConfirmation(), this->hotkeyDialog->getIncludeSidecarFiles());
 			}
+			this->statusHint = QString();
 			this->loading = false;
+			this->update();
 		}
 	}
 
@@ -1594,13 +1601,21 @@ namespace sv {
 		if (this->filesInDirectory.size() > 0 && !this->loading) {
 			this->loading = true;
 			if (this->hotkeyDialog->getAction2() == 0) {
+				this->statusHint = tr("Deleting...");
+				this->update();
 				this->deleteCurrentImage(this->hotkeyDialog->getShowConfirmation(), this->hotkeyDialog->getIncludeSidecarFiles());
 			} else if (this->hotkeyDialog->getAction2() == 1) {
+				this->statusHint = tr("Moving...");
+				this->update();
 				this->moveCurrentImage(this->hotkeyDialog->getFolder2(), this->hotkeyDialog->getShowConfirmation(), this->hotkeyDialog->getIncludeSidecarFiles());
 			} else if (this->hotkeyDialog->getAction2() == 2) {
+				this->statusHint = tr("Copying...");
+				this->update();
 				this->copyCurrentImage(this->hotkeyDialog->getFolder2(), this->hotkeyDialog->getShowConfirmation(), this->hotkeyDialog->getIncludeSidecarFiles());
 			}
+			this->statusHint = QString();
 			this->loading = false;
+			this->update();
 		}
 	}
 
