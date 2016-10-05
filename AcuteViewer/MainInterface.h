@@ -101,7 +101,8 @@ namespace sv {
 		QString currentThreadName;
 		QFileInfo currentFileInfo;
 		std::atomic<bool> currentImageUnreadable{ false };
-		std::atomic<bool> paintLoadingHint{ false };
+		QString statusHint;
+
 		std::map<QString, std::shared_future<Image>> threads;
 		std::shared_ptr<QSettings> settings;
 		bool skipNextAltRelease = false;
