@@ -20,16 +20,21 @@ namespace sv {
 		void showEvent(QShowEvent* e);
 	private:
 		//functions
+		void loadSettings();
 		QString getInstalledVersion();
+		void autoUpdate();
+		void checkForUpdates(bool isAutoUpdate = false);
 		//variables
 		std::shared_ptr<QSettings> settings;
 		QNetworkAccessManager* network;
-		QNetworkReply* infoDocumentReply;
+		std::shared_ptr<QNetworkReply> infoDocumentReply;
 		QStringList infoReplyParts;
 		QString infoString;
 
 		int majorVersion;
 		int minorVersion;
+		int latestMajorVersion;
+		int latestMinorVersion;
 
 		//widgets
 		QVBoxLayout* mainLayout;
@@ -37,9 +42,12 @@ namespace sv {
 		QLabel* infoLabel;
 		QPushButton* downloadButton;
 		QPushButton* closeButton;
+		QCheckBox* autoUpdateCheckbox;
 	private slots:
 		void processInfoFile();
 		void downloadUpdate();
+		void reactToCheckboxChange();
+		void processAutoUpdate();
 	};
 }
 #endif
