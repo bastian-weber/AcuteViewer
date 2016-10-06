@@ -25,6 +25,7 @@ namespace sv {
 		QString getFolder1();
 		QString getFolder2();
 		bool getIncludeSidecarFiles();
+		int getSidecarType();
 		bool getShowConfirmation();
 	public slots:
 		void setHotkeysEnabled(bool value);
@@ -44,6 +45,7 @@ namespace sv {
 		QString folder1OldValue;
 		QString folder2OldValue;
 		bool sidecarFilesOldValue;
+		int sidecarTypeOldValue;
 		bool confirmationOldValue;
 		//widgets
 		QVBoxLayout* mainLayout;
@@ -52,21 +54,25 @@ namespace sv {
 		QFormLayout* formLayout1;
 		QFormLayout* formLayout2;
 		QVBoxLayout* optionsLayout;
+		QVBoxLayout* sidecarLayout;
 		QGroupBox* groupBox1;
 		QGroupBox* groupBox2;
 		QGroupBox* optionsGroupBox;
-		QCheckBox* sidecarFileCheckBox;
+		QGroupBox* sidecarFileGroupBox;
 		QCheckBox* confirmationCheckBox;
 		QKeySequenceEdit* keySequenceEdit1;
 		QKeySequenceEdit* keySequenceEdit2;
 		QButtonGroup* buttonGroup1;
 		QButtonGroup* buttonGroup2;
+		QButtonGroup* sidecarButtonGroup;
 		QRadioButton* binRadioButton1;
 		QRadioButton* binRadioButton2;
 		QRadioButton* moveRadioButton1;
 		QRadioButton* moveRadioButton2;
 		QRadioButton* copyRadioButton1;
 		QRadioButton* copyRadioButton2;
+		QRadioButton* sidecarAllRadioButton;
+		QRadioButton* sidecarXmpRadioButton;
 		QLineEdit* folderLineEdit1;
 		QLineEdit* folderLineEdit2;
 		QCompleter* completer1;
