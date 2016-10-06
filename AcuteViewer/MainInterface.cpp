@@ -706,7 +706,7 @@ namespace sv {
 		return (this->currentFileIndex - 1) % this->filesInDirectory.size();
 	}
 
-	void MainInterface::removeCurrentImageFromList(bool includeSidecarFiles) {
+	void MainInterface::removeCurrentImageFromList(bool includeSidecarFiles, bool onlyXmp) {
 		std::unique_lock<std::mutex> lock(this->threadDeletionMutex);
 
 		if (this->filesInDirectory.size() != 0) {
@@ -717,7 +717,8 @@ namespace sv {
 			//remove sidecar files from directory list
 			if (includeSidecarFiles) {
 				for (int i = 0; i < this->filesInDirectory.size(); ++i) {
-					if (QFileInfo(this->filesInDirectory[i]).baseName() == baseName) {
+					QFileInfo fileInfo(this->filesInDirectory[i]);
+					if (fileInfo.baseName() == baseName && (!onlyXmp || fileInfo.suffix().toLower() == "xmp")) {
 						this->filesInDirectory.remove(i);
 						//correct the index shift
 						if (i < this->currentFileIndex) --this->currentFileIndex;
@@ -1099,7 +1100,7 @@ namespace sv {
 		this->autoRotationAction->setChecked(this->settings->value("autoRotateImages", true).toBool());
 	}
 
-	void MainInterface::deleteCurrentImage(bool askForConfirmation, bool includeSidecarFiles) {
+	void MainInterface::deleteCurrentImage(bool askForConfirmation, bool includeSidecarFiles, bool onlyXmp) {
 		if (askForConfirmation) {
 			QMessageBox msgBox;
 			msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
@@ -1116,8 +1117,9 @@ namespace sv {
 		if (QFileInfo(filepath).exists()) {
 			if (utility::moveFileToRecycleBin(filepath)) {
 				if (includeSidecarFiles) {
+					QString extension = onlyXmp ? "xmp" : "*";
 					QStringList filters;
-					filters << QString("%1.*").arg(QFileInfo(filepath).baseName());
+					filters << QString("%1.%2").arg(QFileInfo(filepath).baseName(), extension);
 					QStringList contents = this->currentDirectory.entryList(filters, QDir::Files);
 					for (QString const & file : contents) {
 						if (!utility::moveFileToRecycleBin(this->currentDirectory.absoluteFilePath(file))) {
@@ -1129,7 +1131,7 @@ namespace sv {
 						}
 					}
 				}
-				this->removeCurrentImageFromList(this->currentFileIndex);
+				this->removeCurrentImageFromList(this->currentFileIndex, onlyXmp);
 			} else {
 #ifdef Q_OS_WIN
 				QMessageBox::critical(this,
@@ -1155,7 +1157,7 @@ namespace sv {
 		}
 	}
 
-	void MainInterface::moveCurrentImage(QString const & newFolder, bool askForConfirmation, bool includeSidecarFiles) {
+	void MainInterface::moveCurrentImage(QString const & newFolder, bool askForConfirmation, bool includeSidecarFiles, bool onlyXmp) {
 		if (askForConfirmation) {
 			QMessageBox msgBox;
 			msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
@@ -1172,8 +1174,9 @@ namespace sv {
 		QString newPath = dir.absoluteFilePath(this->filesInDirectory[this->currentFileIndex]);
 		if (utility::moveFile(oldPath, newPath, false, this)) {
 			if (includeSidecarFiles) {
+				QString extension = onlyXmp ? "xmp" : "*";
 				QStringList filters;
-				filters << QString("%1.*").arg(QFileInfo(oldPath).baseName());
+				filters << QString("%1.%2").arg(QFileInfo(oldPath).baseName(), extension);
 				QStringList contents = this->currentDirectory.entryList(filters, QDir::Files);
 				for (QString const & file : contents) {
 					if (!utility::moveFile(this->currentDirectory.absoluteFilePath(file), dir.absoluteFilePath(file), true, this)) {
@@ -1185,11 +1188,11 @@ namespace sv {
 					}
 				}
 			}
-			this->removeCurrentImageFromList(this->currentFileIndex);
+			this->removeCurrentImageFromList(this->currentFileIndex, onlyXmp);
 		}
 	}
 
-	void MainInterface::copyCurrentImage(QString const & newFolder, bool askForConfirmation, bool includeSidecarFiles) {
+	void MainInterface::copyCurrentImage(QString const & newFolder, bool askForConfirmation, bool includeSidecarFiles, bool onlyXmp) {
 		if (askForConfirmation) {
 			QMessageBox msgBox;
 			msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
@@ -1206,8 +1209,9 @@ namespace sv {
 		QString newPath = dir.absoluteFilePath(this->filesInDirectory[this->currentFileIndex]);
 		if (utility::copyFile(oldPath, newPath, false, this)) {
 			if (includeSidecarFiles) {
+				QString extension = onlyXmp ? "xmp" : "*";
 				QStringList filters;
-				filters << QString("%1.*").arg(QFileInfo(oldPath).baseName());
+				filters << QString("%1.%2").arg(QFileInfo(oldPath).baseName(), extension);
 				QStringList contents = this->currentDirectory.entryList(filters, QDir::Files);
 				for (QString const & file : contents) {
 					if (!utility::copyFile(this->currentDirectory.absoluteFilePath(file), dir.absoluteFilePath(file), true, this)) {
@@ -1627,15 +1631,15 @@ namespace sv {
 			if (this->hotkeyDialog->getAction2() == 0) {
 				this->statusHint = tr("Deleting...");
 				this->update();
-				this->deleteCurrentImage(this->hotkeyDialog->getShowConfirmation(), this->hotkeyDialog->getIncludeSidecarFiles());
+				this->deleteCurrentImage(this->hotkeyDialog->getShowConfirmation(), this->hotkeyDialog->getIncludeSidecarFiles(), this->hotkeyDialog->getSidecarType());
 			} else if (this->hotkeyDialog->getAction2() == 1) {
 				this->statusHint = tr("Moving...");
 				this->update();
-				this->moveCurrentImage(this->hotkeyDialog->getFolder2(), this->hotkeyDialog->getShowConfirmation(), this->hotkeyDialog->getIncludeSidecarFiles());
+				this->moveCurrentImage(this->hotkeyDialog->getFolder2(), this->hotkeyDialog->getShowConfirmation(), this->hotkeyDialog->getIncludeSidecarFiles(), this->hotkeyDialog->getSidecarType());
 			} else if (this->hotkeyDialog->getAction2() == 2) {
 				this->statusHint = tr("Copying...");
 				this->update();
-				this->copyCurrentImage(this->hotkeyDialog->getFolder2(), this->hotkeyDialog->getShowConfirmation(), this->hotkeyDialog->getIncludeSidecarFiles());
+				this->copyCurrentImage(this->hotkeyDialog->getFolder2(), this->hotkeyDialog->getShowConfirmation(), this->hotkeyDialog->getIncludeSidecarFiles(), this->hotkeyDialog->getSidecarType());
 			}
 			this->statusHint = QString();
 			this->loading = false;
