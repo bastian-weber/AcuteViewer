@@ -66,7 +66,7 @@ namespace sv {
 		template <typename T> void waitForThreadToFinish(std::shared_future<T> const& thread, bool indicateLoading = true);
 		size_t nextFileIndex() const;
 		size_t previousFileIndex() const;
-		void removeCurrentImageFromList(bool includeSidecarFiles = false);
+		void removeCurrentImageFromList(bool includeSidecarFiles = false, bool onlyXmp = true);
 		void reset();
 		QString getFullImagePath(size_t index) const;
 		void loadImage(QString path);
@@ -80,9 +80,9 @@ namespace sv {
 		void changeFontSizeBy(int value);
 		void changeLineSpacingBy(int value);
 		void loadSettings();
-		void deleteCurrentImage(bool askForConfirmation = false, bool includeSidecarFiles = false);
-		void moveCurrentImage(QString const & newFolder, bool askForConfirmation = false, bool includeSidecarFiles = false);
-		void copyCurrentImage(QString const & newFolder, bool askForConfirmation = false, bool includeSidecarFiles = false);
+		void deleteCurrentImage(bool askForConfirmation = false, bool includeSidecarFiles = false, bool onlyXmp = true);
+		void moveCurrentImage(QString const & newFolder, bool askForConfirmation = false, bool includeSidecarFiles = false, bool onlyXmp = true);
+		void copyCurrentImage(QString const & newFolder, bool askForConfirmation = false, bool includeSidecarFiles = false, bool onlyXmp = true);
 
 		//variables
 		const QString programTitle = "Acute Viewer";
