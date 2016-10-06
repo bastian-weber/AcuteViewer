@@ -112,7 +112,7 @@ namespace utility {
 		}
 		if (QFile::exists(newPath)) {
 			if (!silent) {
-				QMessageBox msgBox;
+				QMessageBox msgBox(parent);
 				msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
 				msgBox.setDefaultButton(QMessageBox::No);
 				msgBox.setWindowTitle(QObject::tr("File Already Exists"));
@@ -161,7 +161,7 @@ namespace utility {
 		}
 		if (QFile::exists(newPath)) {
 			if (!silent) {
-				QMessageBox msgBox;
+				QMessageBox msgBox(parent);
 				msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
 				msgBox.setDefaultButton(QMessageBox::No);
 				msgBox.setWindowTitle(QObject::tr("File Already Exists"));
