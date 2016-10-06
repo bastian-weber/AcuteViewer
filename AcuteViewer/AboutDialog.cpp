@@ -23,7 +23,7 @@ namespace sv {
 		this->infoLabel->setText(this->infoString.arg(this->getInstalledVersion(), "Latest Version: Loading..."));
 
 		this->autoUpdateCheckbox = new QCheckBox(tr("Notify me when there is a new version available"), this);
-		QObject::connect(this->autoUpdateCheckbox, SIGNAL(stateChanged(int)), this, SLOT(reactToCheckboxChange()));
+		QObject::connect(this->autoUpdateCheckbox, SIGNAL(clicked()), this, SLOT(reactToCheckboxChange()));
 
 		this->downloadButton = new QPushButton(tr("Download Now"), this);
 		this->downloadButton->setVisible(false);
@@ -141,21 +141,34 @@ namespace sv {
 
 	void AboutDialog::reactToCheckboxChange() {
 		this->settings->setValue("updateNotifications", this->autoUpdateCheckbox->isChecked());
+		this->settings->setValue("noRemindMinorVersion", 0);
+		this->settings->setValue("noRemindMajorVersion", 0);
 	}
 
 	void AboutDialog::processAutoUpdate() {
 
 		if (this->latestMajorVersion > this->majorVersion || (this->latestMinorVersion > this->minorVersion && this->latestMajorVersion >= this->majorVersion)) {
-			QWidget* parent;
-			if (!(parent = dynamic_cast<QWidget*>(this->parent()))) {
-				parent = this;
+			int noRemindMajorVersion = this->settings->value("noRemindMajorVersion", 0).toInt();
+			int noRemindMinorVersion = this->settings->value("noRemindMinorVersion", 0).toInt();
+			if (this->latestMajorVersion > noRemindMajorVersion || (this->latestMinorVersion > noRemindMinorVersion && this->latestMajorVersion >= noRemindMajorVersion)) {
+				QWidget* parent;
+				if (!(parent = dynamic_cast<QWidget*>(this->parent()))) {
+					parent = this;
+				}
+				QMessageBox msgBox(parent);
+				msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::Ok);
+				msgBox.setDefaultButton(QMessageBox::Ok);
+				msgBox.setWindowTitle(tr("New Version"));
+				msgBox.setText(tr("There is a newer version of Acute Viewer (%1.%2) available.").arg(this->latestMajorVersion).arg(this->latestMinorVersion));
+				msgBox.setButtonText(QMessageBox::Yes, QObject::tr("Don't remind me about this version anymore"));
+				msgBox.setIcon(QMessageBox::Information);
+				if (msgBox.exec() == QMessageBox::Yes) {
+					this->settings->setValue("noRemindMinorVersion", this->latestMinorVersion);
+					this->settings->setValue("noRemindMajorVersion", this->latestMajorVersion);
+				} else {
+					this->show();
+				}
 			}
-			QMessageBox::information(parent,
-									 QObject::tr("New Version"),
-									 QObject::tr("There is a newer version of Acute Viewer available."),
-									 QMessageBox::StandardButton::Close,
-									 QMessageBox::StandardButton::Close);
-			this->show();
 		}
 	}
 

@@ -1,7 +1,6 @@
 #ifndef SV_ABOUTDIALOG
 #define SV_ABOUTDIALOG
 
-#include <iostream>
 #include <memory>
 
 //Qt
