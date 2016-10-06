@@ -142,9 +142,10 @@ namespace uninstallation {
 		QString file3 = QDir::toNativeSeparators(installDir.absoluteFilePath("Qt5Gui.dll"));
 		QString file4 = QDir::toNativeSeparators(installDir.absoluteFilePath("Qt5Widgets.dll"));
 		QString file5 = QDir::toNativeSeparators(installDir.absoluteFilePath("platforms/qwindows.dll"));
+		QString file6 = QDir::toNativeSeparators(installDir.absoluteFilePath("Qt5Network.dll"));
 		QString path1 = QDir::toNativeSeparators(installDir.absoluteFilePath("platforms"));
 		QString path2 = QDir::toNativeSeparators(installDir.absolutePath());
-		QString parameters = QString("/C choice /C Y /N /D Y /T 3 & del \"%1\" & del \"%2\" & del \"%3\" & del \"%4\" & del \"%5\" & rmdir \"%6\" & rmdir \"%7\" ").arg(file1).arg(file2).arg(file3).arg(file4).arg(file5).arg(path1).arg(path2);
+		QString parameters = QString("/C choice /C Y /N /D Y /T 3 & del \"%1\" & del \"%2\" & del \"%3\" & del \"%4\" & del \"%5\" & del \"%6\" & rmdir \"%7\" & rmdir \"%8\" ").arg(file1).arg(file2).arg(file3).arg(file4).arg(file5).arg(file6).arg(path1).arg(path2);
 		QString cmdPath = getenv("ComSpec");
 		ShellExecute(0, 0, QString("\"%1\"").arg(cmdPath).toStdString().c_str(), parameters.toStdString().c_str(), QDir::rootPath().toStdString().c_str(), SW_HIDE);
 	}
