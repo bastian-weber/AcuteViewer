@@ -696,31 +696,55 @@ namespace sv {
 	}
 
 	size_t MainInterface::nextFileIndex() const {
-		if (this->filesInDirectory.size() <= 0) return 0;
+		if (this->filesInDirectory.size() <= 0) return -1;
 		return (this->currentFileIndex + 1) % this->filesInDirectory.size();
 	}
 
 	size_t MainInterface::previousFileIndex() const {
-		if (this->filesInDirectory.size() <= 0) return 0;
+		if (this->filesInDirectory.size() <= 0) return -1;
 		if (this->currentFileIndex <= 0) return this->filesInDirectory.size() - 1;
 		return (this->currentFileIndex - 1) % this->filesInDirectory.size();
 	}
 
-	void MainInterface::removeCurrentImageFromList() {
+	void MainInterface::removeCurrentImageFromList(bool includeSidecarFiles) {
 		std::unique_lock<std::mutex> lock(this->threadDeletionMutex);
 
 		if (this->filesInDirectory.size() != 0) {
+			QString baseName = QFileInfo(this->filesInDirectory[this->currentFileIndex]).baseName();
+			//remove current file from directory list
 			this->filesInDirectory.remove(this->currentFileIndex);
+
+			//remove sidecar files from directory list
+			if (includeSidecarFiles) {
+				for (int i = 0; i < this->filesInDirectory.size(); ++i) {
+					if (QFileInfo(this->filesInDirectory[i]).baseName() == baseName) {
+						this->filesInDirectory.remove(i);
+						//correct the index shift
+						if (i < this->currentFileIndex) --this->currentFileIndex;
+						--i;
+					}
+				}
+			}
+
+			//if there are now images left, quit
 			if (this->filesInDirectory.size() <= 0) {
+				this->currentFileIndex = -1;
 				lock.unlock();
 				this->cleanUpThreads();
 				this->reset();
 				return;
 			}
+			//update current file index and related variables
 			if (this->currentFileIndex >= this->filesInDirectory.size()) this->currentFileIndex = this->filesInDirectory.size() - 1;
 			this->currentThreadName = this->filesInDirectory[this->currentFileIndex];
+
+			//load the image that is now the current one
 			if (this->threads.find(this->filesInDirectory[this->currentFileIndex]) == this->threads.end()) {
-				return;
+				this->threads[this->filesInDirectory[this->currentFileIndex]] = std::async(std::launch::async,
+																						   &MainInterface::readImage,
+																						   this,
+																						   this->getFullImagePath(this->currentFileIndex),
+																						   false);
 			}
 			this->waitForThreadToFinish(this->currentThread());
 			//calling this function although the exif might not be set to deferred loading is no problem (it checks internally)
@@ -1105,7 +1129,7 @@ namespace sv {
 						}
 					}
 				}
-				this->removeCurrentImageFromList();
+				this->removeCurrentImageFromList(this->currentFileIndex);
 			} else {
 #ifdef Q_OS_WIN
 				QMessageBox::critical(this,
@@ -1161,7 +1185,7 @@ namespace sv {
 					}
 				}
 			}
-			this->removeCurrentImageFromList();
+			this->removeCurrentImageFromList(this->currentFileIndex);
 		}
 	}
 

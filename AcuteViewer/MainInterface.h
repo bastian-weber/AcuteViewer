@@ -66,7 +66,7 @@ namespace sv {
 		template <typename T> void waitForThreadToFinish(std::shared_future<T> const& thread, bool indicateLoading = true);
 		size_t nextFileIndex() const;
 		size_t previousFileIndex() const;
-		void removeCurrentImageFromList();
+		void removeCurrentImageFromList(bool includeSidecarFiles = false);
 		void reset();
 		QString getFullImagePath(size_t index) const;
 		void loadImage(QString path);
