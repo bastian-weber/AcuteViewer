@@ -87,7 +87,10 @@ namespace sv {
 		request.setUrl(QUrl("http://true-contrast.de/avv"));
 		this->infoDocumentReply = std::shared_ptr<QNetworkReply>(network->get(request), [](QNetworkReply* reply) { reply->deleteLater(); });
 		connect(infoDocumentReply.get(), SIGNAL(finished()), this, SLOT(processInfoFile()));
-		if (isAutoUpdate) {
+		QDateTime local(QDateTime::currentDateTime());
+		QDateTime Utc(local.toUTC());
+		//auto update is only conducted every 6 hours
+		if (isAutoUpdate && (Utc.toTime_t() - this->settings->value("lastUpdateCheck", 0).toUInt() > 21600)) {
 			connect(infoDocumentReply.get(), SIGNAL(finished()), this, SLOT(processAutoUpdate()));
 		}
 	}
@@ -146,7 +149,9 @@ namespace sv {
 	}
 
 	void AboutDialog::processAutoUpdate() {
-
+		QDateTime local(QDateTime::currentDateTime());
+		QDateTime Utc(local.toUTC());
+		this->settings->setValue("lastUpdateCheck", Utc.toTime_t());
 		if (this->latestMajorVersion > this->majorVersion || (this->latestMinorVersion > this->minorVersion && this->latestMajorVersion >= this->majorVersion)) {
 			int noRemindMajorVersion = this->settings->value("noRemindMajorVersion", 0).toInt();
 			int noRemindMinorVersion = this->settings->value("noRemindMinorVersion", 0).toInt();

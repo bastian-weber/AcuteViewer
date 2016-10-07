@@ -710,7 +710,9 @@ namespace sv {
 		std::unique_lock<std::mutex> lock(this->threadDeletionMutex);
 
 		if (this->filesInDirectory.size() != 0) {
-			QString baseName = QFileInfo(this->filesInDirectory[this->currentFileIndex]).baseName();
+			QFileInfo imageInfo = QFileInfo(this->filesInDirectory[this->currentFileIndex]);
+			QString baseName = imageInfo.baseName();
+			QString extension = imageInfo.suffix().toLower();
 			//remove current file from directory list
 			this->filesInDirectory.remove(this->currentFileIndex);
 
@@ -718,7 +720,7 @@ namespace sv {
 			if (includeSidecarFiles) {
 				for (int i = 0; i < this->filesInDirectory.size(); ++i) {
 					QFileInfo fileInfo(this->filesInDirectory[i]);
-					if (fileInfo.baseName() == baseName && (!onlyXmp || fileInfo.suffix().toLower() == "xmp")) {
+					if (fileInfo.baseName() == baseName && (!onlyXmp || (fileInfo.suffix().toLower() == "xmp" && this->supportedRawFormats.contains(extension)))) {
 						this->filesInDirectory.remove(i);
 						//correct the index shift
 						if (i < this->currentFileIndex) --this->currentFileIndex;
@@ -1116,7 +1118,7 @@ namespace sv {
 		QString filepath = this->getFullImagePath(this->currentFileIndex);
 		if (QFileInfo(filepath).exists()) {
 			if (utility::moveFileToRecycleBin(filepath)) {
-				if (includeSidecarFiles) {
+				if (includeSidecarFiles && this->supportedRawFormats.contains(QFileInfo(filepath).suffix().toLower())) {
 					QString extension = onlyXmp ? "xmp" : "*";
 					QStringList filters;
 					filters << QString("%1.%2").arg(QFileInfo(filepath).baseName(), extension);
@@ -1131,7 +1133,7 @@ namespace sv {
 						}
 					}
 				}
-				this->removeCurrentImageFromList(this->currentFileIndex, onlyXmp);
+				this->removeCurrentImageFromList(includeSidecarFiles, onlyXmp);
 			} else {
 #ifdef Q_OS_WIN
 				QMessageBox::critical(this,
@@ -1173,7 +1175,7 @@ namespace sv {
 		QString oldPath = this->getFullImagePath(this->currentFileIndex);
 		QString newPath = dir.absoluteFilePath(this->filesInDirectory[this->currentFileIndex]);
 		if (utility::moveFile(oldPath, newPath, false, this)) {
-			if (includeSidecarFiles) {
+			if (includeSidecarFiles && this->supportedRawFormats.contains(QFileInfo(oldPath).suffix().toLower())) {
 				QString extension = onlyXmp ? "xmp" : "*";
 				QStringList filters;
 				filters << QString("%1.%2").arg(QFileInfo(oldPath).baseName(), extension);
@@ -1188,7 +1190,7 @@ namespace sv {
 					}
 				}
 			}
-			this->removeCurrentImageFromList(this->currentFileIndex, onlyXmp);
+			this->removeCurrentImageFromList(includeSidecarFiles, onlyXmp);
 		}
 	}
 
@@ -1208,7 +1210,7 @@ namespace sv {
 		QString oldPath = this->getFullImagePath(this->currentFileIndex);
 		QString newPath = dir.absoluteFilePath(this->filesInDirectory[this->currentFileIndex]);
 		if (utility::copyFile(oldPath, newPath, false, this)) {
-			if (includeSidecarFiles) {
+			if (includeSidecarFiles && this->supportedRawFormats.contains(QFileInfo(oldPath).suffix().toLower())) {
 				QString extension = onlyXmp ? "xmp" : "*";
 				QStringList filters;
 				filters << QString("%1.%2").arg(QFileInfo(oldPath).baseName(), extension);
