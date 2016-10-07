@@ -88,6 +88,7 @@ namespace sv {
 		const QString programTitle = "Acute Viewer";
 		const QStringList supportedExtensions = { "*.bmp", "*.dib", "*.jpeg", "*.jpg", "*.jpe", "*.jpeg", "*.jp2", "*.png", "*.webp", "*.pbm", "*.pgm", "*.ppm", "*.sr", "*.ras", "*.tiff", "*.tif" };
 		const QStringList partiallySupportedExtensions = { "*.arw", "*.dng", "*.psd", "*.nef", "*.cr2", "*.crw", "*.mrw", "*.pef", "*.rw2", "*.sr2", "*.srf", "*.srw", "*.orf", "*.pgf", "*.raf"};
+		const QStringList supportedRawFormats = { "arw", "dng", "nef", "cr2", "crw", "mrw", "pef", "rw2", "sr2", "srf", "srw", "orf", "pgf", "raf" };
 		const int mouseHideDelay = 1000;
 		const int threadCleanUpInterval = 500;
 		const int eventProcessIntervalDuringWait = 16;
