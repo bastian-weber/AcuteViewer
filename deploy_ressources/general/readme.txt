@@ -100,8 +100,8 @@ the last used settings. Hit Space again to stop the slideshow.
 GPU acceleration can be turned on and of. On some graphics cards, performance might be 
 better if you leave it turned off. There are also some options regarding how the images
 are displayed. It can be selected whether images that are smaller than the window shall
-be scaled up (Ctrl + U) and whether pixel values shall be smoothly interpolated when magnification
-is above 100% (Ctrl + S).
+be scaled up (Ctrl + U) and whether pixel values shall be smoothly interpolated when 
+magnification is above 100% (Ctrl + S).
 
  POST-RESIZE SHARPENING
 
@@ -118,12 +118,15 @@ There are two shortcuts that can be set up by the user to perform an action such
 a file or copying or moving it to a user-defined folder. These shortcuts can be set up under
 "File > Hotkey Options..." (Ctrl + Shift + O). Optionally, sidecar files can be included in
 the action. This means that, for example, if an NEF file has an XMP sidecar file there will
-be the same action performed on the XMP file as to the NEF file. Be careful with this feature!
-You might unintentionally delete files. For example, also a TIF file with the same name as
-that NEF file in the same folder would be included in the action. For the comparison only the
+be the same action performed on the XMP file as to the NEF file. There are two options. The
+first one is to include all sidecar files in the action. Be careful with this feature!
+You might unintentionally delete files. For example, a TIF file in the same folder with the 
+same name as that NEF file would be included in the action as well. For the comparison only the
 base name of the file is used, i.e. an action on the file abc.xy would include the file
-abc.z.xy if this option is enabled. This custom hotkeys can then be toggled on and off by 
-using the shortcut Ctrl + H.
+abc.z.xy.
+The second option only indcludes XMP sidecar files in the action, and only if the main file
+is a raw image.
+These custom hotkeys can then be toggled on and off by using the shortcut Ctrl + H.
 
 It follows a full list of the available controls
 
