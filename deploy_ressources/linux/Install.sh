@@ -18,7 +18,7 @@ if [ -d "$path" ]; then
 		#copy files
 		cp -r "$scriptPath/"* "$installPath"
 		#add symbolic link for use from command line
-		sudo ln -s $installPath/Run_AcuteViewer.sh /usr/bin/acuteviewer
+		sudo ln -s $installPath/AcuteViewer /usr/bin/acuteviewer
 		#write desktop file
 		cat <<- _EOF_ > "/usr/share/applications/AcuteViewer.desktop"
 		[Desktop Entry]
@@ -26,7 +26,7 @@ if [ -d "$path" ]; then
 		Name=Acute Viewer
 		GenericName=Acute Viewer
 
-		Exec=$installPath/Run_AcuteViewer.sh
+		Exec=$installPath/AcuteViewer
 		Terminal=false
 		Icon=$installPath/data/icon_128.png
 		Type=Application
