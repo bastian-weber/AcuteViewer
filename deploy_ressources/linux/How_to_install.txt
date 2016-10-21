@@ -9,5 +9,4 @@
       Simple Viewer was installed as root
       
 3. Launching
-    - Run the Run_Acute_Viewer.sh script
     - If installed you can launch via the launcher
