@@ -1067,7 +1067,7 @@ namespace sv {
 
 	void MainInterface::loadSettings() {
 		this->fontSize = this->settings->value("fontSize", 14).toUInt();
-		if (this->fontSize < 1) this->fontSize == 1;
+		if (this->fontSize < 1) this->fontSize = 1;
 		this->lineSpacing = this->settings->value("lineSpacing", 10).toUInt();
 		this->fileActionAction->setChecked(this->settings->value("enableHotkeys", true).toBool());
 		this->showInfoAction->setChecked(this->settings->value("showImageInfo", false).toBool());
@@ -1515,7 +1515,7 @@ namespace sv {
 														  this->settings->value("lastOpenPath", QDir::rootPath()).toString(),
 														  filters);
 
-		if (!paths.size() < 1) {
+		if (!(paths.size() < 1)) {
 			this->settings->setValue("lastOpenPath", QFileInfo(paths.at(0)).path());
 			if (paths.size() == 1) {
 				this->loadImage(paths.at(0));
