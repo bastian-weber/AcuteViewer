@@ -485,7 +485,7 @@ namespace sv {
 
 		this->rotationMenu->addSeparator();
 
-		this->autoRotationAction = new QAction(tr("&Automatic EIXF-based rotation"), this);
+		this->autoRotationAction = new QAction(tr("&Automatic EXIF-based rotation"), this);
 		this->autoRotationAction->setCheckable(true);
 		this->autoRotationAction->setChecked(true);
 		this->autoRotationAction->setShortcut(Qt::CTRL + Qt::Key_R);
