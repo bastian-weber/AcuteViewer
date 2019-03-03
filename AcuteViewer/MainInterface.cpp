@@ -729,7 +729,7 @@ namespace sv {
 				}
 			}
 
-			//if there are now images left, quit
+			//if there are no images left, quit
 			if (this->filesInDirectory.size() <= 0) {
 				this->currentFileIndex = -1;
 				lock.unlock();
