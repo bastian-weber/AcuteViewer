@@ -10,59 +10,59 @@ namespace wi {
 		if (registry.contains("Microsoft/Windows/CurrentVersion/Uninstall/AcuteViewer/UninstallString")) {
 			currentlySelectedPath = QDir(QFileInfo(registry.value("Microsoft/Windows/CurrentVersion/Uninstall/AcuteViewer/UninstallString").toString().section('"', 1, 1)).path());
 		}
-		this->setWindowTitle("Acute Viewer Installer");
+		setWindowTitle("Acute Viewer Installer");
 
-		this->mainWidget = new QWidget(this);
+		mainWidget = new QWidget(this);
 
-		this->descriptionLabel = new QLabel(tr("This will install Acute Viewer on your system under the specified path (a subdirectory will be created automatically). The application will also be registered for the \"Default Programs\" selection dialog and an uninstallation entry will be added to \"Programs and Features\"."), this);
-		this->descriptionLabel->setWordWrap(true);
-		this->descriptionLabel->setMinimumHeight(this->descriptionLabel->sizeHint().height());
+		descriptionLabel = new QLabel(tr("This will install Acute Viewer on your system under the specified path (a subdirectory will be created automatically). The application will also be registered for the \"Default Programs\" selection dialog and an uninstallation entry will be added to \"Programs and Features\"."), this);
+		descriptionLabel->setWordWrap(true);
+		descriptionLabel->setMinimumHeight(descriptionLabel->sizeHint().height());
 
-		this->pathInput = new QLineEdit(this->currentlySelectedPath.absolutePath(), this);
-		this->pathInput->setReadOnly(true);
+		pathInput = new QLineEdit(currentlySelectedPath.absolutePath(), this);
+		pathInput->setReadOnly(true);
 
-		this->browseButton = new QPushButton(tr("&Browse"), this);
-		QObject::connect(this->browseButton, SIGNAL(clicked()), this, SLOT(reactToBrowseButtonClick()));
+		browseButton = new QPushButton(tr("&Browse"), this);
+		QObject::connect(browseButton, SIGNAL(clicked()), this, SLOT(reactToBrowseButtonClick()));
 
-		this->startMenuCheckbox = new QCheckBox(tr("Create Start Menu Entry"), 0);
-		this->startMenuCheckbox->setChecked(true);
+		startMenuCheckbox = new QCheckBox(tr("Create Start Menu Entry"), 0);
+		startMenuCheckbox->setChecked(true);
 
-		this->okButton = new QPushButton(tr("&Ok"), this);
-		this->okButton->setDefault(true);
-		QObject::connect(this->okButton, SIGNAL(clicked()), this, SLOT(install()));
-		this->cancelButton = new QPushButton(tr("&Cancel"), this);
-		QObject::connect(this->cancelButton, SIGNAL(clicked()), this, SLOT(close()));
+		okButton = new QPushButton(tr("&Ok"), this);
+		okButton->setDefault(true);
+		QObject::connect(okButton, SIGNAL(clicked()), this, SLOT(install()));
+		cancelButton = new QPushButton(tr("&Cancel"), this);
+		QObject::connect(cancelButton, SIGNAL(clicked()), this, SLOT(close()));
 
-		this->buttonLayout = new QHBoxLayout();
-		this->buttonLayout->addStretch(1);
-		this->buttonLayout->addWidget(this->okButton);
-		this->buttonLayout->addWidget(this->cancelButton);
+		buttonLayout = new QHBoxLayout();
+		buttonLayout->addStretch(1);
+		buttonLayout->addWidget(okButton);
+		buttonLayout->addWidget(cancelButton);
 
-		this->mainLayout = new QVBoxLayout();
-		this->mainLayout->addWidget(this->descriptionLabel);
-		this->mainLayout->addSpacing(20);
-		this->mainLayout->addWidget(this->pathInput);
-		this->mainLayout->addWidget(this->browseButton, 0, Qt::AlignRight);
-		this->mainLayout->addSpacing(20);
-		this->mainLayout->addWidget(this->startMenuCheckbox);
-		this->mainLayout->addSpacing(20);
-		this->mainLayout->addLayout(this->buttonLayout);
+		mainLayout = new QVBoxLayout();
+		mainLayout->addWidget(descriptionLabel);
+		mainLayout->addSpacing(20);
+		mainLayout->addWidget(pathInput);
+		mainLayout->addWidget(browseButton, 0, Qt::AlignRight);
+		mainLayout->addSpacing(20);
+		mainLayout->addWidget(startMenuCheckbox);
+		mainLayout->addSpacing(20);
+		mainLayout->addLayout(buttonLayout);
 
-		this->mainWidget->setLayout(this->mainLayout);
+		mainWidget->setLayout(mainLayout);
 
-		this->setCentralWidget(this->mainWidget);
+		setCentralWidget(mainWidget);
 	}
 
 	InstallerInterface::~InstallerInterface() {
-		delete this->mainWidget;
-		delete this->mainLayout;
-		delete this->buttonLayout;
-		delete this->descriptionLabel;
-		delete this->pathInput;
-		delete this->browseButton;
-		delete this->startMenuCheckbox;
-		delete this->okButton;
-		delete this->cancelButton;
+		delete mainWidget;
+		delete mainLayout;
+		delete buttonLayout;
+		delete descriptionLabel;
+		delete pathInput;
+		delete browseButton;
+		delete startMenuCheckbox;
+		delete okButton;
+		delete cancelButton;
 	}
 
 	QSize InstallerInterface::sizeHint() const {
@@ -279,21 +279,21 @@ namespace wi {
 	}
 
 	void InstallerInterface::disableControls() {
-		this->browseButton->setEnabled(false);
-		this->startMenuCheckbox->setEnabled(false);
-		this->okButton->setEnabled(false);
-		this->cancelButton->setEnabled(false);
+		browseButton->setEnabled(false);
+		startMenuCheckbox->setEnabled(false);
+		okButton->setEnabled(false);
+		cancelButton->setEnabled(false);
 	}
 
 	//============================================================================ PRIVATE SLOTS =============================================================================\\
 
 	void InstallerInterface::install() {
-		this->disableControls();
-		this->setWindowTitle(this->windowTitle() + QString("- Installing..."));
+		disableControls();
+		setWindowTitle(windowTitle() + QString("- Installing..."));
 		QCoreApplication::processEvents();
-		bool allFilesCopied = InstallerInterface::installFiles(this->currentlySelectedPath);
-		InstallerInterface::registerProgramInRegistry(this->currentlySelectedPath);
-		if (this->startMenuCheckbox->isChecked()) this->createStartMenuEntry(this->currentlySelectedPath.absoluteFilePath("AcuteViewer.exe"));
+		bool allFilesCopied = InstallerInterface::installFiles(currentlySelectedPath);
+		InstallerInterface::registerProgramInRegistry(currentlySelectedPath);
+		if (startMenuCheckbox->isChecked()) createStartMenuEntry(currentlySelectedPath.absoluteFilePath("AcuteViewer.exe"));
 		if (allFilesCopied) {
 			QMessageBox::information(this,
 									 tr("Installation Successful"),
@@ -309,11 +309,11 @@ namespace wi {
 	}
 
 	void InstallerInterface::reactToBrowseButtonClick() {
-		QString path = QFileDialog::getExistingDirectory(this, tr("Select Installation Directory"), this->currentlySelectedPath.absolutePath());
+		QString path = QFileDialog::getExistingDirectory(this, tr("Select Installation Directory"), currentlySelectedPath.absolutePath());
 
 		if (!path.isEmpty()) {
-			this->currentlySelectedPath = QDir(path).absoluteFilePath("Acute Viewer");
-			this->pathInput->setText(this->currentlySelectedPath.absolutePath());
+			currentlySelectedPath = QDir(path).absoluteFilePath("Acute Viewer");
+			pathInput->setText(currentlySelectedPath.absolutePath());
 		}
 	}
 

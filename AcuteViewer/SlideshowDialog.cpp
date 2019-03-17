@@ -5,53 +5,53 @@ namespace sv {
 	SlideshowDialog::SlideshowDialog(std::shared_ptr<QSettings> settings, QWidget* parent)
 		: settings(settings), 
 		QDialog(parent) {
-		this->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
-		this->setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
+		setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
+		setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
-		this->setWindowTitle(tr("Start Slideshow"));
+		setWindowTitle(tr("Start Slideshow"));
 
-		this->timeSpinBox = new QDoubleSpinBox(this);
-		this->timeSpinBox->setMinimum(0);
-		this->timeSpinBox->setMaximum(1814400000);
-		this->timeSpinBox->setDecimals(3);
-		this->timeSpinBox->setValue(settings->value("slideDelay", 3).toDouble());
-		this->timeSpinBox->setSuffix("s");
+		timeSpinBox = new QDoubleSpinBox(this);
+		timeSpinBox->setMinimum(0);
+		timeSpinBox->setMaximum(1814400000);
+		timeSpinBox->setDecimals(3);
+		timeSpinBox->setValue(settings->value("slideDelay", 3).toDouble());
+		timeSpinBox->setSuffix("s");
 
-		this->loopCheckbox = new QCheckBox(tr("&Loop"), this);
-		this->loopCheckbox->setChecked(settings->value("slideshowLoop", false).toBool());
+		loopCheckbox = new QCheckBox(tr("&Loop"), this);
+		loopCheckbox->setChecked(settings->value("slideshowLoop", false).toBool());
 
-		this->formLayout = new QFormLayout();
-		this->formLayout->addRow(tr("&Delay:"), this->timeSpinBox);
-		this->formLayout->addRow("", this->loopCheckbox);
+		formLayout = new QFormLayout();
+		formLayout->addRow(tr("&Delay:"), timeSpinBox);
+		formLayout->addRow("", loopCheckbox);
 
-		this->okButton = new QPushButton(tr("&Ok"), this);
-		this->okButton->setDefault(true);
-		QObject::connect(this->okButton, SIGNAL(clicked()), this, SLOT(reactToOkButtonClick()));
+		okButton = new QPushButton(tr("&Ok"), this);
+		okButton->setDefault(true);
+		QObject::connect(okButton, SIGNAL(clicked()), this, SLOT(reactToOkButtonClick()));
 
-		this->cancelButton = new QPushButton(tr("&Cancel"), this);
-		QObject::connect(this->cancelButton, SIGNAL(clicked()), this, SLOT(reject()));
+		cancelButton = new QPushButton(tr("&Cancel"), this);
+		QObject::connect(cancelButton, SIGNAL(clicked()), this, SLOT(reject()));
 
-		this->buttonLayout = new QHBoxLayout();
-		this->buttonLayout->addStretch(1);
-		this->buttonLayout->addWidget(okButton);
-		this->buttonLayout->addWidget(cancelButton);
+		buttonLayout = new QHBoxLayout();
+		buttonLayout->addStretch(1);
+		buttonLayout->addWidget(okButton);
+		buttonLayout->addWidget(cancelButton);
 
-		this->mainLayout = new QVBoxLayout();
-		this->mainLayout->addLayout(this->formLayout);
-		this->mainLayout->addLayout(this->buttonLayout);
+		mainLayout = new QVBoxLayout();
+		mainLayout->addLayout(formLayout);
+		mainLayout->addLayout(buttonLayout);
 
-		this->setLayout(this->mainLayout);
-		this->layout()->setSizeConstraint(QLayout::SetFixedSize);
+		setLayout(mainLayout);
+		layout()->setSizeConstraint(QLayout::SetFixedSize);
 	}
 
 	SlideshowDialog::~SlideshowDialog() {
-		delete this->mainLayout;
-		delete this->formLayout;
-		delete this->buttonLayout;
-		delete this->timeSpinBox;
-		delete this->loopCheckbox;
-		delete this->okButton;
-		delete this->cancelButton;
+		delete mainLayout;
+		delete formLayout;
+		delete buttonLayout;
+		delete timeSpinBox;
+		delete loopCheckbox;
+		delete okButton;
+		delete cancelButton;
 	}
 
 	//============================================================================== PROTECTED ==============================================================================\\
@@ -63,10 +63,10 @@ namespace sv {
 	//============================================================================ PRIVATE SLOTS =============================================================================\\
 
 	void SlideshowDialog::reactToOkButtonClick() {
-		settings->setValue("slideshowLoop", this->loopCheckbox->isChecked());
-		settings->setValue("slideDelay", this->timeSpinBox->value());
-		this->accept();
-		this->close();
+		settings->setValue("slideshowLoop", loopCheckbox->isChecked());
+		settings->setValue("slideDelay", timeSpinBox->value());
+		accept();
+		close();
 	}
 
 }
