@@ -1,5 +1,4 @@
-﻿#ifndef HB_RASTERMAPRENDERER
-#define HB_RASTERMAPRENDERER
+﻿#pragma once
 
 //Qt
 #include <QtWidgets/QtWidgets>
@@ -280,5 +279,3 @@ namespace hb {
 	}
 
 }
-
-#endif

@@ -233,7 +233,7 @@ namespace sv {
 
 		this->slideshowDialog = new SlideshowDialog(settings, this);
 		this->slideshowDialog->setWindowModality(Qt::WindowModal);
-		QObject::connect(this->slideshowDialog, SIGNAL(accepted()), this, SLOT(startSlideshow()));
+		QObject::connect(this->slideshowDialog, &SlideshowDialog::accepted, this, &MainInterface::startSlideshow);
 		QObject::connect(this->slideshowDialog, SIGNAL(finished(int)), this, SLOT(enableAutomaticMouseHide()));
 
 		this->sharpeningDialog = new SharpeningDialog(settings, this);

@@ -1,5 +1,4 @@
-#ifndef UTILITY
-#define UTILITY
+#pragma once
 
 #include <vector>
 #include <fstream>
@@ -28,5 +27,3 @@ namespace utility {
 	bool copyFile(QString const & oldPath, QString const & newPath, bool silent = false, QWidget * parent = 0);
 
 }
-
-#endif
