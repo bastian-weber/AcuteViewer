@@ -5,62 +5,62 @@ namespace sv {
 	AboutDialog::AboutDialog(std::shared_ptr<QSettings> settings, QWidget* parent)
 		: settings(settings),
 		QDialog(parent) {
-		this->setSizeGripEnabled(false);
-		this->setWindowFlags((this->windowFlags() & ~Qt::WindowContextHelpButtonHint) | Qt::MSWindowsFixedSizeDialogHint);
+		setSizeGripEnabled(false);
+		setWindowFlags((windowFlags() & ~Qt::WindowContextHelpButtonHint) | Qt::MSWindowsFixedSizeDialogHint);
 
-		this->setFixedWidth(400);
+		setFixedWidth(400);
 
-		this->setWindowTitle(tr("About Acute Viewer"));
+		setWindowTitle(tr("About Acute Viewer"));
 
-		this->majorVersion = AV_MAJOR_VERSION;
-		this->minorVersion = AV_MINOR_VERSION;
+		majorVersion = AV_MAJOR_VERSION;
+		minorVersion = AV_MINOR_VERSION;
 
-		this->infoString = tr("<h2>Acute Viewer</h2><p><b>This Version: %1</b></p><b>%2</b><p><b>%3</p>").arg(QString("%1.%2").arg(this->majorVersion).arg(this->minorVersion));
+		infoString = tr("<h2>Acute Viewer</h2><p><b>This Version: %1</b></p><b>%2</b><p><b>%3</p>").arg(QString("%1.%2").arg(majorVersion).arg(minorVersion));
 
-		this->infoLabel = new QLabel;
-		this->infoLabel->setTextFormat(Qt::RichText);
-		this->infoLabel->setWordWrap(true);
-		this->infoLabel->setText(this->infoString.arg(this->getInstalledVersion(), "Latest Version: Loading..."));
+		infoLabel = new QLabel;
+		infoLabel->setTextFormat(Qt::RichText);
+		infoLabel->setWordWrap(true);
+		infoLabel->setText(infoString.arg(getInstalledVersion(), "Latest Version: Loading..."));
 
-		this->autoUpdateCheckbox = new QCheckBox(tr("Notify me when there is a new version available"), this);
-		QObject::connect(this->autoUpdateCheckbox, SIGNAL(clicked()), this, SLOT(reactToCheckboxChange()));
+		autoUpdateCheckbox = new QCheckBox(tr("Notify me when there is a new version available"), this);
+		QObject::connect(autoUpdateCheckbox, SIGNAL(clicked()), this, SLOT(reactToCheckboxChange()));
 
-		this->downloadButton = new QPushButton(tr("Download Now"), this);
-		this->downloadButton->setVisible(false);
-		QObject::connect(this->downloadButton, SIGNAL(clicked()), this, SLOT(downloadUpdate()));
-		this->closeButton = new QPushButton(tr("Close"), this);
-		QObject::connect(this->closeButton, SIGNAL(clicked()), this, SLOT(close()));
+		downloadButton = new QPushButton(tr("Download Now"), this);
+		downloadButton->setVisible(false);
+		QObject::connect(downloadButton, SIGNAL(clicked()), this, SLOT(downloadUpdate()));
+		closeButton = new QPushButton(tr("Close"), this);
+		QObject::connect(closeButton, SIGNAL(clicked()), this, SLOT(close()));
 
-		this->buttonLayout = new QHBoxLayout;
-		this->buttonLayout->addStretch(1);
-		this->buttonLayout->addWidget(downloadButton);
-		this->buttonLayout->addWidget(closeButton);
+		buttonLayout = new QHBoxLayout;
+		buttonLayout->addStretch(1);
+		buttonLayout->addWidget(downloadButton);
+		buttonLayout->addWidget(closeButton);
 
-		this->mainLayout = new QVBoxLayout;
-		this->mainLayout->addWidget(infoLabel);
-		this->mainLayout->addSpacing(20);
-		this->mainLayout->addWidget(this->autoUpdateCheckbox);
-		this->mainLayout->addSpacing(20);
-		this->mainLayout->addLayout(this->buttonLayout);
+		mainLayout = new QVBoxLayout;
+		mainLayout->addWidget(infoLabel);
+		mainLayout->addSpacing(20);
+		mainLayout->addWidget(autoUpdateCheckbox);
+		mainLayout->addSpacing(20);
+		mainLayout->addLayout(buttonLayout);
 
-		this->setLayout(this->mainLayout);
+		setLayout(mainLayout);
 
-		this->network = new QNetworkAccessManager(this);
+		network = new QNetworkAccessManager(this);
 
-		this->loadSettings();
-		this->autoUpdate();
+		loadSettings();
+		autoUpdate();
 	}
 
 	//============================================================================== PROTECTED ==============================================================================\\
 
 	void AboutDialog::showEvent(QShowEvent * e) {
-		this->downloadButton->setVisible(false);
-		this->infoLabel->setText(this->infoString.arg(this->getInstalledVersion(), "Latest Version: Loading..."));
-		this->checkForUpdates();
+		downloadButton->setVisible(false);
+		infoLabel->setText(infoString.arg(getInstalledVersion(), "Latest Version: Loading..."));
+		checkForUpdates();
 	}
 
 	void AboutDialog::loadSettings() {
-		this->autoUpdateCheckbox->setChecked(this->settings->value("updateNotifications", false).toBool());
+		autoUpdateCheckbox->setChecked(settings->value("updateNotifications", false).toBool());
 	}
 
 	QString AboutDialog::getInstalledVersion() {
@@ -77,20 +77,20 @@ namespace sv {
 	}
 
 	void AboutDialog::autoUpdate() {
-		if (this->autoUpdateCheckbox->isChecked()) {
-			this->checkForUpdates(true);
+		if (autoUpdateCheckbox->isChecked()) {
+			checkForUpdates(true);
 		}
 	}
 
 	void AboutDialog::checkForUpdates(bool isAutoUpdate) {
 		QNetworkRequest request;
 		request.setUrl(QUrl("http://true-contrast.de/avv"));
-		this->infoDocumentReply = std::shared_ptr<QNetworkReply>(network->get(request), [](QNetworkReply* reply) { reply->deleteLater(); });
+		infoDocumentReply = std::shared_ptr<QNetworkReply>(network->get(request), [](QNetworkReply* reply) { reply->deleteLater(); });
 		connect(infoDocumentReply.get(), SIGNAL(finished()), this, SLOT(processInfoFile()));
 		QDateTime local(QDateTime::currentDateTime());
 		QDateTime Utc(local.toUTC());
 		//auto update is only conducted every 6 hours
-		if (isAutoUpdate && (Utc.toTime_t() - this->settings->value("lastUpdateCheck", 0).toUInt() > 21600)) {
+		if (isAutoUpdate && (Utc.toTime_t() - settings->value("lastUpdateCheck", 0).toUInt() > 21600)) {
 			connect(infoDocumentReply.get(), SIGNAL(finished()), this, SLOT(processAutoUpdate()));
 		}
 	}
@@ -102,30 +102,30 @@ namespace sv {
 	//============================================================================ PRIVATE SLOTS =============================================================================\\
 
 	void AboutDialog::processInfoFile() {
-		if (this->infoDocumentReply->error() == QNetworkReply::NoError) {
-			QString response = QString(this->infoDocumentReply->readAll().toStdString().c_str());
-			this->infoReplyParts = response.split("\\\\\\\\\\");
-			if (this->infoReplyParts.size() >= 4) {
-				this->infoLabel->setText(this->infoString.arg(this->getInstalledVersion(), this->infoReplyParts.at(1).arg(this->infoReplyParts.at(0))));
-				QStringList version = this->infoReplyParts.at(0).split('.');
-				this->latestMajorVersion = version.at(0).toInt();
-				this->latestMinorVersion = version.at(1).toInt();
-				if (this->latestMajorVersion > this->majorVersion || (this->latestMinorVersion > this->minorVersion && this->latestMajorVersion >= this->majorVersion)) {
-					this->downloadButton->setVisible(true);
+		if (infoDocumentReply->error() == QNetworkReply::NoError) {
+			QString response = QString(infoDocumentReply->readAll().toStdString().c_str());
+			infoReplyParts = response.split("\\\\\\\\\\");
+			if (infoReplyParts.size() >= 4) {
+				infoLabel->setText(infoString.arg(getInstalledVersion(), infoReplyParts.at(1).arg(infoReplyParts.at(0))));
+				QStringList version = infoReplyParts.at(0).split('.');
+				latestMajorVersion = version.at(0).toInt();
+				latestMinorVersion = version.at(1).toInt();
+				if (latestMajorVersion > majorVersion || (latestMinorVersion > minorVersion && latestMajorVersion >= majorVersion)) {
+					downloadButton->setVisible(true);
 				}
 			} else {
-				this->infoLabel->setText(this->infoString.arg(this->getInstalledVersion(), tr("<b>Latest Version: (error)</b>")));
+				infoLabel->setText(infoString.arg(getInstalledVersion(), tr("<b>Latest Version: (error)</b>")));
 			}
 		} else {
-			this->infoLabel->setText(this->infoString.arg(this->getInstalledVersion(), tr("<b>Latest Version: (network request failed)</b>")));
+			infoLabel->setText(infoString.arg(getInstalledVersion(), tr("<b>Latest Version: (network request failed)</b>")));
 		}
 	}
 
 	void AboutDialog::downloadUpdate() {
 #ifdef Q_OS_WIN
-		QUrl url(this->infoReplyParts.at(2));
+		QUrl url(infoReplyParts.at(2));
 #else
-		QUrl url(this->infoReplyParts.at(3));
+		QUrl url(infoReplyParts.at(3));
 #endif
 		if (QDesktopServices::openUrl(url)) {
 			QMessageBox::information(this,
@@ -143,19 +143,19 @@ namespace sv {
 	}
 
 	void AboutDialog::reactToCheckboxChange() {
-		this->settings->setValue("updateNotifications", this->autoUpdateCheckbox->isChecked());
-		this->settings->setValue("noRemindMinorVersion", 0);
-		this->settings->setValue("noRemindMajorVersion", 0);
+		settings->setValue("updateNotifications", autoUpdateCheckbox->isChecked());
+		settings->setValue("noRemindMinorVersion", 0);
+		settings->setValue("noRemindMajorVersion", 0);
 	}
 
 	void AboutDialog::processAutoUpdate() {
 		QDateTime local(QDateTime::currentDateTime());
 		QDateTime Utc(local.toUTC());
-		this->settings->setValue("lastUpdateCheck", Utc.toTime_t());
-		if (this->latestMajorVersion > this->majorVersion || (this->latestMinorVersion > this->minorVersion && this->latestMajorVersion >= this->majorVersion)) {
-			int noRemindMajorVersion = this->settings->value("noRemindMajorVersion", 0).toInt();
-			int noRemindMinorVersion = this->settings->value("noRemindMinorVersion", 0).toInt();
-			if (this->latestMajorVersion > noRemindMajorVersion || (this->latestMinorVersion > noRemindMinorVersion && this->latestMajorVersion >= noRemindMajorVersion)) {
+		settings->setValue("lastUpdateCheck", Utc.toTime_t());
+		if (latestMajorVersion > majorVersion || (latestMinorVersion > minorVersion && latestMajorVersion >= majorVersion)) {
+			int noRemindMajorVersion = settings->value("noRemindMajorVersion", 0).toInt();
+			int noRemindMinorVersion = settings->value("noRemindMinorVersion", 0).toInt();
+			if (latestMajorVersion > noRemindMajorVersion || (latestMinorVersion > noRemindMinorVersion && latestMajorVersion >= noRemindMajorVersion)) {
 				QWidget* parent;
 				if (!(parent = dynamic_cast<QWidget*>(this->parent()))) {
 					parent = this;
@@ -164,14 +164,14 @@ namespace sv {
 				msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::Ok);
 				msgBox.setDefaultButton(QMessageBox::Ok);
 				msgBox.setWindowTitle(tr("New Version"));
-				msgBox.setText(tr("There is a newer version of Acute Viewer (%1.%2) available.").arg(this->latestMajorVersion).arg(this->latestMinorVersion));
+				msgBox.setText(tr("There is a newer version of Acute Viewer (%1.%2) available.").arg(latestMajorVersion).arg(latestMinorVersion));
 				msgBox.setButtonText(QMessageBox::Yes, QObject::tr("Don't remind me about this version anymore"));
 				msgBox.setIcon(QMessageBox::Information);
 				if (msgBox.exec() == QMessageBox::Yes) {
-					this->settings->setValue("noRemindMinorVersion", this->latestMinorVersion);
-					this->settings->setValue("noRemindMajorVersion", this->latestMajorVersion);
+					settings->setValue("noRemindMinorVersion", latestMinorVersion);
+					settings->setValue("noRemindMajorVersion", latestMajorVersion);
 				} else {
-					this->show();
+					show();
 				}
 			}
 		}

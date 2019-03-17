@@ -5,234 +5,234 @@ namespace sv {
 	HotkeyDialog::HotkeyDialog(std::shared_ptr<QSettings> settings, QWidget* parent)
 		: settings(settings),
 		QDialog(parent) {
-		this->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
-		this->setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
+		setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
+		setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
-		this->setMinimumHeight(300);
+		setMinimumHeight(300);
 
-		this->setWindowTitle(tr("Hotkey Options"));
+		setWindowTitle(tr("Hotkey Options"));
 
 		//first hotkey
 
-		this->keySequenceEdit1 = new QKeySequenceEdit(this);
-		QObject::connect(this->keySequenceEdit1, SIGNAL(keySequenceChanged(QKeySequence)), this, SLOT(verifyChanges()));
-		this->binRadioButton1 = new QRadioButton(tr("Move to recycle bin"), this);
-		this->moveRadioButton1 = new QRadioButton(tr("Move to folder..."), this);
-		this->copyRadioButton1 = new QRadioButton(tr("Copy to folder..."), this);
-		this->buttonGroup1 = new QButtonGroup(this);
-		this->buttonGroup1->addButton(binRadioButton1, 0);
-		this->buttonGroup1->addButton(moveRadioButton1, 1);
-		this->buttonGroup1->addButton(copyRadioButton1, 2);
-		QObject::connect(this->buttonGroup1, SIGNAL(buttonClicked(int)), this, SLOT(reactToCheckboxChange()));
-		QObject::connect(this->buttonGroup1, SIGNAL(buttonClicked(int)), this, SLOT(verifyChanges()));
-		this->folderLineEdit1 = new QLineEdit(this);
-		this->folderLineEdit1->setMinimumWidth(250);
-		QObject::connect(this->folderLineEdit1, SIGNAL(textChanged(QString)), this, SLOT(verifyChanges()));
-		this->completer1 = new QCompleter(this);
+		keySequenceEdit1 = new QKeySequenceEdit(this);
+		QObject::connect(keySequenceEdit1, SIGNAL(keySequenceChanged(QKeySequence)), this, SLOT(verifyChanges()));
+		binRadioButton1 = new QRadioButton(tr("Move to recycle bin"), this);
+		moveRadioButton1 = new QRadioButton(tr("Move to folder..."), this);
+		copyRadioButton1 = new QRadioButton(tr("Copy to folder..."), this);
+		buttonGroup1 = new QButtonGroup(this);
+		buttonGroup1->addButton(binRadioButton1, 0);
+		buttonGroup1->addButton(moveRadioButton1, 1);
+		buttonGroup1->addButton(copyRadioButton1, 2);
+		QObject::connect(buttonGroup1, SIGNAL(buttonClicked(int)), this, SLOT(reactToCheckboxChange()));
+		QObject::connect(buttonGroup1, SIGNAL(buttonClicked(int)), this, SLOT(verifyChanges()));
+		folderLineEdit1 = new QLineEdit(this);
+		folderLineEdit1->setMinimumWidth(250);
+		QObject::connect(folderLineEdit1, SIGNAL(textChanged(QString)), this, SLOT(verifyChanges()));
+		completer1 = new QCompleter(this);
 		QDirModel* dirModel1 = new QDirModel(completer1);
 		dirModel1->setFilter(QDir::Dirs | QDir::NoDotAndDotDot);
 		completer1->setModel(dirModel1);
-		this->folderLineEdit1->setCompleter(completer1);
-		this->chooseButton1 = new QPushButton(tr("Choose"), this);
-		this->chooseButton1->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
-		QObject::connect(this->chooseButton1, SIGNAL(clicked()), this, SLOT(selectFolder()));
+		folderLineEdit1->setCompleter(completer1);
+		chooseButton1 = new QPushButton(tr("Choose"), this);
+		chooseButton1->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
+		QObject::connect(chooseButton1, SIGNAL(clicked()), this, SLOT(selectFolder()));
 
-		this->formLayout1 = new QFormLayout();
-		this->formLayout1->setFormAlignment(Qt::AlignCenter);
-		this->formLayout1->addRow(tr("Key:"), this->keySequenceEdit1);
-		this->formLayout1->addRow(tr("Action:"), this->binRadioButton1);
-		this->formLayout1->addRow("", this->moveRadioButton1);
-		this->formLayout1->addRow("", this->copyRadioButton1);
-		this->formLayout1->addRow(tr("Folder:"), this->folderLineEdit1);
-		this->formLayout1->addRow("", this->chooseButton1);
+		formLayout1 = new QFormLayout();
+		formLayout1->setFormAlignment(Qt::AlignCenter);
+		formLayout1->addRow(tr("Key:"), keySequenceEdit1);
+		formLayout1->addRow(tr("Action:"), binRadioButton1);
+		formLayout1->addRow("", moveRadioButton1);
+		formLayout1->addRow("", copyRadioButton1);
+		formLayout1->addRow(tr("Folder:"), folderLineEdit1);
+		formLayout1->addRow("", chooseButton1);
 
-		this->groupBox1 = new QGroupBox(tr("Hotkey 1"), this);
-		this->groupBox1->setCheckable(true);
-		this->groupBox1->setLayout(this->formLayout1);
-		QObject::connect(this->groupBox1, SIGNAL(toggled(bool)), this, SLOT(verifyChanges()));
+		groupBox1 = new QGroupBox(tr("Hotkey 1"), this);
+		groupBox1->setCheckable(true);
+		groupBox1->setLayout(formLayout1);
+		QObject::connect(groupBox1, SIGNAL(toggled(bool)), this, SLOT(verifyChanges()));
 
 		//second hotkey
 
-		this->keySequenceEdit2 = new QKeySequenceEdit(this);
-		QObject::connect(this->keySequenceEdit2, SIGNAL(keySequenceChanged(QKeySequence)), this, SLOT(verifyChanges()));
-		this->binRadioButton2 = new QRadioButton(tr("Move to recycle bin"), this);
-		this->moveRadioButton2 = new QRadioButton(tr("Move to folder..."), this);
-		this->copyRadioButton2 = new QRadioButton(tr("Copy to folder..."), this);
-		this->buttonGroup2 = new QButtonGroup(this);
-		this->buttonGroup2->addButton(binRadioButton2, 0);
-		this->buttonGroup2->addButton(moveRadioButton2, 1);
-		this->buttonGroup2->addButton(copyRadioButton2, 2);
-		QObject::connect(this->buttonGroup2, SIGNAL(buttonClicked(int)), this, SLOT(reactToCheckboxChange()));
-		QObject::connect(this->buttonGroup2, SIGNAL(buttonClicked(int)), this, SLOT(verifyChanges()));
-		this->folderLineEdit2 = new QLineEdit(this);
-		this->folderLineEdit2->setMinimumWidth(250);
-		QObject::connect(this->folderLineEdit2, SIGNAL(textChanged(QString)), this, SLOT(verifyChanges()));
-		this->completer2 = new QCompleter(this);
+		keySequenceEdit2 = new QKeySequenceEdit(this);
+		QObject::connect(keySequenceEdit2, SIGNAL(keySequenceChanged(QKeySequence)), this, SLOT(verifyChanges()));
+		binRadioButton2 = new QRadioButton(tr("Move to recycle bin"), this);
+		moveRadioButton2 = new QRadioButton(tr("Move to folder..."), this);
+		copyRadioButton2 = new QRadioButton(tr("Copy to folder..."), this);
+		buttonGroup2 = new QButtonGroup(this);
+		buttonGroup2->addButton(binRadioButton2, 0);
+		buttonGroup2->addButton(moveRadioButton2, 1);
+		buttonGroup2->addButton(copyRadioButton2, 2);
+		QObject::connect(buttonGroup2, SIGNAL(buttonClicked(int)), this, SLOT(reactToCheckboxChange()));
+		QObject::connect(buttonGroup2, SIGNAL(buttonClicked(int)), this, SLOT(verifyChanges()));
+		folderLineEdit2 = new QLineEdit(this);
+		folderLineEdit2->setMinimumWidth(250);
+		QObject::connect(folderLineEdit2, SIGNAL(textChanged(QString)), this, SLOT(verifyChanges()));
+		completer2 = new QCompleter(this);
 		QDirModel* dirModel2 = new QDirModel(completer2);
 		dirModel2->setFilter(QDir::Dirs | QDir::NoDotAndDotDot);
-		this->completer2->setModel(dirModel2);
-		this->folderLineEdit2->setCompleter(this->completer2);
-		this->chooseButton2 = new QPushButton(tr("Choose"), this);
-		this->chooseButton2->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
-		QObject::connect(this->chooseButton2, SIGNAL(clicked()), this, SLOT(selectFolder()));
+		completer2->setModel(dirModel2);
+		folderLineEdit2->setCompleter(completer2);
+		chooseButton2 = new QPushButton(tr("Choose"), this);
+		chooseButton2->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
+		QObject::connect(chooseButton2, SIGNAL(clicked()), this, SLOT(selectFolder()));
 
-		this->formLayout2 = new QFormLayout();
-		this->formLayout2->setFormAlignment(Qt::AlignCenter);
-		this->formLayout2->addRow(tr("Key:"), this->keySequenceEdit2);
-		this->formLayout2->addRow(tr("Action:"), this->binRadioButton2);
-		this->formLayout2->addRow("", this->moveRadioButton2);
-		this->formLayout2->addRow("", this->copyRadioButton2);
-		this->formLayout2->addRow(tr("Folder:"), this->folderLineEdit2);
-		this->formLayout2->addRow("", this->chooseButton2);
+		formLayout2 = new QFormLayout();
+		formLayout2->setFormAlignment(Qt::AlignCenter);
+		formLayout2->addRow(tr("Key:"), keySequenceEdit2);
+		formLayout2->addRow(tr("Action:"), binRadioButton2);
+		formLayout2->addRow("", moveRadioButton2);
+		formLayout2->addRow("", copyRadioButton2);
+		formLayout2->addRow(tr("Folder:"), folderLineEdit2);
+		formLayout2->addRow("", chooseButton2);
 
-		this->groupBox2 = new QGroupBox(tr("Hotkey 2"), this);
-		this->groupBox2->setCheckable(true);
-		this->groupBox2->setLayout(this->formLayout2);
-		QObject::connect(this->groupBox2, SIGNAL(toggled(bool)), this, SLOT(verifyChanges()));
+		groupBox2 = new QGroupBox(tr("Hotkey 2"), this);
+		groupBox2->setCheckable(true);
+		groupBox2->setLayout(formLayout2);
+		QObject::connect(groupBox2, SIGNAL(toggled(bool)), this, SLOT(verifyChanges()));
 
-		this->globalGroupBoxLayout = new QVBoxLayout;
-		this->globalGroupBoxLayout->addWidget(groupBox1);
-		this->globalGroupBoxLayout->addWidget(groupBox2);
+		globalGroupBoxLayout = new QVBoxLayout;
+		globalGroupBoxLayout->addWidget(groupBox1);
+		globalGroupBoxLayout->addWidget(groupBox2);
 
-		this->globalGroupBox = new QGroupBox(tr("Enable Hotkeys"), this);
-		this->globalGroupBox->setCheckable(true);
-		this->globalGroupBox->setLayout(this->globalGroupBoxLayout);
-		QObject::connect(this->globalGroupBox, SIGNAL(toggled(bool)), this, SLOT(verifyChanges()));
+		globalGroupBox = new QGroupBox(tr("Enable Hotkeys"), this);
+		globalGroupBox->setCheckable(true);
+		globalGroupBox->setLayout(globalGroupBoxLayout);
+		QObject::connect(globalGroupBox, SIGNAL(toggled(bool)), this, SLOT(verifyChanges()));
 
-		this->sidecarAllRadioButton = new QRadioButton(tr("All Sidecar Files"), this);
-		this->sidecarAllRadioButton->setToolTip(tr("If this option is selected, only XMP sidecar files will be affected by the action."));
-		this->sidecarXmpRadioButton = new QRadioButton(tr("XMP Sidecar Files Only"), this);
-		this->sidecarAllRadioButton->setToolTip(tr("If this option is selected, all sidecar files regardless of the extension will be affected by the action."));
-		this->sidecarButtonGroup = new QButtonGroup(this);
-		this->sidecarButtonGroup->addButton(this->sidecarAllRadioButton, 1);
-		this->sidecarButtonGroup->addButton(this->sidecarXmpRadioButton, 0);
+		sidecarAllRadioButton = new QRadioButton(tr("All Sidecar Files"), this);
+		sidecarAllRadioButton->setToolTip(tr("If this option is selected, only XMP sidecar files will be affected by the action."));
+		sidecarXmpRadioButton = new QRadioButton(tr("XMP Sidecar Files Only"), this);
+		sidecarAllRadioButton->setToolTip(tr("If this option is selected, all sidecar files regardless of the extension will be affected by the action."));
+		sidecarButtonGroup = new QButtonGroup(this);
+		sidecarButtonGroup->addButton(sidecarAllRadioButton, 1);
+		sidecarButtonGroup->addButton(sidecarXmpRadioButton, 0);
 
-		this->sidecarLayout = new QVBoxLayout;
-		this->sidecarLayout->addWidget(this->sidecarXmpRadioButton);
-		this->sidecarLayout->addWidget(this->sidecarAllRadioButton);
-		this->sidecarFileGroupBox = new QGroupBox(tr("Include Sidecar Files in Action"), this);
-		this->sidecarFileGroupBox->setCheckable(true);
-		this->sidecarFileGroupBox->setToolTip(tr("If this is checked, sidecar files will be included in whatever action is performed. Sidecar files are files with the same name but a different extension, for example XMP files."));
-		this->sidecarFileGroupBox->setLayout(this->sidecarLayout);
+		sidecarLayout = new QVBoxLayout;
+		sidecarLayout->addWidget(sidecarXmpRadioButton);
+		sidecarLayout->addWidget(sidecarAllRadioButton);
+		sidecarFileGroupBox = new QGroupBox(tr("Include Sidecar Files in Action"), this);
+		sidecarFileGroupBox->setCheckable(true);
+		sidecarFileGroupBox->setToolTip(tr("If this is checked, sidecar files will be included in whatever action is performed. Sidecar files are files with the same name but a different extension, for example XMP files."));
+		sidecarFileGroupBox->setLayout(sidecarLayout);
 		
-		this->confirmationCheckBox = new QCheckBox(tr("Ask for Confirmation Before Performing an Action"), this);
+		confirmationCheckBox = new QCheckBox(tr("Ask for Confirmation Before Performing an Action"), this);
 
-		this->optionsLayout = new QVBoxLayout;
-		this->optionsLayout->addWidget(this->sidecarFileGroupBox);
-		this->optionsLayout->addWidget(this->confirmationCheckBox);
+		optionsLayout = new QVBoxLayout;
+		optionsLayout->addWidget(sidecarFileGroupBox);
+		optionsLayout->addWidget(confirmationCheckBox);
 
-		this->optionsGroupBox = new QGroupBox(tr("Options"), this);
-		this->optionsGroupBox->setLayout(this->optionsLayout);
+		optionsGroupBox = new QGroupBox(tr("Options"), this);
+		optionsGroupBox->setLayout(optionsLayout);
 
-		this->okButton = new QPushButton(tr("Ok"), this);
-		QObject::connect(this->okButton, SIGNAL(clicked()), this, SLOT(reactToOkButtonClick()));
-		this->cancelButton = new QPushButton(tr("Cancel"), this);
-		QObject::connect(this->cancelButton, SIGNAL(clicked()), this, SLOT(resetChanges()));
-		QObject::connect(this->cancelButton, SIGNAL(clicked()), this, SLOT(reject()));
+		okButton = new QPushButton(tr("Ok"), this);
+		QObject::connect(okButton, SIGNAL(clicked()), this, SLOT(reactToOkButtonClick()));
+		cancelButton = new QPushButton(tr("Cancel"), this);
+		QObject::connect(cancelButton, SIGNAL(clicked()), this, SLOT(resetChanges()));
+		QObject::connect(cancelButton, SIGNAL(clicked()), this, SLOT(reject()));
 
-		this->buttonLayout = new QHBoxLayout();
-		this->buttonLayout->addStretch(1);
-		this->buttonLayout->addWidget(okButton);
-		this->buttonLayout->addWidget(cancelButton);
+		buttonLayout = new QHBoxLayout();
+		buttonLayout->addStretch(1);
+		buttonLayout->addWidget(okButton);
+		buttonLayout->addWidget(cancelButton);
 
-		this->mainLayout = new QVBoxLayout();
-		this->mainLayout->addWidget(this->globalGroupBox);
-		this->mainLayout->addWidget(this->optionsGroupBox);
-		this->mainLayout->addLayout(this->buttonLayout);
+		mainLayout = new QVBoxLayout();
+		mainLayout->addWidget(globalGroupBox);
+		mainLayout->addWidget(optionsGroupBox);
+		mainLayout->addLayout(buttonLayout);
 
-		this->setLayout(this->mainLayout);
-		this->layout()->setSizeConstraint(QLayout::SetFixedSize);
+		setLayout(mainLayout);
+		layout()->setSizeConstraint(QLayout::SetFixedSize);
 
-		this->loadSettings();
-		this->saveState();
+		loadSettings();
+		saveState();
 	}
 
 	//=============================================================================== PRIVATE ===============================================================================\\
 
 	void HotkeyDialog::loadSettings() {
-		this->keySequenceEdit1->setKeySequence(this->settings->value("hotkey1Shortcut", QKeySequence(Qt::Key_Delete)).value<QKeySequence>());
-		this->buttonGroup1->button(this->settings->value("hotkey1Action", 0).toInt())->setChecked(true);
-		this->folderLineEdit1->setText(this->settings->value("hotkey1Folder", QDir::rootPath()).toString());
-		this->keySequenceEdit2->setKeySequence(this->settings->value("hotkey2Shortcut", QKeySequence(Qt::Key_Enter)).value<QKeySequence>());
-		this->buttonGroup2->button(this->settings->value("hotkey2Action", 0).toInt())->setChecked(true);
-		this->folderLineEdit2->setText(this->settings->value("hotkey2Folder", QDir::rootPath()).toString());
-		this->globalGroupBox->setChecked(this->settings->value("enableHotkeys", true).toBool());
-		this->groupBox1->setChecked(this->settings->value("enableHotkey1", true).toBool());
-		this->groupBox2->setChecked(this->settings->value("enableHotkey2", false).toBool());
-		this->sidecarFileGroupBox->setChecked(this->settings->value("includeSidecarFiles", false).toBool());
-		this->sidecarButtonGroup->button(this->settings->value("sidecarType", 0).toInt())->setChecked(true);
-		this->confirmationCheckBox->setChecked(this->settings->value("showActionConfirmation", true).toBool());
-		this->reactToCheckboxChange();
+		keySequenceEdit1->setKeySequence(settings->value("hotkey1Shortcut", QKeySequence(Qt::Key_Delete)).value<QKeySequence>());
+		buttonGroup1->button(settings->value("hotkey1Action", 0).toInt())->setChecked(true);
+		folderLineEdit1->setText(settings->value("hotkey1Folder", QDir::rootPath()).toString());
+		keySequenceEdit2->setKeySequence(settings->value("hotkey2Shortcut", QKeySequence(Qt::Key_Enter)).value<QKeySequence>());
+		buttonGroup2->button(settings->value("hotkey2Action", 0).toInt())->setChecked(true);
+		folderLineEdit2->setText(settings->value("hotkey2Folder", QDir::rootPath()).toString());
+		globalGroupBox->setChecked(settings->value("enableHotkeys", true).toBool());
+		groupBox1->setChecked(settings->value("enableHotkey1", true).toBool());
+		groupBox2->setChecked(settings->value("enableHotkey2", false).toBool());
+		sidecarFileGroupBox->setChecked(settings->value("includeSidecarFiles", false).toBool());
+		sidecarButtonGroup->button(settings->value("sidecarType", 0).toInt())->setChecked(true);
+		confirmationCheckBox->setChecked(settings->value("showActionConfirmation", true).toBool());
+		reactToCheckboxChange();
 	}
 
 	void HotkeyDialog::saveState() {
-		this->enableHotkeysOldValue = this->globalGroupBox->isChecked();
-		this->enableHotkey1OldValue = this->groupBox1->isChecked();
-		this->enableHotkey2OldValue = this->groupBox2->isChecked();
-		this->keySequence1OldValue = this->keySequenceEdit1->keySequence();
-		this->keySequence2OldValue = this->keySequenceEdit2->keySequence();
-		this->action1OldValue = this->buttonGroup1->checkedId();
-		this->action2OldValue = this->buttonGroup2->checkedId();
-		this->folder1OldValue = this->folderLineEdit1->text();
-		this->folder2OldValue = this->folderLineEdit2->text();
-		this->sidecarFilesOldValue = this->sidecarFileGroupBox->isChecked();
-		this->sidecarTypeOldValue = this->sidecarButtonGroup->checkedId();
-		this->confirmationOldValue = this->confirmationCheckBox->isChecked();
+		enableHotkeysOldValue = globalGroupBox->isChecked();
+		enableHotkey1OldValue = groupBox1->isChecked();
+		enableHotkey2OldValue = groupBox2->isChecked();
+		keySequence1OldValue = keySequenceEdit1->keySequence();
+		keySequence2OldValue = keySequenceEdit2->keySequence();
+		action1OldValue = buttonGroup1->checkedId();
+		action2OldValue = buttonGroup2->checkedId();
+		folder1OldValue = folderLineEdit1->text();
+		folder2OldValue = folderLineEdit2->text();
+		sidecarFilesOldValue = sidecarFileGroupBox->isChecked();
+		sidecarTypeOldValue = sidecarButtonGroup->checkedId();
+		confirmationOldValue = confirmationCheckBox->isChecked();
 	}
 
 	//============================================================================ PRIVATE SLOTS =============================================================================\\
 
 	void HotkeyDialog::reactToOkButtonClick() {
-		if (!this->verifyChanges()) {
-			if (!this->isVisible()) this->show();
+		if (!verifyChanges()) {
+			if (!isVisible()) show();
 			return;
 		}
-		settings->setValue("enableHotkeys", this->globalGroupBox->isChecked());
-		settings->setValue("enableHotkey1", this->groupBox1->isChecked());
-		settings->setValue("enableHotkey2", this->groupBox2->isChecked());
-		settings->setValue("hotkey1Shortcut", this->keySequenceEdit1->keySequence());
-		settings->setValue("hotkey1Action", this->buttonGroup1->checkedId());
-		settings->setValue("hotkey1Folder", this->folderLineEdit1->text());
-		settings->setValue("hotkey2Shortcut", this->keySequenceEdit2->keySequence());
-		settings->setValue("hotkey2Action", this->buttonGroup2->checkedId());
-		settings->setValue("hotkey2Folder", this->folderLineEdit2->text());
-		settings->setValue("includeSidecarFiles", this->sidecarFileGroupBox->isChecked());
-		settings->setValue("sidecarType", this->sidecarButtonGroup->checkedId());
-		settings->setValue("showActionConfirmation", this->confirmationCheckBox->isChecked());
-		this->saveState();
-		this->accept();
+		settings->setValue("enableHotkeys", globalGroupBox->isChecked());
+		settings->setValue("enableHotkey1", groupBox1->isChecked());
+		settings->setValue("enableHotkey2", groupBox2->isChecked());
+		settings->setValue("hotkey1Shortcut", keySequenceEdit1->keySequence());
+		settings->setValue("hotkey1Action", buttonGroup1->checkedId());
+		settings->setValue("hotkey1Folder", folderLineEdit1->text());
+		settings->setValue("hotkey2Shortcut", keySequenceEdit2->keySequence());
+		settings->setValue("hotkey2Action", buttonGroup2->checkedId());
+		settings->setValue("hotkey2Folder", folderLineEdit2->text());
+		settings->setValue("includeSidecarFiles", sidecarFileGroupBox->isChecked());
+		settings->setValue("sidecarType", sidecarButtonGroup->checkedId());
+		settings->setValue("showActionConfirmation", confirmationCheckBox->isChecked());
+		saveState();
+		accept();
 	}
 
 	void HotkeyDialog::resetChanges() {
-		this->keySequenceEdit1->setKeySequence(this->keySequence1OldValue);
-		this->keySequenceEdit2->setKeySequence(this->keySequence2OldValue);
-		this->buttonGroup1->button(this->action1OldValue)->setChecked(true);
-		this->buttonGroup2->button(this->action2OldValue)->setChecked(true);
-		this->folderLineEdit1->setText(this->folder1OldValue);
-		this->folderLineEdit2->setText(this->folder2OldValue);
-		this->groupBox1->setChecked(this->enableHotkey1OldValue);
-		this->groupBox2->setChecked(this->enableHotkey2OldValue);
-		this->globalGroupBox->setChecked(this->enableHotkeysOldValue);
-		this->sidecarFileGroupBox->setChecked(this->sidecarFilesOldValue);
-		this->sidecarButtonGroup->button(this->sidecarTypeOldValue)->setChecked(true);
-		this->confirmationCheckBox->setChecked(this->confirmationOldValue);
-		this->reactToCheckboxChange();
+		keySequenceEdit1->setKeySequence(keySequence1OldValue);
+		keySequenceEdit2->setKeySequence(keySequence2OldValue);
+		buttonGroup1->button(action1OldValue)->setChecked(true);
+		buttonGroup2->button(action2OldValue)->setChecked(true);
+		folderLineEdit1->setText(folder1OldValue);
+		folderLineEdit2->setText(folder2OldValue);
+		groupBox1->setChecked(enableHotkey1OldValue);
+		groupBox2->setChecked(enableHotkey2OldValue);
+		globalGroupBox->setChecked(enableHotkeysOldValue);
+		sidecarFileGroupBox->setChecked(sidecarFilesOldValue);
+		sidecarButtonGroup->button(sidecarTypeOldValue)->setChecked(true);
+		confirmationCheckBox->setChecked(confirmationOldValue);
+		reactToCheckboxChange();
 	}
 
 	void HotkeyDialog::reactToCheckboxChange() {
-		if (this->buttonGroup1->checkedId() == 0) {
-			this->folderLineEdit1->setEnabled(false);
-			this->chooseButton1->setEnabled(false);
-		} else if (this->groupBox1->isChecked()) {
-			this->folderLineEdit1->setEnabled(true);
-			this->chooseButton1->setEnabled(true);
+		if (buttonGroup1->checkedId() == 0) {
+			folderLineEdit1->setEnabled(false);
+			chooseButton1->setEnabled(false);
+		} else if (groupBox1->isChecked()) {
+			folderLineEdit1->setEnabled(true);
+			chooseButton1->setEnabled(true);
 		}
-		if (this->buttonGroup2->checkedId() == 0) {
-			this->folderLineEdit2->setEnabled(false);
-			this->chooseButton2->setEnabled(false);
-		} else if (this->groupBox2->isChecked()) {
-			this->folderLineEdit2->setEnabled(true);
-			this->chooseButton2->setEnabled(true);
+		if (buttonGroup2->checkedId() == 0) {
+			folderLineEdit2->setEnabled(false);
+			chooseButton2->setEnabled(false);
+		} else if (groupBox2->isChecked()) {
+			folderLineEdit2->setEnabled(true);
+			chooseButton2->setEnabled(true);
 		}
 	}
 
@@ -240,26 +240,26 @@ namespace sv {
 		QPalette redPalette;
 		redPalette.setColor(QPalette::Text, Qt::red);
 		bool result = true;
-		this->okButton->setEnabled(true);
-		this->keySequenceEdit1->setPalette(QPalette());
-		this->keySequenceEdit2->setPalette(QPalette());
-		this->folderLineEdit1->setPalette(QPalette());
-		this->folderLineEdit2->setPalette(QPalette());
-		if (this->globalGroupBox->isChecked()) {
-			if (this->groupBox1->isChecked() && this->groupBox2->isChecked() && this->keySequenceEdit1->keySequence() == this->keySequenceEdit2->keySequence()) {
-				this->keySequenceEdit1->setPalette(redPalette);
-				this->keySequenceEdit2->setPalette(redPalette);
-				this->okButton->setEnabled(false);
+		okButton->setEnabled(true);
+		keySequenceEdit1->setPalette(QPalette());
+		keySequenceEdit2->setPalette(QPalette());
+		folderLineEdit1->setPalette(QPalette());
+		folderLineEdit2->setPalette(QPalette());
+		if (globalGroupBox->isChecked()) {
+			if (groupBox1->isChecked() && groupBox2->isChecked() && keySequenceEdit1->keySequence() == keySequenceEdit2->keySequence()) {
+				keySequenceEdit1->setPalette(redPalette);
+				keySequenceEdit2->setPalette(redPalette);
+				okButton->setEnabled(false);
 				result = false;
 			}
-			if (this->groupBox1->isChecked() && this->buttonGroup1->checkedId() != 0 && !QDir(this->folderLineEdit1->text()).exists()) {
-				this->folderLineEdit1->setPalette(redPalette);
-				this->okButton->setEnabled(false);
+			if (groupBox1->isChecked() && buttonGroup1->checkedId() != 0 && !QDir(folderLineEdit1->text()).exists()) {
+				folderLineEdit1->setPalette(redPalette);
+				okButton->setEnabled(false);
 				result = false;
 			}
-			if (this->groupBox2->isChecked() && this->buttonGroup2->checkedId() != 0 && !QDir(this->folderLineEdit2->text()).exists()) {
-				this->folderLineEdit2->setPalette(redPalette);
-				this->okButton->setEnabled(false);
+			if (groupBox2->isChecked() && buttonGroup2->checkedId() != 0 && !QDir(folderLineEdit2->text()).exists()) {
+				folderLineEdit2->setPalette(redPalette);
+				okButton->setEnabled(false);
 				result = false;
 			}
 		}
@@ -267,64 +267,64 @@ namespace sv {
 	}
 
 	void HotkeyDialog::selectFolder() {
-		QString startDirectory = (QObject::sender() == this->chooseButton1) ? this->folderLineEdit1->text() : this->folderLineEdit2->text();
+		QString startDirectory = (QObject::sender() == chooseButton1) ? folderLineEdit1->text() : folderLineEdit2->text();
 		QString path = QFileDialog::getExistingDirectory(this, tr("Choose Folder"), startDirectory);
 		if (!path.isEmpty()) {
-			(QObject::sender() == this->chooseButton1) ? this->folderLineEdit1->setText(path) : this->folderLineEdit2->setText(path);
+			(QObject::sender() == chooseButton1) ? folderLineEdit1->setText(path) : folderLineEdit2->setText(path);
 		}
 	}
 
 	bool HotkeyDialog::getHotkeysEnabled() {
-		return this->globalGroupBox->isChecked();
+		return globalGroupBox->isChecked();
 	}
 
 	bool HotkeyDialog::getHotkey1Enabled() {
-		return this->groupBox1->isChecked();
+		return groupBox1->isChecked();
 	}
 
 	bool HotkeyDialog::getHotkey2Enabled() {
-		return this->groupBox2->isChecked();
+		return groupBox2->isChecked();
 	}
 
 	QKeySequence HotkeyDialog::getKeySequence1() {
-		return this->keySequenceEdit1->keySequence();
+		return keySequenceEdit1->keySequence();
 	}
 
 	QKeySequence HotkeyDialog::getKeySequence2() {
-		return this->keySequenceEdit2->keySequence();
+		return keySequenceEdit2->keySequence();
 	}
 
 	int HotkeyDialog::getAction1() {
-		return this->buttonGroup1->checkedId();
+		return buttonGroup1->checkedId();
 	}
 
 	int HotkeyDialog::getAction2() {
-		return this->buttonGroup2->checkedId();
+		return buttonGroup2->checkedId();
 	}
 
 	QString HotkeyDialog::getFolder1() {
-		return this->folderLineEdit1->text();
+		return folderLineEdit1->text();
 	}
 
 	QString HotkeyDialog::getFolder2() {
-		return this->folderLineEdit2->text();
+		return folderLineEdit2->text();
 	}
 
 	bool HotkeyDialog::getIncludeSidecarFiles() {
-		return this->sidecarFileGroupBox->isChecked();
+		return sidecarFileGroupBox->isChecked();
 	}
 
 	int HotkeyDialog::getSidecarType() {
-		return this->sidecarButtonGroup->checkedId();
+		return sidecarButtonGroup->checkedId();
 	}
 
 	bool HotkeyDialog::getShowConfirmation() {
-		return this->confirmationCheckBox->isChecked();
+		return confirmationCheckBox->isChecked();
 	}
 
 	void HotkeyDialog::setHotkeysEnabled(bool value) {
-		this->globalGroupBox->setChecked(value);
-		this->reactToOkButtonClick();
+		globalGroupBox->setChecked(value);
+		reactToOkButtonClick();
 	}
 
 }
