@@ -1,5 +1,4 @@
-#ifndef SV_ABOUTDIALOG
-#define SV_ABOUTDIALOG
+#pragma once
 
 #include <memory>
 
@@ -49,4 +48,3 @@ namespace sv {
 		void processAutoUpdate();
 	};
 }
-#endif

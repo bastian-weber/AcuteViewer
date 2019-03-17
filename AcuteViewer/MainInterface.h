@@ -1,5 +1,4 @@
-#ifndef SV_MAININTERFACE
-#define SV_MAININTERFACE
+#pragma once
 
 #include <iostream>
 #include <future>
@@ -229,5 +228,3 @@ namespace sv {
 	}
 
 }
-
-#endif

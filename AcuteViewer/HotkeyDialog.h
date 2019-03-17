@@ -1,5 +1,4 @@
-#ifndef SV_HOTKEYDIALOG
-#define SV_HOTKEYDIALOG
+#pragma once
 
 #include <iostream>
 #include <memory>
@@ -90,4 +89,3 @@ namespace sv {
 		void selectFolder();
 	};
 }
-#endif

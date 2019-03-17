@@ -1,5 +1,4 @@
-#ifndef SV_SHARPENINGDIALOG
-#define SV_SHARPENINGDIALOG
+#pragma once
 
 #include <iostream>
 #include <memory>
@@ -45,4 +44,3 @@ namespace sv {
 		void sharpeningParametersChanged();
 	};
 }
-#endif

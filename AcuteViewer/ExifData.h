@@ -1,5 +1,4 @@
-#ifndef SV_EXIFDATA
-#define SV_EXIFDATA
+#pragma once
 
 #include <thread>
 #include <atomic>
@@ -69,5 +68,3 @@ namespace sv {
 	};
 
 }
-
-#endif

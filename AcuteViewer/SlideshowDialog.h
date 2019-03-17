@@ -1,5 +1,4 @@
-#ifndef SV_SLIDESHOWDIALOG
-#define SV_SLIDESHOWDIALOG
+#pragma once
 
 #include <iostream>
 #include <memory>
@@ -35,4 +34,3 @@ namespace sv {
 		void reactToOkButtonClick();
 	};
 }
-#endif

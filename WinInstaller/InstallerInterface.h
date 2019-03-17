@@ -1,5 +1,4 @@
-#ifndef WI_INSTALLERINTERFACE
-#define WI_INSTALLERINTERFACE
+#pragma once
 
 #include <iostream>
 
@@ -46,4 +45,3 @@ namespace wi {
 	signals:
 	};
 }
-#endif
