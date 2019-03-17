@@ -7,11 +7,11 @@ namespace sv {
 	Image::Image(cv::Mat mat, std::shared_ptr<ExifData> exifData, bool isPreviewImage) : matrix(mat), exifData(exifData), valid(true), previewImage(isPreviewImage) { }
 
 	cv::Mat Image::mat() const {
-		return this->matrix;
+		return matrix;
 	}
 
 	std::shared_ptr<ExifData> Image::exif() const {
-		return this->exifData;
+		return exifData;
 	}
 
 	bool Image::isValid() const {
@@ -19,7 +19,7 @@ namespace sv {
 	}
 
 	bool Image::isPreviewImage() const {
-		return this->previewImage;
+		return previewImage;
 	}
 
 	//============================================================================ MAIN INTERFACE ============================================================================\\
@@ -28,10 +28,10 @@ namespace sv {
 		: QMainWindow(parent),
 		settings(new QSettings(QSettings::IniFormat, QSettings::UserScope, "Acute Viewer", "Acute Viewer")) {
 
-		this->initialize();
+		initialize();
 
 		if (openWithFilename != QString()) {
-			this->loadImage(openWithFilename);
+			loadImage(openWithFilename);
 		}
 	}
 
@@ -39,41 +39,41 @@ namespace sv {
 		: QMainWindow(parent),
 		settings(new QSettings(QSettings::IniFormat, QSettings::UserScope, "Acute Viewer", "Acute Viewer")) {
 
-		this->initialize();
+		initialize();
 		
-		this->loadImages(openWithFilenames);
+		loadImages(openWithFilenames);
 	}
 
 	MainInterface::~MainInterface() {
-		delete this->imageView;
-		delete this->slideshowDialog;
-		delete this->sharpeningDialog;
-		delete this->fileMenu;
-		delete this->viewMenu;
-		delete this->slideshowMenu;
-		delete this->applicationMenu;
-		delete this->quitAction;
-		delete this->openAction;
-		delete this->refreshAction;
-		delete this->resetSettingsAction;
-		delete this->showInfoAction;
-		delete this->smoothingAction;
-		delete this->enlargementAction;
-		delete this->sharpeningAction;
-		delete this->sharpeningOptionsAction;
-		delete this->menuBarAutoHideAction;
-		delete this->slideshowAction;
-		delete this->slideshowNoDialogAction;
-		delete this->zoomLevelAction;
-		delete this->installAction;
-		delete this->uninstallAction;
-		delete this->mouseHideTimer;
-		delete this->threadCleanUpTimer;
-		delete this->slideshowTimer;
+		delete imageView;
+		delete slideshowDialog;
+		delete sharpeningDialog;
+		delete fileMenu;
+		delete viewMenu;
+		delete slideshowMenu;
+		delete applicationMenu;
+		delete quitAction;
+		delete openAction;
+		delete refreshAction;
+		delete resetSettingsAction;
+		delete showInfoAction;
+		delete smoothingAction;
+		delete enlargementAction;
+		delete sharpeningAction;
+		delete sharpeningOptionsAction;
+		delete menuBarAutoHideAction;
+		delete slideshowAction;
+		delete slideshowNoDialogAction;
+		delete zoomLevelAction;
+		delete installAction;
+		delete uninstallAction;
+		delete mouseHideTimer;
+		delete threadCleanUpTimer;
+		delete slideshowTimer;
 	}
 
 	QSize MainInterface::sizeHint() const {
-		return this->settings->value("windowSize", QSize(900, 600)).toSize();
+		return settings->value("windowSize", QSize(900, 600)).toSize();
 		//return QSize(900, 600);
 	}
 
@@ -82,14 +82,14 @@ namespace sv {
 	bool MainInterface::eventFilter(QObject* object, QEvent* e) {
 		if (e->type() == QEvent::MouseButtonRelease) {
 			QMouseEvent* keyEvent = (QMouseEvent*)e;
-			this->mouseReleaseEvent(keyEvent);
+			mouseReleaseEvent(keyEvent);
 		} else if (e->type() == QEvent::Wheel) {
-			if (this->menuBar()->isVisible()) {
-				this->hideMenuBar();
+			if (menuBar()->isVisible()) {
+				hideMenuBar();
 			}
 		} else if (e->type() == QEvent::MouseMove) {
 			QMouseEvent* keyEvent = (QMouseEvent*)e;
-			this->mouseMoveEvent(keyEvent);
+			mouseMoveEvent(keyEvent);
 		}
 		return false;
 	}
@@ -120,16 +120,16 @@ namespace sv {
 	void MainInterface::keyPressEvent(QKeyEvent* e) {
 		if (e->modifiers() == (Qt::ControlModifier | Qt::ShiftModifier)) {
 			if (e->key() == Qt::Key_Right) {
-				this->changeFontSizeBy(1);
+				changeFontSizeBy(1);
 				e->accept();
 			} else if (e->key() == Qt::Key_Left) {
-				this->changeFontSizeBy(-1);
+				changeFontSizeBy(-1);
 				e->accept();
 			} else if (e->key() == Qt::Key_Up) {
-				this->changeLineSpacingBy(1);
+				changeLineSpacingBy(1);
 				e->accept();
 			} else if (e->key() == Qt::Key_Down) {
-				this->changeLineSpacingBy(-1);
+				changeLineSpacingBy(-1);
 				e->accept();
 			}
 		} else if (e->key() == Qt::Key_Right || e->key() == Qt::Key_Down) {
@@ -139,10 +139,10 @@ namespace sv {
 			loadPreviousImage();
 			e->accept();
 		} else if (e->key() == Qt::Key_Escape) {
-			if (this->menuBar()->isVisible()) {
-				this->hideMenuBar();
-			} else if (this->isFullScreen()) {
-				this->exitFullscreen();
+			if (menuBar()->isVisible()) {
+				hideMenuBar();
+			} else if (isFullScreen()) {
+				exitFullscreen();
 			}
 		} else {
 			e->ignore();
@@ -150,52 +150,52 @@ namespace sv {
 	}
 
 	void MainInterface::keyReleaseEvent(QKeyEvent* e) {
-		if (e->key() == Qt::Key_Alt && !this->skipNextAltRelease) {
-			if (!this->menuBar()->isVisible()){
-				this->showMenuBar();
+		if (e->key() == Qt::Key_Alt && !skipNextAltRelease) {
+			if (!menuBar()->isVisible()){
+				showMenuBar();
 				e->accept();
 			} else {
-				this->hideMenuBar();
+				hideMenuBar();
 				e->ignore();
 			}
 		}
 		if (e->key() == Qt::Key_Alt) {
-			this->skipNextAltRelease = false;
+			skipNextAltRelease = false;
 		}
 	}
 
 	void MainInterface::mouseDoubleClickEvent(QMouseEvent* e) {
 		if (e->button() == Qt::LeftButton) {
-			this->toggleFullscreen();
+			toggleFullscreen();
 			e->accept();
 		}
 	}
 
 	void MainInterface::mouseReleaseEvent(QMouseEvent* e) {
-		if (e->button() == Qt::ForwardButton) this->loadNextImage();
-		if (e->button() == Qt::BackButton) this->loadPreviousImage();
-		if (this->menuBar()->isVisible()) {
-			this->hideMenuBar();
+		if (e->button() == Qt::ForwardButton) loadNextImage();
+		if (e->button() == Qt::BackButton) loadPreviousImage();
+		if (menuBar()->isVisible()) {
+			hideMenuBar();
 		}
 	}
 
 	void MainInterface::mouseMoveEvent(QMouseEvent* e) {
-		if (this->isFullScreen()) {
-			this->showMouse();
-			this->enableAutomaticMouseHide();
+		if (isFullScreen()) {
+			showMouse();
+			enableAutomaticMouseHide();
 		}
 		e->ignore();
 	}
 
 	void MainInterface::changeEvent(QEvent* e) {
 		if (e->type() == QEvent::WindowStateChange) {
-			if (!this->isMinimized() && !this->isFullScreen()) {
-				this->settings->setValue("maximized", this->isMaximized());
-				this->saveSizeAction->setEnabled(!this->isMaximized());
-			} else if (this->isFullScreen()) {
+			if (!isMinimized() && !isFullScreen()) {
+				settings->setValue("maximized", isMaximized());
+				saveSizeAction->setEnabled(!isMaximized());
+			} else if (isFullScreen()) {
 				QWindowStateChangeEvent* windowStateChangeEvent = static_cast<QWindowStateChangeEvent*>(e);
-				this->settings->setValue("maximized", bool(windowStateChangeEvent->oldState() & Qt::WindowMaximized));
-				this->saveSizeAction->setEnabled(false);
+				settings->setValue("maximized", bool(windowStateChangeEvent->oldState() & Qt::WindowMaximized));
+				saveSizeAction->setEnabled(false);
 			}
 		}
 	}
@@ -203,11 +203,11 @@ namespace sv {
 	void MainInterface::wheelEvent(QWheelEvent * e) {
 		if (e->modifiers() == Qt::ShiftModifier) {
 			if (e->delta() > 0) {
-				this->userRotation -= 10;
-				this->imageView->rotateBy(-10);
+				userRotation -= 10;
+				imageView->rotateBy(-10);
 			} else if (e->delta() < 0) {
-				this->userRotation += 10;
-				this->imageView->rotateBy(10);
+				userRotation += 10;
+				imageView->rotateBy(10);
 			}
 		}
 	}
@@ -218,359 +218,359 @@ namespace sv {
 		setAcceptDrops(true);
 		qRegisterMetaType<Image>("Image");
 		QObject::connect(this, SIGNAL(readImageFinished(Image)), this, SLOT(reactToReadImageCompletion(Image)));
-		this->setWindowTitle(this->programTitle);
+		setWindowTitle(programTitle);
 
-		this->imageView = new hb::ImageView(this);
-		this->imageView->setShowInterfaceOutline(false);
-		this->imageView->setUseSmoothTransform(false);
-		this->imageView->installEventFilter(this);
-		this->imageView->setExternalPostPaintFunction(this, &MainInterface::infoPaintFunction);
-		this->imageView->setInterfaceBackgroundColor(Qt::black);
-		this->imageView->setPreventMagnificationInDefaultZoom(true);
-		this->imageView->setUseGpu(true);
-		this->imageView->setPostResizeSharpening(false, this->settings->value("sharpeningStrength", 0.5).toDouble(), this->settings->value("sharpeningRadius", 0.5).toDouble());
-		setCentralWidget(this->imageView);
+		imageView = new hb::ImageView(this);
+		imageView->setShowInterfaceOutline(false);
+		imageView->setUseSmoothTransform(false);
+		imageView->installEventFilter(this);
+		imageView->setExternalPostPaintFunction(this, &MainInterface::infoPaintFunction);
+		imageView->setInterfaceBackgroundColor(Qt::black);
+		imageView->setPreventMagnificationInDefaultZoom(true);
+		imageView->setUseGpu(true);
+		imageView->setPostResizeSharpening(false, settings->value("sharpeningStrength", 0.5).toDouble(), settings->value("sharpeningRadius", 0.5).toDouble());
+		setCentralWidget(imageView);
 
-		this->slideshowDialog = new SlideshowDialog(settings, this);
-		this->slideshowDialog->setWindowModality(Qt::WindowModal);
-		QObject::connect(this->slideshowDialog, &SlideshowDialog::accepted, this, &MainInterface::startSlideshow);
-		QObject::connect(this->slideshowDialog, SIGNAL(finished(int)), this, SLOT(enableAutomaticMouseHide()));
+		slideshowDialog = new SlideshowDialog(settings, this);
+		slideshowDialog->setWindowModality(Qt::WindowModal);
+		QObject::connect(slideshowDialog, &SlideshowDialog::accepted, this, &MainInterface::startSlideshow);
+		QObject::connect(slideshowDialog, SIGNAL(finished(int)), this, SLOT(enableAutomaticMouseHide()));
 
-		this->sharpeningDialog = new SharpeningDialog(settings, this);
-		QObject::connect(this->sharpeningDialog, SIGNAL(sharpeningParametersChanged()), this, SLOT(updateSharpening()));
-		QObject::connect(this->sharpeningDialog, SIGNAL(finished(int)), this, SLOT(enableAutomaticMouseHide()));
+		sharpeningDialog = new SharpeningDialog(settings, this);
+		QObject::connect(sharpeningDialog, SIGNAL(sharpeningParametersChanged()), this, SLOT(updateSharpening()));
+		QObject::connect(sharpeningDialog, SIGNAL(finished(int)), this, SLOT(enableAutomaticMouseHide()));
 
-		this->hotkeyDialog = new HotkeyDialog(settings, this);
-		this->hotkeyDialog->setWindowModality(Qt::WindowModal);
-		QObject::connect(this->hotkeyDialog, SIGNAL(finished(int)), this, SLOT(enableAutomaticMouseHide()));
-		QObject::connect(this->hotkeyDialog, SIGNAL(finished(int)), this, SLOT(updateCustomHotkeys()));
+		hotkeyDialog = new HotkeyDialog(settings, this);
+		hotkeyDialog->setWindowModality(Qt::WindowModal);
+		QObject::connect(hotkeyDialog, SIGNAL(finished(int)), this, SLOT(enableAutomaticMouseHide()));
+		QObject::connect(hotkeyDialog, SIGNAL(finished(int)), this, SLOT(updateCustomHotkeys()));
 
-		this->aboutDialog = new AboutDialog(settings, this);
-		this->aboutDialog->setWindowModality(Qt::WindowModal);
+		aboutDialog = new AboutDialog(settings, this);
+		aboutDialog->setWindowModality(Qt::WindowModal);
 
-		QObject::connect(this->menuBar(), SIGNAL(triggered(QAction*)), this, SLOT(hideMenuBar(QAction*)));
-		this->fileMenu = this->menuBar()->addMenu(tr("&File"));
-		this->viewMenu = this->menuBar()->addMenu(tr("&View"));
-		this->zoomMenu = this->menuBar()->addMenu(tr("&Zoom"));
-		this->rotationMenu = this->menuBar()->addMenu(tr("&Rotation"));
-		this->sharpeningMenu = this->menuBar()->addMenu(tr("&Sharpening"));
-		this->slideshowMenu = this->menuBar()->addMenu(tr("S&lideshow"));
+		QObject::connect(menuBar(), SIGNAL(triggered(QAction*)), this, SLOT(hideMenuBar(QAction*)));
+		fileMenu = menuBar()->addMenu(tr("&File"));
+		viewMenu = menuBar()->addMenu(tr("&View"));
+		zoomMenu = menuBar()->addMenu(tr("&Zoom"));
+		rotationMenu = menuBar()->addMenu(tr("&Rotation"));
+		sharpeningMenu = menuBar()->addMenu(tr("&Sharpening"));
+		slideshowMenu = menuBar()->addMenu(tr("S&lideshow"));
 
-		this->applicationMenu = this->menuBar()->addMenu(tr("&Application"));
+		applicationMenu = menuBar()->addMenu(tr("&Application"));
 #ifdef Q_OS_WIN
-		QObject::connect(this->applicationMenu, SIGNAL(aboutToShow()), this, SLOT(populateApplicationMenu()));
-		this->installAction = new QAction(tr("&Install"), this);
-		QObject::connect(this->installAction, SIGNAL(triggered()), this, SLOT(runInstaller()));
-		this->uninstallAction = new QAction(tr("&Uninstall"), this);
-		QObject::connect(this->uninstallAction, SIGNAL(triggered()), this, SLOT(runUninstaller()));
+		QObject::connect(applicationMenu, SIGNAL(aboutToShow()), this, SLOT(populateApplicationMenu()));
+		installAction = new QAction(tr("&Install"), this);
+		QObject::connect(installAction, SIGNAL(triggered()), this, SLOT(runInstaller()));
+		uninstallAction = new QAction(tr("&Uninstall"), this);
+		QObject::connect(uninstallAction, SIGNAL(triggered()), this, SLOT(runUninstaller()));
 #endif
 
-		this->aboutAction = new QAction(tr("&About"), this);
-		this->aboutAction->setShortcut(Qt::Key_F1);
-		this->aboutAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->aboutAction, SIGNAL(triggered()), this->aboutDialog, SLOT(show()));
-		this->applicationMenu->addAction(aboutAction);
-		this->addAction(this->aboutAction);
+		aboutAction = new QAction(tr("&About"), this);
+		aboutAction->setShortcut(Qt::Key_F1);
+		aboutAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(aboutAction, SIGNAL(triggered()), aboutDialog, SLOT(show()));
+		applicationMenu->addAction(aboutAction);
+		addAction(aboutAction);
 
-		this->openAction = new QAction(tr("&Open File"), this);
-		this->openAction->setShortcut(QKeySequence::Open);
-		this->openAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->openAction, SIGNAL(triggered()), this, SLOT(openDialog()));
-		this->fileMenu->addAction(this->openAction);
-		this->addAction(this->openAction);
+		openAction = new QAction(tr("&Open File"), this);
+		openAction->setShortcut(QKeySequence::Open);
+		openAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(openAction, SIGNAL(triggered()), this, SLOT(openDialog()));
+		fileMenu->addAction(openAction);
+		addAction(openAction);
 
-		this->refreshAction = new QAction(tr("&Refresh"), this);
-		this->refreshAction->setEnabled(false);
-		this->refreshAction->setShortcut(Qt::Key_F5);
-		this->refreshAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->refreshAction, SIGNAL(triggered()), this, SLOT(refresh()));
-		this->fileMenu->addAction(this->refreshAction);
-		this->addAction(this->refreshAction);
+		refreshAction = new QAction(tr("&Refresh"), this);
+		refreshAction->setEnabled(false);
+		refreshAction->setShortcut(Qt::Key_F5);
+		refreshAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(refreshAction, SIGNAL(triggered()), this, SLOT(refresh()));
+		fileMenu->addAction(refreshAction);
+		addAction(refreshAction);
 
-		this->fileMenu->addSeparator();
+		fileMenu->addSeparator();
 
-		this->fileActionAction = new QAction(tr("&Enable File Action Hotkeys"), this);
-		this->fileActionAction->setCheckable(true);
-		this->fileActionAction->setChecked(false);
-		this->fileActionAction->setShortcut(Qt::CTRL + Qt::Key_H);
-		this->fileActionAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->fileActionAction, SIGNAL(triggered(bool)), this->hotkeyDialog, SLOT(setHotkeysEnabled(bool)));
-		this->fileMenu->addAction(this->fileActionAction);
-		this->addAction(this->fileActionAction);
+		fileActionAction = new QAction(tr("&Enable File Action Hotkeys"), this);
+		fileActionAction->setCheckable(true);
+		fileActionAction->setChecked(false);
+		fileActionAction->setShortcut(Qt::CTRL + Qt::Key_H);
+		fileActionAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(fileActionAction, SIGNAL(triggered(bool)), hotkeyDialog, SLOT(setHotkeysEnabled(bool)));
+		fileMenu->addAction(fileActionAction);
+		addAction(fileActionAction);
 
-		this->hotkeyOptionsAction = new QAction(tr("&Hotkey Options..."), this);
-		this->hotkeyOptionsAction->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_O);
-		this->hotkeyOptionsAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->hotkeyOptionsAction, SIGNAL(triggered()), this, SLOT(showHotkeyDialog()));
-		this->fileMenu->addAction(this->hotkeyOptionsAction);
-		this->addAction(this->hotkeyOptionsAction);
+		hotkeyOptionsAction = new QAction(tr("&Hotkey Options..."), this);
+		hotkeyOptionsAction->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_O);
+		hotkeyOptionsAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(hotkeyOptionsAction, SIGNAL(triggered()), this, SLOT(showHotkeyDialog()));
+		fileMenu->addAction(hotkeyOptionsAction);
+		addAction(hotkeyOptionsAction);
 
-		this->fileMenu->addSeparator();
+		fileMenu->addSeparator();
 
-		this->includePartiallySupportedFilesAction = new QAction(tr("&Include Preview-Only Files in Directory List"), this);
-		this->includePartiallySupportedFilesAction->setCheckable(true);
-		this->includePartiallySupportedFilesAction->setChecked(true);
-		this->includePartiallySupportedFilesAction->setShortcut(Qt::CTRL + Qt::Key_P);
-		this->includePartiallySupportedFilesAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->includePartiallySupportedFilesAction, SIGNAL(triggered(bool)), this, SLOT(togglePreviewOnlyFiles(bool)));
-		this->fileMenu->addAction(this->includePartiallySupportedFilesAction);
-		this->addAction(this->includePartiallySupportedFilesAction);
+		includePartiallySupportedFilesAction = new QAction(tr("&Include Preview-Only Files in Directory List"), this);
+		includePartiallySupportedFilesAction->setCheckable(true);
+		includePartiallySupportedFilesAction->setChecked(true);
+		includePartiallySupportedFilesAction->setShortcut(Qt::CTRL + Qt::Key_P);
+		includePartiallySupportedFilesAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(includePartiallySupportedFilesAction, SIGNAL(triggered(bool)), this, SLOT(togglePreviewOnlyFiles(bool)));
+		fileMenu->addAction(includePartiallySupportedFilesAction);
+		addAction(includePartiallySupportedFilesAction);
 
-		this->fileMenu->addSeparator();
+		fileMenu->addSeparator();
 
-		this->resetSettingsAction = new QAction(tr("&Reset All Settings to Default"), this);
-		QObject::connect(this->resetSettingsAction, SIGNAL(triggered()), this, SLOT(resetSettings()));
-		this->fileMenu->addAction(this->resetSettingsAction);
+		resetSettingsAction = new QAction(tr("&Reset All Settings to Default"), this);
+		QObject::connect(resetSettingsAction, SIGNAL(triggered()), this, SLOT(resetSettings()));
+		fileMenu->addAction(resetSettingsAction);
 
-		this->fileMenu->addSeparator();
+		fileMenu->addSeparator();
 
-		this->quitAction = new QAction(tr("&Quit"), this);
-		this->quitAction->setShortcut(Qt::CTRL + Qt::Key_Q);
-		this->quitAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->quitAction, SIGNAL(triggered()), this, SLOT(quit()));
-		this->fileMenu->addAction(this->quitAction);
+		quitAction = new QAction(tr("&Quit"), this);
+		quitAction->setShortcut(Qt::CTRL + Qt::Key_Q);
+		quitAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(quitAction, SIGNAL(triggered()), this, SLOT(quit()));
+		fileMenu->addAction(quitAction);
 		//so shortcuts also work when menu bar is not visible
-		this->addAction(this->quitAction);
+		addAction(quitAction);
 
-		this->showInfoAction = new QAction(tr("Show &Info Overlay"), this);
-		this->showInfoAction->setCheckable(true);
-		this->showInfoAction->setChecked(false);
-		this->showInfoAction->setShortcut(Qt::Key_I);
-		this->showInfoAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->showInfoAction, SIGNAL(triggered(bool)), this, SLOT(toggleInfoOverlay(bool)));
-		this->viewMenu->addAction(this->showInfoAction);
-		this->addAction(this->showInfoAction);
+		showInfoAction = new QAction(tr("Show &Info Overlay"), this);
+		showInfoAction->setCheckable(true);
+		showInfoAction->setChecked(false);
+		showInfoAction->setShortcut(Qt::Key_I);
+		showInfoAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(showInfoAction, SIGNAL(triggered(bool)), this, SLOT(toggleInfoOverlay(bool)));
+		viewMenu->addAction(showInfoAction);
+		addAction(showInfoAction);
 
-		this->zoomLevelAction = new QAction(tr("Show &Zoom Level Overlay"), this);
-		this->zoomLevelAction->setCheckable(true);
-		this->zoomLevelAction->setChecked(false);
-		this->zoomLevelAction->setShortcut(Qt::Key_Z);
-		this->zoomLevelAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->zoomLevelAction, SIGNAL(triggered(bool)), this, SLOT(toggleZoomLevelOverlay(bool)));
-		this->viewMenu->addAction(this->zoomLevelAction);
-		this->addAction(this->zoomLevelAction);
+		zoomLevelAction = new QAction(tr("Show &Zoom Level Overlay"), this);
+		zoomLevelAction->setCheckable(true);
+		zoomLevelAction->setChecked(false);
+		zoomLevelAction->setShortcut(Qt::Key_Z);
+		zoomLevelAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(zoomLevelAction, SIGNAL(triggered(bool)), this, SLOT(toggleZoomLevelOverlay(bool)));
+		viewMenu->addAction(zoomLevelAction);
+		addAction(zoomLevelAction);
 
-		this->backgroundColorMenu = this->viewMenu->addMenu(tr("&Background Colour"));
+		backgroundColorMenu = viewMenu->addMenu(tr("&Background Colour"));
 
-		this->backgroundColorBlackAction = new QAction(tr("&Black"), this);
-		this->backgroundColorBlackAction->setCheckable(true);
-		this->backgroundColorBlackAction->setChecked(false);
-		this->backgroundColorBlackAction->setShortcut(Qt::CTRL + Qt::Key_B);
-		this->backgroundColorBlackAction->setShortcutContext(Qt::ApplicationShortcut);
-		this->backgroundColorMenu->addAction(this->backgroundColorBlackAction);
-		this->addAction(this->backgroundColorBlackAction);
+		backgroundColorBlackAction = new QAction(tr("&Black"), this);
+		backgroundColorBlackAction->setCheckable(true);
+		backgroundColorBlackAction->setChecked(false);
+		backgroundColorBlackAction->setShortcut(Qt::CTRL + Qt::Key_B);
+		backgroundColorBlackAction->setShortcutContext(Qt::ApplicationShortcut);
+		backgroundColorMenu->addAction(backgroundColorBlackAction);
+		addAction(backgroundColorBlackAction);
 
-		this->backgroundColorGrayAction = new QAction(tr("Dark &Grey"), this);
-		this->backgroundColorGrayAction->setCheckable(true);
-		this->backgroundColorGrayAction->setChecked(false);
-		this->backgroundColorGrayAction->setShortcut(Qt::CTRL + Qt::Key_G);
-		this->backgroundColorGrayAction->setShortcutContext(Qt::ApplicationShortcut);
-		this->backgroundColorMenu->addAction(this->backgroundColorGrayAction);
-		this->addAction(this->backgroundColorGrayAction);
+		backgroundColorGrayAction = new QAction(tr("Dark &Grey"), this);
+		backgroundColorGrayAction->setCheckable(true);
+		backgroundColorGrayAction->setChecked(false);
+		backgroundColorGrayAction->setShortcut(Qt::CTRL + Qt::Key_G);
+		backgroundColorGrayAction->setShortcutContext(Qt::ApplicationShortcut);
+		backgroundColorMenu->addAction(backgroundColorGrayAction);
+		addAction(backgroundColorGrayAction);
 
-		this->backgroundColorWhiteAction = new QAction(tr("&White"), this);
-		this->backgroundColorWhiteAction->setCheckable(true);
-		this->backgroundColorWhiteAction->setChecked(false);
-		this->backgroundColorWhiteAction->setShortcut(Qt::CTRL + Qt::Key_W);
-		this->backgroundColorWhiteAction->setShortcutContext(Qt::ApplicationShortcut);
-		this->backgroundColorMenu->addAction(this->backgroundColorWhiteAction);
-		this->addAction(this->backgroundColorWhiteAction);
+		backgroundColorWhiteAction = new QAction(tr("&White"), this);
+		backgroundColorWhiteAction->setCheckable(true);
+		backgroundColorWhiteAction->setChecked(false);
+		backgroundColorWhiteAction->setShortcut(Qt::CTRL + Qt::Key_W);
+		backgroundColorWhiteAction->setShortcutContext(Qt::ApplicationShortcut);
+		backgroundColorMenu->addAction(backgroundColorWhiteAction);
+		addAction(backgroundColorWhiteAction);
 
-		this->backgroundColorCustomAction = new QAction(tr("&Custom"), this);
-		this->backgroundColorCustomAction->setCheckable(true);
-		this->backgroundColorCustomAction->setChecked(false);
-		this->backgroundColorCustomAction->setShortcut(Qt::CTRL + Qt::Key_C);
-		this->backgroundColorCustomAction->setShortcutContext(Qt::ApplicationShortcut);
-		this->backgroundColorMenu->addAction(this->backgroundColorCustomAction);
-		this->addAction(this->backgroundColorCustomAction);
+		backgroundColorCustomAction = new QAction(tr("&Custom"), this);
+		backgroundColorCustomAction->setCheckable(true);
+		backgroundColorCustomAction->setChecked(false);
+		backgroundColorCustomAction->setShortcut(Qt::CTRL + Qt::Key_C);
+		backgroundColorCustomAction->setShortcutContext(Qt::ApplicationShortcut);
+		backgroundColorMenu->addAction(backgroundColorCustomAction);
+		addAction(backgroundColorCustomAction);
 
-		this->backgroundColorActionGroup = new QActionGroup(this);
-		this->backgroundColorActionGroup->addAction(this->backgroundColorBlackAction);
-		this->backgroundColorActionGroup->addAction(this->backgroundColorGrayAction);
-		this->backgroundColorActionGroup->addAction(this->backgroundColorWhiteAction);
-		this->backgroundColorActionGroup->addAction(this->backgroundColorCustomAction);
-		this->backgroundColorActionGroup->setExclusive(true);
-		QObject::connect(this->backgroundColorActionGroup, SIGNAL(triggered(QAction*)), this, SLOT(changeBackgroundColor(QAction*)));
+		backgroundColorActionGroup = new QActionGroup(this);
+		backgroundColorActionGroup->addAction(backgroundColorBlackAction);
+		backgroundColorActionGroup->addAction(backgroundColorGrayAction);
+		backgroundColorActionGroup->addAction(backgroundColorWhiteAction);
+		backgroundColorActionGroup->addAction(backgroundColorCustomAction);
+		backgroundColorActionGroup->setExclusive(true);
+		QObject::connect(backgroundColorActionGroup, SIGNAL(triggered(QAction*)), this, SLOT(changeBackgroundColor(QAction*)));
 
-		this->viewMenu->addSeparator();
+		viewMenu->addSeparator();
 
-		this->fullscreenAction = new QAction(tr("&Fullscreen"), this);
-		this->fullscreenAction->setCheckable(true);
-		this->fullscreenAction->setChecked(false);
-		this->fullscreenAction->setShortcut(Qt::Key_F);
-		this->fullscreenAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->fullscreenAction, SIGNAL(triggered(bool)), this, SLOT(toggleFullscreen()));
-		this->viewMenu->addAction(this->fullscreenAction);
-		this->addAction(this->fullscreenAction);
+		fullscreenAction = new QAction(tr("&Fullscreen"), this);
+		fullscreenAction->setCheckable(true);
+		fullscreenAction->setChecked(false);
+		fullscreenAction->setShortcut(Qt::Key_F);
+		fullscreenAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(fullscreenAction, SIGNAL(triggered(bool)), this, SLOT(toggleFullscreen()));
+		viewMenu->addAction(fullscreenAction);
+		addAction(fullscreenAction);
 
-		this->viewMenu->addSeparator();
+		viewMenu->addSeparator();
 
-		this->menuBarAutoHideAction = new QAction(tr("&Always Show Menu Bar"), this);
-		this->menuBarAutoHideAction->setCheckable(true);
-		this->menuBarAutoHideAction->setChecked(false);
-		this->menuBarAutoHideAction->setShortcut(Qt::Key_M);
-		this->menuBarAutoHideAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->menuBarAutoHideAction, SIGNAL(triggered(bool)), this, SLOT(toggleMenuBarAutoHide(bool)));
-		this->viewMenu->addAction(this->menuBarAutoHideAction);
-		this->addAction(this->menuBarAutoHideAction);
+		menuBarAutoHideAction = new QAction(tr("&Always Show Menu Bar"), this);
+		menuBarAutoHideAction->setCheckable(true);
+		menuBarAutoHideAction->setChecked(false);
+		menuBarAutoHideAction->setShortcut(Qt::Key_M);
+		menuBarAutoHideAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(menuBarAutoHideAction, SIGNAL(triggered(bool)), this, SLOT(toggleMenuBarAutoHide(bool)));
+		viewMenu->addAction(menuBarAutoHideAction);
+		addAction(menuBarAutoHideAction);
 
-		this->viewMenu->addSeparator();
+		viewMenu->addSeparator();
 
-		this->gpuAction = new QAction(tr("&Use GPU Acceleration"), this);
-		this->gpuAction->setCheckable(true);
-		this->gpuAction->setChecked(this->imageView->getUseGpu());
-		QObject::connect(this->gpuAction, SIGNAL(triggered(bool)), this, SLOT(toggleGpu(bool)));
-		this->viewMenu->addAction(this->gpuAction);
+		gpuAction = new QAction(tr("&Use GPU Acceleration"), this);
+		gpuAction->setCheckable(true);
+		gpuAction->setChecked(imageView->getUseGpu());
+		QObject::connect(gpuAction, SIGNAL(triggered(bool)), this, SLOT(toggleGpu(bool)));
+		viewMenu->addAction(gpuAction);
 
-		this->viewMenu->addSeparator();
+		viewMenu->addSeparator();
 
-		this->saveSizeAction = new QAction(tr("&Save Current Window Size and Position as Default"), this);
-		QObject::connect(this->saveSizeAction, SIGNAL(triggered(bool)), this, SLOT(saveWindowSize()));
-		this->viewMenu->addAction(this->saveSizeAction);
+		saveSizeAction = new QAction(tr("&Save Current Window Size and Position as Default"), this);
+		QObject::connect(saveSizeAction, SIGNAL(triggered(bool)), this, SLOT(saveWindowSize()));
+		viewMenu->addAction(saveSizeAction);
 
-		this->enlargementAction = new QAction(tr("&Enlarge Smaller Images to Fit Window"), this);
-		this->enlargementAction->setCheckable(true);
-		this->enlargementAction->setChecked(false);
-		this->enlargementAction->setShortcut(Qt::CTRL + Qt::Key_U);
-		this->enlargementAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->enlargementAction, SIGNAL(triggered(bool)), this, SLOT(toggleSmallImageUpscaling(bool)));
-		this->zoomMenu->addAction(this->enlargementAction);
-		this->addAction(this->enlargementAction);
+		enlargementAction = new QAction(tr("&Enlarge Smaller Images to Fit Window"), this);
+		enlargementAction->setCheckable(true);
+		enlargementAction->setChecked(false);
+		enlargementAction->setShortcut(Qt::CTRL + Qt::Key_U);
+		enlargementAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(enlargementAction, SIGNAL(triggered(bool)), this, SLOT(toggleSmallImageUpscaling(bool)));
+		zoomMenu->addAction(enlargementAction);
+		addAction(enlargementAction);
 
-		this->smoothingAction = new QAction(tr("Use &Smooth Interpolation when Enlarging"), this);
-		this->smoothingAction->setCheckable(true);
-		this->smoothingAction->setChecked(false);
-		this->smoothingAction->setShortcut(Qt::CTRL + Qt::Key_S);
-		this->smoothingAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->smoothingAction, SIGNAL(triggered(bool)), this, SLOT(toggleEnglargmentInterpolationMethod(bool)));
-		this->zoomMenu->addAction(this->smoothingAction);
-		this->addAction(this->smoothingAction);
+		smoothingAction = new QAction(tr("Use &Smooth Interpolation when Enlarging"), this);
+		smoothingAction->setCheckable(true);
+		smoothingAction->setChecked(false);
+		smoothingAction->setShortcut(Qt::CTRL + Qt::Key_S);
+		smoothingAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(smoothingAction, SIGNAL(triggered(bool)), this, SLOT(toggleEnglargmentInterpolationMethod(bool)));
+		zoomMenu->addAction(smoothingAction);
+		addAction(smoothingAction);
 
-		this->zoomMenu->addSeparator();
+		zoomMenu->addSeparator();
 
-		this->zoomToFitAction = new QAction(tr("Zoom to &Fit"), this);
-		this->zoomToFitAction->setShortcut(Qt::CTRL + Qt::Key_0);
-		this->zoomToFitAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->zoomToFitAction, SIGNAL(triggered(bool)), this->imageView, SLOT(resetZoom()));
-		this->zoomMenu->addAction(this->zoomToFitAction);
-		this->addAction(this->zoomToFitAction);
+		zoomToFitAction = new QAction(tr("Zoom to &Fit"), this);
+		zoomToFitAction->setShortcut(Qt::CTRL + Qt::Key_0);
+		zoomToFitAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(zoomToFitAction, SIGNAL(triggered(bool)), imageView, SLOT(resetZoom()));
+		zoomMenu->addAction(zoomToFitAction);
+		addAction(zoomToFitAction);
 
-		this->zoomTo100Action = new QAction(tr("Zoom to &100%"), this);
-		this->zoomTo100Action->setShortcut(Qt::CTRL + Qt::ALT + Qt::Key_0);
-		this->zoomTo100Action->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->zoomTo100Action, SIGNAL(triggered(bool)), this, SLOT(zoomTo100()));
-		this->zoomMenu->addAction(this->zoomTo100Action);
-		this->addAction(this->zoomTo100Action);
+		zoomTo100Action = new QAction(tr("Zoom to &100%"), this);
+		zoomTo100Action->setShortcut(Qt::CTRL + Qt::ALT + Qt::Key_0);
+		zoomTo100Action->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(zoomTo100Action, SIGNAL(triggered(bool)), this, SLOT(zoomTo100()));
+		zoomMenu->addAction(zoomTo100Action);
+		addAction(zoomTo100Action);
 
-		this->rotateLeftAction = new QAction(tr("Rotate View &Left"), this);
-		this->rotateLeftAction->setShortcut(Qt::CTRL + Qt::Key_Left);
-		this->rotateLeftAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->rotateLeftAction, SIGNAL(triggered(bool)), this, SLOT(rotateLeft()));
-		this->rotationMenu->addAction(this->rotateLeftAction);
-		this->addAction(this->rotateLeftAction);
+		rotateLeftAction = new QAction(tr("Rotate View &Left"), this);
+		rotateLeftAction->setShortcut(Qt::CTRL + Qt::Key_Left);
+		rotateLeftAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(rotateLeftAction, SIGNAL(triggered(bool)), this, SLOT(rotateLeft()));
+		rotationMenu->addAction(rotateLeftAction);
+		addAction(rotateLeftAction);
 
-		this->rotateRightAction = new QAction(tr("Rotate &View Right"), this);
-		this->rotateRightAction->setShortcut(Qt::CTRL + Qt::Key_Right);
-		this->rotateRightAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->rotateRightAction, SIGNAL(triggered(bool)), this, SLOT(rotateRight()));
-		this->rotationMenu->addAction(this->rotateRightAction);
-		this->addAction(this->rotateRightAction);
+		rotateRightAction = new QAction(tr("Rotate &View Right"), this);
+		rotateRightAction->setShortcut(Qt::CTRL + Qt::Key_Right);
+		rotateRightAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(rotateRightAction, SIGNAL(triggered(bool)), this, SLOT(rotateRight()));
+		rotationMenu->addAction(rotateRightAction);
+		addAction(rotateRightAction);
 
-		this->resetRotationAction = new QAction(tr("&Reset Rotation"), this);
-		this->resetRotationAction->setShortcut(Qt::SHIFT + Qt::Key_Escape);
-		this->resetRotationAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->resetRotationAction, SIGNAL(triggered(bool)), this, SLOT(resetRotation()));
-		this->rotationMenu->addAction(this->resetRotationAction);
-		this->addAction(this->resetRotationAction);
+		resetRotationAction = new QAction(tr("&Reset Rotation"), this);
+		resetRotationAction->setShortcut(Qt::SHIFT + Qt::Key_Escape);
+		resetRotationAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(resetRotationAction, SIGNAL(triggered(bool)), this, SLOT(resetRotation()));
+		rotationMenu->addAction(resetRotationAction);
+		addAction(resetRotationAction);
 
-		this->rotationMenu->addSeparator();
+		rotationMenu->addSeparator();
 
-		this->autoRotationAction = new QAction(tr("&Automatic EXIF-based rotation"), this);
-		this->autoRotationAction->setCheckable(true);
-		this->autoRotationAction->setChecked(true);
-		this->autoRotationAction->setShortcut(Qt::CTRL + Qt::Key_R);
-		this->autoRotationAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->autoRotationAction, SIGNAL(triggered(bool)), this, SLOT(toggleAutoRotation(bool)));
-		this->rotationMenu->addAction(this->autoRotationAction);
-		this->addAction(this->autoRotationAction);
+		autoRotationAction = new QAction(tr("&Automatic EXIF-based rotation"), this);
+		autoRotationAction->setCheckable(true);
+		autoRotationAction->setChecked(true);
+		autoRotationAction->setShortcut(Qt::CTRL + Qt::Key_R);
+		autoRotationAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(autoRotationAction, SIGNAL(triggered(bool)), this, SLOT(toggleAutoRotation(bool)));
+		rotationMenu->addAction(autoRotationAction);
+		addAction(autoRotationAction);
 
-		this->sharpeningAction = new QAction(tr("&Sharpen Images After Downsampling"), this);
-		this->sharpeningAction->setCheckable(true);
-		this->sharpeningAction->setChecked(false);
-		this->sharpeningAction->setShortcut(Qt::CTRL + Qt::Key_E);
-		this->sharpeningAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->sharpeningAction, SIGNAL(triggered(bool)), this, SLOT(toggleSharpening(bool)));
-		this->sharpeningMenu->addAction(this->sharpeningAction);
-		this->addAction(this->sharpeningAction);
+		sharpeningAction = new QAction(tr("&Sharpen Images After Downsampling"), this);
+		sharpeningAction->setCheckable(true);
+		sharpeningAction->setChecked(false);
+		sharpeningAction->setShortcut(Qt::CTRL + Qt::Key_E);
+		sharpeningAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(sharpeningAction, SIGNAL(triggered(bool)), this, SLOT(toggleSharpening(bool)));
+		sharpeningMenu->addAction(sharpeningAction);
+		addAction(sharpeningAction);
 
-		this->sharpeningOptionsAction = new QAction(tr("Sharpening &Options..."), this);
-		this->sharpeningOptionsAction->setShortcut(Qt::Key_O);
-		this->sharpeningOptionsAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->sharpeningOptionsAction, SIGNAL(triggered(bool)), this, SLOT(showSharpeningOptions()));
-		this->sharpeningMenu->addAction(this->sharpeningOptionsAction);
-		this->addAction(this->sharpeningOptionsAction);
+		sharpeningOptionsAction = new QAction(tr("Sharpening &Options..."), this);
+		sharpeningOptionsAction->setShortcut(Qt::Key_O);
+		sharpeningOptionsAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(sharpeningOptionsAction, SIGNAL(triggered(bool)), this, SLOT(showSharpeningOptions()));
+		sharpeningMenu->addAction(sharpeningOptionsAction);
+		addAction(sharpeningOptionsAction);
 
-		this->slideshowAction = new QAction(tr("&Start Slideshow"), this);
-		this->slideshowAction->setEnabled(false);
-		this->slideshowAction->setShortcut(Qt::CTRL + Qt::Key_Space);
-		this->slideshowAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->slideshowAction, SIGNAL(triggered()), this, SLOT(toggleSlideshow()));
-		this->slideshowMenu->addAction(this->slideshowAction);
-		this->addAction(this->slideshowAction);
+		slideshowAction = new QAction(tr("&Start Slideshow"), this);
+		slideshowAction->setEnabled(false);
+		slideshowAction->setShortcut(Qt::CTRL + Qt::Key_Space);
+		slideshowAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(slideshowAction, SIGNAL(triggered()), this, SLOT(toggleSlideshow()));
+		slideshowMenu->addAction(slideshowAction);
+		addAction(slideshowAction);
 
-		this->slideshowNoDialogAction = new QAction(this);
-		this->slideshowNoDialogAction->setEnabled(false);
-		this->slideshowNoDialogAction->setShortcut(Qt::Key_Space);
-		this->slideshowNoDialogAction->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->slideshowNoDialogAction, SIGNAL(triggered()), this, SLOT(toggleSlideshowNoDialog()));
-		this->addAction(this->slideshowNoDialogAction);
+		slideshowNoDialogAction = new QAction(this);
+		slideshowNoDialogAction->setEnabled(false);
+		slideshowNoDialogAction->setShortcut(Qt::Key_Space);
+		slideshowNoDialogAction->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(slideshowNoDialogAction, SIGNAL(triggered()), this, SLOT(toggleSlideshowNoDialog()));
+		addAction(slideshowNoDialogAction);
 
-		this->customAction1 = new QAction(this);
-		this->customAction1->setEnabled(this->hotkeyDialog->getHotkey1Enabled() && this->hotkeyDialog->getHotkeysEnabled());
-		this->customAction1->setShortcut(this->hotkeyDialog->getKeySequence1());
-		this->customAction1->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->customAction1, SIGNAL(triggered()), this, SLOT(triggerCustomAction1()));
-		this->addAction(this->customAction1);
+		customAction1 = new QAction(this);
+		customAction1->setEnabled(hotkeyDialog->getHotkey1Enabled() && hotkeyDialog->getHotkeysEnabled());
+		customAction1->setShortcut(hotkeyDialog->getKeySequence1());
+		customAction1->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(customAction1, SIGNAL(triggered()), this, SLOT(triggerCustomAction1()));
+		addAction(customAction1);
 
-		this->customAction2 = new QAction(this);
-		this->customAction2->setEnabled(this->hotkeyDialog->getHotkey2Enabled() && this->hotkeyDialog->getHotkeysEnabled());
-		this->customAction2->setShortcut(this->hotkeyDialog->getKeySequence2());
-		this->customAction2->setShortcutContext(Qt::ApplicationShortcut);
-		QObject::connect(this->customAction2, SIGNAL(triggered()), this, SLOT(triggerCustomAction2()));
-		this->addAction(this->customAction2);
+		customAction2 = new QAction(this);
+		customAction2->setEnabled(hotkeyDialog->getHotkey2Enabled() && hotkeyDialog->getHotkeysEnabled());
+		customAction2->setShortcut(hotkeyDialog->getKeySequence2());
+		customAction2->setShortcutContext(Qt::ApplicationShortcut);
+		QObject::connect(customAction2, SIGNAL(triggered()), this, SLOT(triggerCustomAction2()));
+		addAction(customAction2);
 
 		//mouse hide timer in fullscreen
-		this->mouseHideTimer = new QTimer(this);
-		QObject::connect(this->mouseHideTimer, SIGNAL(timeout()), this, SLOT(hideMouse()));
+		mouseHideTimer = new QTimer(this);
+		QObject::connect(mouseHideTimer, SIGNAL(timeout()), this, SLOT(hideMouse()));
 
 		//timer for thread cleanup
-		this->threadCleanUpTimer = new QTimer(this);
-		this->threadCleanUpTimer->setSingleShot(true);
-		QObject::connect(this->threadCleanUpTimer, SIGNAL(timeout()), this, SLOT(cleanUpThreads()));
+		threadCleanUpTimer = new QTimer(this);
+		threadCleanUpTimer->setSingleShot(true);
+		QObject::connect(threadCleanUpTimer, SIGNAL(timeout()), this, SLOT(cleanUpThreads()));
 
 		//timer for the slideshow
-		this->slideshowTimer = new QTimer(this);
-		QObject::connect(this->slideshowTimer, SIGNAL(timeout()), this, SLOT(nextSlide()));
+		slideshowTimer = new QTimer(this);
+		QObject::connect(slideshowTimer, SIGNAL(timeout()), this, SLOT(nextSlide()));
 
 		//load settings
-		this->loadSettings();
-		if (this->settings->contains("windowPosition")) {
-			this->move(this->settings->value("windowPosition", QPoint(10, 10)).toPoint());
+		loadSettings();
+		if (settings->contains("windowPosition")) {
+			move(settings->value("windowPosition", QPoint(10, 10)).toPoint());
 		}
-		if (this->settings->contains("windowSize")) {
-			this->resize(this->settings->value("windowSize", QSize(900, 600)).toSize());
+		if (settings->contains("windowSize")) {
+			resize(settings->value("windowSize", QSize(900, 600)).toSize());
 		}
-		if (this->settings->value("maximized", false).toBool()) {
-			this->showMaximized();
+		if (settings->value("maximized", false).toBool()) {
+			showMaximized();
 		}
 	}
 
 	std::shared_future<Image>& MainInterface::currentThread() {
-		return this->threads[this->currentThreadName];
+		return threads[currentThreadName];
 	}
 
 	bool MainInterface::exifIsRequired() const {
-		return this->showInfoAction->isChecked() || this->autoRotationAction->isChecked();
+		return showInfoAction->isChecked() || autoRotationAction->isChecked();
 	}
 
 	Image MainInterface::readImage(QString path, bool emitSignals) {
@@ -580,7 +580,7 @@ namespace sv {
 			Image result;
 			std::shared_ptr<ExifData> exifData;
 			//for the images we know are not supported by opencv do not attempt to read them with opencv
-			bool forcePreview = this->partiallySupportedExtensions.contains(QString("*.") + QFileInfo(path).suffix().toLower());
+			bool forcePreview = partiallySupportedExtensions.contains(QString("*.") + QFileInfo(path).suffix().toLower());
 			if (!utility::isCharCompatible(path)) {
 				std::shared_ptr<std::vector<char>> buffer = utility::readFileIntoBuffer(path);
 				if (buffer->empty()) {
@@ -591,9 +591,9 @@ namespace sv {
 				exifData = std::shared_ptr<ExifData>(new ExifData(buffer));
 			} else {
 				if (!forcePreview) image = cv::imread(path.toStdString(), cv::IMREAD_UNCHANGED);
-				exifData = std::shared_ptr<ExifData>(new ExifData(path, !this->exifIsRequired() && image.data));
+				exifData = std::shared_ptr<ExifData>(new ExifData(path, !exifIsRequired() && image.data));
 			}
-			if (!image.data) {
+			if (!image.data) {  
 				exifData->join();
 				if (exifData->hasPreviewImage()) {
 					image = exifData->largestReadablePreviewImage();
@@ -621,297 +621,297 @@ namespace sv {
 	}
 
 	void MainInterface::loadNextImage() {
-		if (this->loading) return;
-		std::unique_lock<std::mutex> lock(this->threadDeletionMutex);
-		this->loading = true;
+		if (loading) return;
+		std::unique_lock<std::mutex> lock(threadDeletionMutex);
+		loading = true;
 
-		if (this->filesInDirectory.size() != 0) {
-			this->currentFileIndex = this->nextFileIndex();
-			this->currentThreadName = this->filesInDirectory[this->currentFileIndex];
-			if (this->threads.find(this->filesInDirectory[this->currentFileIndex]) == this->threads.end()) {
-				this->loading = false;
+		if (filesInDirectory.size() != 0) {
+			currentFileIndex = nextFileIndex();
+			currentThreadName = filesInDirectory[currentFileIndex];
+			if (threads.find(filesInDirectory[currentFileIndex]) == threads.end()) {
+				loading = false;
 				return;
 			}
-			this->waitForThreadToFinish(this->currentThread());
+			waitForThreadToFinish(currentThread());
 			//calling this function although the exif might not be set to deferred loading is no problem (it checks internally)
-			if (this->exifIsRequired() && this->currentThread().get().isValid()) this->currentThread().get().exif()->startLoading();
-			this->image = this->currentThread().get();
+			if (exifIsRequired() && currentThread().get().isValid()) currentThread().get().exif()->startLoading();
+			image = currentThread().get();
 
-			this->currentFileInfo = QFileInfo(this->getFullImagePath(this->currentFileIndex));
+			currentFileInfo = QFileInfo(getFullImagePath(currentFileIndex));
 			//start loading next image
-			if (this->threads.find(this->filesInDirectory[this->nextFileIndex()]) == this->threads.end()) {
-				this->threads[this->filesInDirectory[this->nextFileIndex()]] = std::async(std::launch::async,
+			if (threads.find(filesInDirectory[nextFileIndex()]) == threads.end()) {
+				threads[filesInDirectory[nextFileIndex()]] = std::async(std::launch::async,
 																						  &MainInterface::readImage,
 																						  this,
-																						  this->getFullImagePath(this->nextFileIndex()),
+																						  getFullImagePath(nextFileIndex()),
 																						  false);
 			}
 			lock.unlock();
-			this->displayImageIfOk();
+			displayImageIfOk();
 		} else {
 			lock.unlock();
 		}
-		this->loading = false;
-		this->cleanUpThreads();
+		loading = false;
+		cleanUpThreads();
 	}
 
 	void MainInterface::loadPreviousImage() {
-		if (this->loading) return;
-		std::unique_lock<std::mutex> lock(this->threadDeletionMutex);
-		this->loading = true;
-		if (this->filesInDirectory.size() != 0) {
-			this->currentFileIndex = this->previousFileIndex();
-			this->currentThreadName = this->filesInDirectory[this->currentFileIndex];
-			if (this->threads.find(this->filesInDirectory[this->currentFileIndex]) == this->threads.end()) {
-				this->loading = false;
+		if (loading) return;
+		std::unique_lock<std::mutex> lock(threadDeletionMutex);
+		loading = true;
+		if (filesInDirectory.size() != 0) {
+			currentFileIndex = previousFileIndex();
+			currentThreadName = filesInDirectory[currentFileIndex];
+			if (threads.find(filesInDirectory[currentFileIndex]) == threads.end()) {
+				loading = false;
 				return;
 			}
-			this->waitForThreadToFinish(this->currentThread());
+			waitForThreadToFinish(currentThread());
 			//calling this function although the exif might not be set to deferred loading is no problem (it checks internally)
-			if (this->exifIsRequired() && this->currentThread().get().isValid()) this->currentThread().get().exif()->startLoading();
-			this->image = this->currentThread().get();
-			this->currentFileInfo = QFileInfo(this->getFullImagePath(this->currentFileIndex));
+			if (exifIsRequired() && currentThread().get().isValid()) currentThread().get().exif()->startLoading();
+			image = currentThread().get();
+			currentFileInfo = QFileInfo(getFullImagePath(currentFileIndex));
 			//start loading previous image
-			if (this->threads.find(this->filesInDirectory[this->previousFileIndex()]) == this->threads.end()) {
-				this->threads[this->filesInDirectory[this->previousFileIndex()]] = std::async(std::launch::async,
+			if (threads.find(filesInDirectory[previousFileIndex()]) == threads.end()) {
+				threads[filesInDirectory[previousFileIndex()]] = std::async(std::launch::async,
 																							  &MainInterface::readImage,
 																							  this,
-																							  this->getFullImagePath(this->previousFileIndex()),
+																							  getFullImagePath(previousFileIndex()),
 																							  false);
 			}
 			lock.unlock();
-			this->displayImageIfOk();
+			displayImageIfOk();
 		} else {
 			lock.unlock();
 		}
-		this->loading = false;
-		this->cleanUpThreads();
+		loading = false;
+		cleanUpThreads();
 	}
 
 	void MainInterface::clearThreads() {
-		for (std::map<QString, std::shared_future<Image>>::iterator it = this->threads.begin(); it != this->threads.end(); ++it) {
-			this->waitForThreadToFinish(it->second, false);
+		for (std::map<QString, std::shared_future<Image>>::iterator it = threads.begin(); it != threads.end(); ++it) {
+			waitForThreadToFinish(it->second, false);
 		}
-		this->threads.clear();
+		threads.clear();
 	}
 
 	size_t MainInterface::nextFileIndex() const {
-		if (this->filesInDirectory.size() <= 0) return -1;
-		return (this->currentFileIndex + 1) % this->filesInDirectory.size();
+		if (filesInDirectory.size() <= 0) return -1;
+		return (currentFileIndex + 1) % filesInDirectory.size();
 	}
 
 	size_t MainInterface::previousFileIndex() const {
-		if (this->filesInDirectory.size() <= 0) return -1;
-		if (this->currentFileIndex <= 0) return this->filesInDirectory.size() - 1;
-		return (this->currentFileIndex - 1) % this->filesInDirectory.size();
+		if (filesInDirectory.size() <= 0) return -1;
+		if (currentFileIndex <= 0) return filesInDirectory.size() - 1;
+		return (currentFileIndex - 1) % filesInDirectory.size();
 	}
 
 	void MainInterface::removeCurrentImageFromList(bool includeSidecarFiles, bool onlyXmp) {
-		std::unique_lock<std::mutex> lock(this->threadDeletionMutex);
+		std::unique_lock<std::mutex> lock(threadDeletionMutex);
 
-		if (this->filesInDirectory.size() != 0) {
-			QFileInfo imageInfo = QFileInfo(this->filesInDirectory[this->currentFileIndex]);
+		if (filesInDirectory.size() != 0) {
+			QFileInfo imageInfo = QFileInfo(filesInDirectory[currentFileIndex]);
 			QString baseName = imageInfo.baseName();
 			QString extension = imageInfo.suffix().toLower();
 			//remove current file from directory list
-			this->filesInDirectory.remove(this->currentFileIndex);
+			filesInDirectory.remove(currentFileIndex);
 
 			//remove sidecar files from directory list
 			if (includeSidecarFiles) {
-				for (int i = 0; i < this->filesInDirectory.size(); ++i) {
-					QFileInfo fileInfo(this->filesInDirectory[i]);
-					if (fileInfo.baseName() == baseName && (!onlyXmp || (fileInfo.suffix().toLower() == "xmp" && this->supportedRawFormats.contains(extension)))) {
-						this->filesInDirectory.remove(i);
+				for (int i = 0; i < filesInDirectory.size(); ++i) {
+					QFileInfo fileInfo(filesInDirectory[i]);
+					if (fileInfo.baseName() == baseName && (!onlyXmp || (fileInfo.suffix().toLower() == "xmp" && supportedRawFormats.contains(extension)))) {
+						filesInDirectory.remove(i);
 						//correct the index shift
-						if (i < this->currentFileIndex) --this->currentFileIndex;
+						if (i < currentFileIndex) --currentFileIndex;
 						--i;
 					}
 				}
 			}
 
 			//if there are no images left, quit
-			if (this->filesInDirectory.size() <= 0) {
-				this->currentFileIndex = -1;
+			if (filesInDirectory.size() <= 0) {
+				currentFileIndex = -1;
 				lock.unlock();
-				this->cleanUpThreads();
-				this->reset();
+				cleanUpThreads();
+				reset();
 				return;
 			}
 			//update current file index and related variables
-			if (this->currentFileIndex >= this->filesInDirectory.size()) this->currentFileIndex = this->filesInDirectory.size() - 1;
-			this->currentThreadName = this->filesInDirectory[this->currentFileIndex];
+			if (currentFileIndex >= filesInDirectory.size()) currentFileIndex = filesInDirectory.size() - 1;
+			currentThreadName = filesInDirectory[currentFileIndex];
 
 			//load the image that is now the current one
-			if (this->threads.find(this->filesInDirectory[this->currentFileIndex]) == this->threads.end()) {
-				this->threads[this->filesInDirectory[this->currentFileIndex]] = std::async(std::launch::async,
+			if (threads.find(filesInDirectory[currentFileIndex]) == threads.end()) {
+				threads[filesInDirectory[currentFileIndex]] = std::async(std::launch::async,
 																						   &MainInterface::readImage,
 																						   this,
-																						   this->getFullImagePath(this->currentFileIndex),
+																						   getFullImagePath(currentFileIndex),
 																						   false);
 			}
-			this->waitForThreadToFinish(this->currentThread());
+			waitForThreadToFinish(currentThread());
 			//calling this function although the exif might not be set to deferred loading is no problem (it checks internally)
-			if (this->exifIsRequired() && this->currentThread().get().isValid()) this->currentThread().get().exif()->startLoading();
-			this->image = this->currentThread().get();
-			this->currentFileInfo = QFileInfo(this->getFullImagePath(this->currentFileIndex));
+			if (exifIsRequired() && currentThread().get().isValid()) currentThread().get().exif()->startLoading();
+			image = currentThread().get();
+			currentFileInfo = QFileInfo(getFullImagePath(currentFileIndex));
 
 			//start loading next and previous image
-			if (this->threads.find(this->filesInDirectory[this->nextFileIndex()]) == this->threads.end()) {
-				this->threads[this->filesInDirectory[this->nextFileIndex()]] = std::async(std::launch::async,
+			if (threads.find(filesInDirectory[nextFileIndex()]) == threads.end()) {
+				threads[filesInDirectory[nextFileIndex()]] = std::async(std::launch::async,
 																						  &MainInterface::readImage,
 																						  this,
-																						  this->getFullImagePath(this->nextFileIndex()),
+																						  getFullImagePath(nextFileIndex()),
 																						  false);
 			}
-			if (this->threads.find(this->filesInDirectory[this->previousFileIndex()]) == this->threads.end()) {
-				this->threads[this->filesInDirectory[this->previousFileIndex()]] = std::async(std::launch::async,
+			if (threads.find(filesInDirectory[previousFileIndex()]) == threads.end()) {
+				threads[filesInDirectory[previousFileIndex()]] = std::async(std::launch::async,
 																							  &MainInterface::readImage,
 																							  this,
-																							  this->getFullImagePath(this->previousFileIndex()),
+																							  getFullImagePath(previousFileIndex()),
 																							  false);
 			}
 			lock.unlock();
-			this->displayImageIfOk();
+			displayImageIfOk();
 		} else {
 			lock.unlock();
 		}
-		this->cleanUpThreads();
+		cleanUpThreads();
 	}
 
 	void MainInterface::reset() {
-		this->imageView->resetImage();
-		this->image = sv::Image();
-		this->filesInDirectory.clear();
-		this->setWindowTitle(this->programTitle);
+		imageView->resetImage();
+		image = sv::Image();
+		filesInDirectory.clear();
+		setWindowTitle(programTitle);
 	}
 
 	QString MainInterface::getFullImagePath(size_t index) const {
-		return this->currentDirectory.absoluteFilePath(this->filesInDirectory[index]);
+		return currentDirectory.absoluteFilePath(filesInDirectory[index]);
 	}
 
 	void MainInterface::loadImage(QString path) {
-		if (this->loading) return;
-		std::unique_lock<std::mutex> lock(this->threadDeletionMutex);
-		this->loading = true;
+		if (loading) return;
+		std::unique_lock<std::mutex> lock(threadDeletionMutex);
+		loading = true;
 		//find the path in the current directory listing
 		QFileInfo fileInfo = QFileInfo(QDir::cleanPath(path));
 		QDir directory = fileInfo.absoluteDir();
 		QString filename = fileInfo.fileName();
 		//always scan directory; uncomment to scan only if different directory
-		//if (directory != this->currentDirectory || this->noCurrentDir) {
-			this->currentDirectory = directory;
-			this->noCurrentDir = false;
-			QStringList filters = this->supportedExtensions;
+		//if (directory != currentDirectory || noCurrentDir) {
+			currentDirectory = directory;
+			noCurrentDir = false;
+			QStringList filters = supportedExtensions;
 			filters << "*.bmp" << "*.dib" << "*.jpeg" << "*.jpg" << "*.jpe" << "*.jpeg" << "*.jp2" << "*.png" << "*.webp" << "*.pbm" << "*.pgm" << "*.ppm" << "*.sr" << "*.ras" << "*.tiff" << "*.tif";
-			if (this->includePartiallySupportedFilesAction->isChecked()) {
-				filters.append(this->partiallySupportedExtensions);
+			if (includePartiallySupportedFilesAction->isChecked()) {
+				filters.append(partiallySupportedExtensions);
 			}
 			QStringList contents = directory.entryList(filters, QDir::Files);
 			QCollator collator;
 			collator.setNumericMode(true);
 			std::sort(contents.begin(), contents.end(), collator);
-			this->filesInDirectory = contents.toVector();
+			filesInDirectory = contents.toVector();
 		//}
-		if (this->filesInDirectory.size() == 0 || this->currentFileIndex < 0 || this->currentFileIndex >= this->filesInDirectory.size() || this->filesInDirectory.at(this->currentFileIndex) != filename) {
-			this->currentFileIndex = this->filesInDirectory.indexOf(filename);
+		if (filesInDirectory.size() == 0 || currentFileIndex < 0 || currentFileIndex >= filesInDirectory.size() || filesInDirectory.at(currentFileIndex) != filename) {
+			currentFileIndex = filesInDirectory.indexOf(filename);
 		}
-		this->currentThreadName = filename;
-		this->currentFileInfo = fileInfo;
-		this->clearThreads();
-		this->threads[filename] = std::async(std::launch::async, &MainInterface::readImage, this, path, true);
-		this->setWindowTitle(this->windowTitle() + QString(tr(" - Loading...")));
-		this->statusHint = tr("Loading...");
-		this->imageView->update();
+		currentThreadName = filename;
+		currentFileInfo = fileInfo;
+		clearThreads();
+		threads[filename] = std::async(std::launch::async, &MainInterface::readImage, this, path, true);
+		setWindowTitle(windowTitle() + QString(tr(" - Loading...")));
+		statusHint = tr("Loading...");
+		imageView->update();
 	}
 
 	void MainInterface::loadImages(QStringList paths) {
-		if (this->loading) return;
-		std::unique_lock<std::mutex> lock(this->threadDeletionMutex);
-		this->loading = true;
+		if (loading) return;
+		std::unique_lock<std::mutex> lock(threadDeletionMutex);
+		loading = true;
 		
 		QString path = paths.first();
 		//find the path in the current directory listing
 		QFileInfo fileInfo = QFileInfo(QDir::cleanPath(path));
 		QDir directory = fileInfo.absoluteDir();
 		QString filename = fileInfo.fileName();
-		this->currentDirectory = directory;
-		this->noCurrentDir = false;
+		currentDirectory = directory;
+		noCurrentDir = false;
 		//remove all images that are not in the same directory
 		QMutableListIterator<QString> it(paths);
 		while (it.hasNext()) {
-			if (QFileInfo(it.next()).absoluteDir() != this->currentDirectory) {
+			if (QFileInfo(it.next()).absoluteDir() != currentDirectory) {
 				it.remove();
 			}
 		}
-		this->filesInDirectory.resize(paths.size());
+		filesInDirectory.resize(paths.size());
 		for (int i = 0; i < paths.size(); ++i) {
-			this->filesInDirectory[i] = QFileInfo(QDir::cleanPath(paths[i])).fileName();
+			filesInDirectory[i] = QFileInfo(QDir::cleanPath(paths[i])).fileName();
 		}
 
-		if (this->filesInDirectory.size() == 0 || this->currentFileIndex < 0 || this->currentFileIndex >= this->filesInDirectory.size() || this->filesInDirectory.at(this->currentFileIndex) != filename) {
-			this->currentFileIndex = this->filesInDirectory.indexOf(filename);
+		if (filesInDirectory.size() == 0 || currentFileIndex < 0 || currentFileIndex >= filesInDirectory.size() || filesInDirectory.at(currentFileIndex) != filename) {
+			currentFileIndex = filesInDirectory.indexOf(filename);
 		}
-		this->currentThreadName = filename;
-		this->currentFileInfo = fileInfo;
-		this->clearThreads();
-		this->threads[filename] = std::async(std::launch::async, &MainInterface::readImage, this, path, true);
-		this->setWindowTitle(this->windowTitle() + QString(tr(" - Loading...")));
-		this->statusHint = tr("Loading...");
-		this->imageView->update();
+		currentThreadName = filename;
+		currentFileInfo = fileInfo;
+		clearThreads();
+		threads[filename] = std::async(std::launch::async, &MainInterface::readImage, this, path, true);
+		setWindowTitle(windowTitle() + QString(tr(" - Loading...")));
+		statusHint = tr("Loading...");
+		imageView->update();
 	}
 
 	void MainInterface::displayImageIfOk() {
-		if (this->image.isValid()) {
-			this->currentImageUnreadable = false;
-			this->imageView->setImage(this->image.mat());
-			if (this->autoRotationAction->isChecked()) {
-				this->autoRotateImage();
+		if (image.isValid()) {
+			currentImageUnreadable = false;
+			imageView->setImage(image.mat());
+			if (autoRotationAction->isChecked()) {
+				autoRotateImage();
 			}
 		} else {
-			this->currentImageUnreadable = true;
-			this->imageView->resetImage();
+			currentImageUnreadable = true;
+			imageView->resetImage();
 		}
-		this->setWindowTitle(QString("%1%5 - %2 - %3 of %4").arg(this->currentFileInfo.fileName(),
-															   this->programTitle).arg(this->currentFileIndex + 1).arg(this->filesInDirectory.size()).arg(this->image.isPreviewImage() ? " [Preview]" : ""));
+		setWindowTitle(QString("%1%5 - %2 - %3 of %4").arg(currentFileInfo.fileName(),
+															   programTitle).arg(currentFileIndex + 1).arg(filesInDirectory.size()).arg(image.isPreviewImage() ? " [Preview]" : ""));
 	}
 
 	void MainInterface::autoRotateImage() {
-		if (this->image.isValid()) {
-			this->image.exif()->join();
-			if (this->image.exif()->hasExif()) {
-				long orientation = this->image.exif()->orientation();
-				this->imageView->setRotation(this->userRotation);
+		if (image.isValid()) {
+			image.exif()->join();
+			if (image.exif()->hasExif()) {
+				long orientation = image.exif()->orientation();
+				imageView->setRotation(userRotation);
 				orientation = (orientation + 1) / 2;
 				if (orientation == 3) {
-					this->imageView->rotateBy(90);
+					imageView->rotateBy(90);
 				} else if (orientation == 4) {
-					this->imageView->rotateBy(-90);
+					imageView->rotateBy(-90);
 				} else if (orientation == 2) {
-					this->imageView->rotateBy(180);
+					imageView->rotateBy(180);
 				}
 			}
 		}
 	}
 
 	void MainInterface::enterFullscreen() {
-		//this->imageView->setInterfaceBackgroundColor(Qt::black);
-		this->showFullScreen();
-		this->hideMenuBar();
-		this->enableAutomaticMouseHide();
-		this->fullscreenAction->setChecked(true);
+		//imageView->setInterfaceBackgroundColor(Qt::black);
+		showFullScreen();
+		hideMenuBar();
+		enableAutomaticMouseHide();
+		fullscreenAction->setChecked(true);
 	}
 
 	void MainInterface::exitFullscreen() {
 		//QPalette palette = qApp->palette();
-		//this->imageView->setInterfaceBackgroundColor(palette.base().color());
-		if (this->settings->value("maximized", false).toBool()) {
-			this->showMaximized();
+		//imageView->setInterfaceBackgroundColor(palette.base().color());
+		if (settings->value("maximized", false).toBool()) {
+			showMaximized();
 		} else {
-			this->showNormal();
+			showNormal();
 		}
-		if (this->menuBarAutoHideAction->isChecked()) showMenuBar();
-		this->disableAutomaticMouseHide();
-		this->fullscreenAction->setChecked(false);
+		if (menuBarAutoHideAction->isChecked()) showMenuBar();
+		disableAutomaticMouseHide();
+		fullscreenAction->setChecked(false);
 	}
 
 	void MainInterface::infoPaintFunction(QPainter& canvas) {
@@ -920,49 +920,49 @@ namespace sv {
 		canvas.setPen(textPen);
 		canvas.setBrush(Qt::NoBrush);
 		QFont font;
-		font.setPointSize(this->fontSize);
+		font.setPointSize(fontSize);
 		canvas.setFont(font);
 		QColor base = Qt::white;
 		base.setAlpha(200);
 		canvas.setBackground(base);
 		canvas.setBackgroundMode(Qt::OpaqueMode);
 		QFontMetrics metrics(font);
-		if (this->currentImageUnreadable && this->statusHint.isEmpty()) {
+		if (currentImageUnreadable && statusHint.isEmpty()) {
 			QString message = tr("This file could not be read:");
-			canvas.drawText(QPoint((canvas.device()->width() - metrics.width(message)) / 2.0, canvas.device()->height() / 2.0 - 0.5*this->lineSpacing),
+			canvas.drawText(QPoint((canvas.device()->width() - metrics.width(message)) / 2.0, canvas.device()->height() / 2.0 - 0.5*lineSpacing),
 							message);
-			canvas.drawText(QPoint((canvas.device()->width() - metrics.width(this->currentFileInfo.fileName())) / 2.0,
-								   canvas.device()->height() / 2.0 + 0.5*this->lineSpacing + metrics.height()),
-							this->currentFileInfo.fileName());
+			canvas.drawText(QPoint((canvas.device()->width() - metrics.width(currentFileInfo.fileName())) / 2.0,
+								   canvas.device()->height() / 2.0 + 0.5*lineSpacing + metrics.height()),
+							currentFileInfo.fileName());
 		}
-		if (!this->statusHint.isEmpty()) {
-			canvas.drawText(QPoint((canvas.device()->width() - metrics.width(this->statusHint)) / 2.0, canvas.device()->height() / 2.0 + 0.5*metrics.height()),
-							this->statusHint);
+		if (!statusHint.isEmpty()) {
+			canvas.drawText(QPoint((canvas.device()->width() - metrics.width(statusHint)) / 2.0, canvas.device()->height() / 2.0 + 0.5*metrics.height()),
+							statusHint);
 		}
-		if (this->showInfoAction->isChecked() && this->imageView->getImageAssigned()) {
+		if (showInfoAction->isChecked() && imageView->getImageAssigned()) {
 			//draw current filename
 			canvas.drawText(QPoint(30, 30 + metrics.height()),
-							this->currentFileInfo.fileName());
-			int sizeAndResolutionTopOffset = 30 + this->lineSpacing + 2 * metrics.height();
-			if (this->image.isValid()) {
-				QString resolution = QString::fromWCharArray(L"%1\u2006x\u2006%2").arg(this->image.mat().cols).arg(this->image.mat().rows);
+							currentFileInfo.fileName());
+			int sizeAndResolutionTopOffset = 30 + lineSpacing + 2 * metrics.height();
+			if (image.isValid()) {
+				QString resolution = QString::fromWCharArray(L"%1\u2006x\u2006%2").arg(image.mat().cols).arg(image.mat().rows);
 				canvas.drawText(QPoint(30, sizeAndResolutionTopOffset),
-								QString::fromWCharArray(L"%1, %2\u2006Mb").arg(resolution).arg(this->currentFileInfo.size() / 1048576.0, 0, 'f', 2));
-				if (this->image.exif()->isReady()) {
-					if (this->image.exif()->hasExif()) {
+								QString::fromWCharArray(L"%1, %2\u2006Mb").arg(resolution).arg(currentFileInfo.size() / 1048576.0, 0, 'f', 2));
+				if (image.exif()->isReady()) {
+					if (image.exif()->hasExif()) {
 						//get camera model, speed, aperture and ISO
-						QString cameraModel = this->image.exif()->cameraModel();
-						QString lensModel = this->image.exif()->lensModel();
-						QString aperture = this->image.exif()->fNumber();
-						QString speed = this->image.exif()->exposureTime();
-						QString focalLength = this->image.exif()->focalLength();
-						QString equivalentFocalLength = this->image.exif()->focalLength35mmEquivalent();
-						QString exposureBias = this->image.exif()->exposureBias();
-						QString iso = this->image.exif()->iso();
-						QString captureDate = this->image.exif()->captureDate();
+						QString cameraModel = image.exif()->cameraModel();
+						QString lensModel = image.exif()->lensModel();
+						QString aperture = image.exif()->fNumber();
+						QString speed = image.exif()->exposureTime();
+						QString focalLength = image.exif()->focalLength();
+						QString equivalentFocalLength = image.exif()->focalLength35mmEquivalent();
+						QString exposureBias = image.exif()->exposureBias();
+						QString iso = image.exif()->iso();
+						QString captureDate = image.exif()->captureDate();
 						//calculate the v coordinates for the lines
-						int heightOfOneLine = this->lineSpacing + metrics.height();
-						int topOffset = 30 + 2 * this->lineSpacing + 3 * metrics.height();
+						int heightOfOneLine = lineSpacing + metrics.height();
+						int topOffset = 30 + 2 * lineSpacing + 3 * metrics.height();
 
 						//draw the EXIF text (note \u2005 is a sixth of a quad)
 						if (!cameraModel.isEmpty()) {
@@ -1019,18 +1019,18 @@ namespace sv {
 											QString("%1").arg(captureDate));
 							topOffset += heightOfOneLine;
 						}
-						if (this->image.isPreviewImage()) {
+						if (image.isPreviewImage()) {
 							canvas.drawText(QPoint(30, topOffset), "[Preview Image]");
 						}
 					}
 				} else {
-					canvas.drawText(QPoint(30, 30 + 2 * this->lineSpacing + 3 * metrics.height()),
+					canvas.drawText(QPoint(30, 30 + 2 * lineSpacing + 3 * metrics.height()),
 									tr("Loading EXIF..."));
 				}
 			}
 		}
-		if (this->zoomLevelAction->isChecked() && this->imageView->getImageAssigned()) {
-			QString message = QString::number(this->imageView->getCurrentPreviewScalingFactor() * 100, 'f', 1).append("%");
+		if (zoomLevelAction->isChecked() && imageView->getImageAssigned()) {
+			QString message = QString::number(imageView->getCurrentPreviewScalingFactor() * 100, 'f', 1).append("%");
 			canvas.drawText(QPoint(30, canvas.device()->height() - 30), message);
 		}
 	}
@@ -1046,60 +1046,60 @@ namespace sv {
 	}
 
 	void MainInterface::changeFontSizeBy(int value) {
-		if (this->showInfoAction->isChecked() || this->zoomLevelAction->isChecked()) {
-			if (this->fontSize + value >= 1) {
-				this->fontSize += value;
-				this->settings->setValue("fontSize", this->fontSize);
-				this->imageView->update();
+		if (showInfoAction->isChecked() || zoomLevelAction->isChecked()) {
+			if (fontSize + value >= 1) {
+				fontSize += value;
+				settings->setValue("fontSize", fontSize);
+				imageView->update();
 			}
 		}
 	}
 
 	void MainInterface::changeLineSpacingBy(int value) {
-		if (this->showInfoAction->isChecked()) {
-			if (int(this->lineSpacing) + value >= 0) {
-				this->lineSpacing += value;
-				this->settings->setValue("fontSize", this->lineSpacing);
-				this->imageView->update();
+		if (showInfoAction->isChecked()) {
+			if (int(lineSpacing) + value >= 0) {
+				lineSpacing += value;
+				settings->setValue("fontSize", lineSpacing);
+				imageView->update();
 			}
 		}
 	}
 
 	void MainInterface::loadSettings() {
-		this->fontSize = this->settings->value("fontSize", 14).toUInt();
-		if (this->fontSize < 1) this->fontSize = 1;
-		this->lineSpacing = this->settings->value("lineSpacing", 10).toUInt();
-		this->fileActionAction->setChecked(this->settings->value("enableHotkeys", true).toBool());
-		this->showInfoAction->setChecked(this->settings->value("showImageInfo", false).toBool());
-		this->zoomLevelAction->setChecked(this->settings->value("showZoomLevel", false).toBool());
-		this->enlargementAction->setChecked(this->settings->value("enlargeSmallImages", false).toBool());
-		this->toggleSmallImageUpscaling(this->enlargementAction->isChecked());
-		this->smoothingAction->setChecked(this->settings->value("useSmoothEnlargmentInterpolation", false).toBool());
-		this->toggleEnglargmentInterpolationMethod(this->smoothingAction->isChecked());
-		this->sharpeningAction->setChecked(this->settings->value("sharpenImagesAfterDownscale", false).toBool());
-		this->toggleSharpening(this->sharpeningAction->isChecked());
-		this->menuBarAutoHideAction->setChecked(!this->settings->value("autoHideMenuBar", true).toBool());
-		this->toggleMenuBarAutoHide(this->menuBarAutoHideAction->isChecked());
-		if (this->imageView->OpenClAvailable()) {
-			this->gpuAction->setChecked(this->settings->value("useGpu", true).toBool());
+		fontSize = settings->value("fontSize", 14).toUInt();
+		if (fontSize < 1) fontSize = 1;
+		lineSpacing = settings->value("lineSpacing", 10).toUInt();
+		fileActionAction->setChecked(settings->value("enableHotkeys", true).toBool());
+		showInfoAction->setChecked(settings->value("showImageInfo", false).toBool());
+		zoomLevelAction->setChecked(settings->value("showZoomLevel", false).toBool());
+		enlargementAction->setChecked(settings->value("enlargeSmallImages", false).toBool());
+		toggleSmallImageUpscaling(enlargementAction->isChecked());
+		smoothingAction->setChecked(settings->value("useSmoothEnlargmentInterpolation", false).toBool());
+		toggleEnglargmentInterpolationMethod(smoothingAction->isChecked());
+		sharpeningAction->setChecked(settings->value("sharpenImagesAfterDownscale", false).toBool());
+		toggleSharpening(sharpeningAction->isChecked());
+		menuBarAutoHideAction->setChecked(!settings->value("autoHideMenuBar", true).toBool());
+		toggleMenuBarAutoHide(menuBarAutoHideAction->isChecked());
+		if (imageView->OpenClAvailable()) {
+			gpuAction->setChecked(settings->value("useGpu", true).toBool());
 		} else {
-			this->gpuAction->setChecked(false);
-			this->gpuAction->setEnabled(false);
+			gpuAction->setChecked(false);
+			gpuAction->setEnabled(false);
 		}
-		this->toggleGpu(this->gpuAction->isChecked());
-		QColor backgroundColor = this->settings->value("backgroundColor", QColor(Qt::black)).value<QColor>();
-		this->imageView->setInterfaceBackgroundColor(backgroundColor);
+		toggleGpu(gpuAction->isChecked());
+		QColor backgroundColor = settings->value("backgroundColor", QColor(Qt::black)).value<QColor>();
+		imageView->setInterfaceBackgroundColor(backgroundColor);
 		if (backgroundColor == Qt::black) {
-			this->backgroundColorBlackAction->setChecked(true);
+			backgroundColorBlackAction->setChecked(true);
 		} else if (backgroundColor == Qt::white) {
-			this->backgroundColorWhiteAction->setChecked(true);
-		} else if (backgroundColor == this->darkGray) {
-			this->backgroundColorGrayAction->setChecked(true);
+			backgroundColorWhiteAction->setChecked(true);
+		} else if (backgroundColor == darkGray) {
+			backgroundColorGrayAction->setChecked(true);
 		} else {
-			this->backgroundColorCustomAction->setChecked(true);
+			backgroundColorCustomAction->setChecked(true);
 		}
-		this->includePartiallySupportedFilesAction->setChecked(this->settings->value("includePreviewOnlyFiles", true).toBool());
-		this->autoRotationAction->setChecked(this->settings->value("autoRotateImages", true).toBool());
+		includePartiallySupportedFilesAction->setChecked(settings->value("includePreviewOnlyFiles", true).toBool());
+		autoRotationAction->setChecked(settings->value("autoRotateImages", true).toBool());
 	}
 
 	void MainInterface::deleteCurrentImage(bool askForConfirmation, bool includeSidecarFiles, bool onlyXmp) {
@@ -1115,16 +1115,16 @@ namespace sv {
 			if (msgBox.exec() == QMessageBox::No) return;
 		}
 
-		QString filepath = this->getFullImagePath(this->currentFileIndex);
+		QString filepath = getFullImagePath(currentFileIndex);
 		if (QFileInfo(filepath).exists()) {
 			if (utility::moveFileToRecycleBin(filepath)) {
-				if (includeSidecarFiles && this->supportedRawFormats.contains(QFileInfo(filepath).suffix().toLower())) {
+				if (includeSidecarFiles && supportedRawFormats.contains(QFileInfo(filepath).suffix().toLower())) {
 					QString extension = onlyXmp ? "xmp" : "*";
 					QStringList filters;
 					filters << QString("%1.%2").arg(QFileInfo(filepath).baseName(), extension);
-					QStringList contents = this->currentDirectory.entryList(filters, QDir::Files);
+					QStringList contents = currentDirectory.entryList(filters, QDir::Files);
 					for (QString const & file : contents) {
-						if (!utility::moveFileToRecycleBin(this->currentDirectory.absoluteFilePath(file))) {
+						if (!utility::moveFileToRecycleBin(currentDirectory.absoluteFilePath(file))) {
 							QMessageBox::critical(this,
 												  tr("Sidecar File Not Deleted"),
 												  tr("The sidecar file %1 could not be deleted. Please check that you have the required permissions and that the path length does not exceed MAX_PATH.").arg(file),
@@ -1133,7 +1133,7 @@ namespace sv {
 						}
 					}
 				}
-				this->removeCurrentImageFromList(includeSidecarFiles, onlyXmp);
+				removeCurrentImageFromList(includeSidecarFiles, onlyXmp);
 			} else {
 #ifdef Q_OS_WIN
 				QMessageBox::critical(this,
@@ -1172,16 +1172,16 @@ namespace sv {
 			if (msgBox.exec() == QMessageBox::No) return;
 		}
 		QDir dir = QDir(newFolder);
-		QString oldPath = this->getFullImagePath(this->currentFileIndex);
-		QString newPath = dir.absoluteFilePath(this->filesInDirectory[this->currentFileIndex]);
+		QString oldPath = getFullImagePath(currentFileIndex);
+		QString newPath = dir.absoluteFilePath(filesInDirectory[currentFileIndex]);
 		if (utility::moveFile(oldPath, newPath, false, this)) {
-			if (includeSidecarFiles && this->supportedRawFormats.contains(QFileInfo(oldPath).suffix().toLower())) {
+			if (includeSidecarFiles && supportedRawFormats.contains(QFileInfo(oldPath).suffix().toLower())) {
 				QString extension = onlyXmp ? "xmp" : "*";
 				QStringList filters;
 				filters << QString("%1.%2").arg(QFileInfo(oldPath).baseName(), extension);
-				QStringList contents = this->currentDirectory.entryList(filters, QDir::Files);
+				QStringList contents = currentDirectory.entryList(filters, QDir::Files);
 				for (QString const & file : contents) {
-					if (!utility::moveFile(this->currentDirectory.absoluteFilePath(file), dir.absoluteFilePath(file), true, this)) {
+					if (!utility::moveFile(currentDirectory.absoluteFilePath(file), dir.absoluteFilePath(file), true, this)) {
 						QMessageBox::critical(this,
 											  tr("Sidecar File Not Moved"),
 											  tr("The sidecar file %1 could not be deleted. Please check that you have the required permissions and that the path length does not exceed MAX_PATH.").arg(file),
@@ -1190,7 +1190,7 @@ namespace sv {
 					}
 				}
 			}
-			this->removeCurrentImageFromList(includeSidecarFiles, onlyXmp);
+			removeCurrentImageFromList(includeSidecarFiles, onlyXmp);
 		}
 	}
 
@@ -1207,16 +1207,16 @@ namespace sv {
 			if (msgBox.exec() == QMessageBox::No) return;
 		}
 		QDir dir = QDir(newFolder);
-		QString oldPath = this->getFullImagePath(this->currentFileIndex);
-		QString newPath = dir.absoluteFilePath(this->filesInDirectory[this->currentFileIndex]);
+		QString oldPath = getFullImagePath(currentFileIndex);
+		QString newPath = dir.absoluteFilePath(filesInDirectory[currentFileIndex]);
 		if (utility::copyFile(oldPath, newPath, false, this)) {
-			if (includeSidecarFiles && this->supportedRawFormats.contains(QFileInfo(oldPath).suffix().toLower())) {
+			if (includeSidecarFiles && supportedRawFormats.contains(QFileInfo(oldPath).suffix().toLower())) {
 				QString extension = onlyXmp ? "xmp" : "*";
 				QStringList filters;
 				filters << QString("%1.%2").arg(QFileInfo(oldPath).baseName(), extension);
-				QStringList contents = this->currentDirectory.entryList(filters, QDir::Files);
+				QStringList contents = currentDirectory.entryList(filters, QDir::Files);
 				for (QString const & file : contents) {
-					if (!utility::copyFile(this->currentDirectory.absoluteFilePath(file), dir.absoluteFilePath(file), true, this)) {
+					if (!utility::copyFile(currentDirectory.absoluteFilePath(file), dir.absoluteFilePath(file), true, this)) {
 						QMessageBox::critical(this,
 											  tr("Sidecar File Not Copied"),
 											  tr("The sidecar file %1 could not be copied. Please check that you have the required permissions and that the path length does not exceed MAX_PATH.").arg(file),
@@ -1232,46 +1232,46 @@ namespace sv {
 	//============================================================================ PRIVATE SLOTS =============================================================================\\
 
 	void MainInterface::refresh() {
-		if (this->currentFileIndex >= 0 && this->filesInDirectory.size() > 0) {
-			this->loadImage(this->getFullImagePath(this->currentFileIndex));
+		if (currentFileIndex >= 0 && filesInDirectory.size() > 0) {
+			loadImage(getFullImagePath(currentFileIndex));
 		}
 	}
 
 	void MainInterface::showHotkeyDialog() {
-		this->disableAutomaticMouseHide();
-		this->hotkeyDialog->show();
+		disableAutomaticMouseHide();
+		hotkeyDialog->show();
 	}
 
 	void MainInterface::nextSlide() {
-		this->loadNextImage();
-		if (!settings->value("slideshowLoop", false).toBool() && this->currentFileIndex == (this->filesInDirectory.size() - 1)) {
-			this->stopSlideshow();
+		loadNextImage();
+		if (!settings->value("slideshowLoop", false).toBool() && currentFileIndex == (filesInDirectory.size() - 1)) {
+			stopSlideshow();
 		}
 	}
 
 	void MainInterface::cleanUpThreads() {
 		try {
-			std::lock_guard<std::mutex> lock(this->threadDeletionMutex);
-			size_t previousIndex = this->previousFileIndex();
-			size_t nextIndex = this->nextFileIndex();
-			for (std::map<QString, std::shared_future<Image>>::iterator it = this->threads.begin(); it != this->threads.end();) {
-				int index = this->filesInDirectory.indexOf(it->first);
+			std::lock_guard<std::mutex> lock(threadDeletionMutex);
+			size_t previousIndex = previousFileIndex();
+			size_t nextIndex = nextFileIndex();
+			for (std::map<QString, std::shared_future<Image>>::iterator it = threads.begin(); it != threads.end();) {
+				int index = filesInDirectory.indexOf(it->first);
 				//see if the thread has finished loading
 				//also the exif should have finished loading to prevent blocking, check if it's valid first to not derefence an invalid pointer
-				if (index != this->currentFileIndex
+				if (index != currentFileIndex
 					&& index != previousIndex
 					&& index != nextIndex
 					&& it->second.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready
 					&& (!it->second.get().isValid() || it->second.get().exif()->isReady() || it->second.get().exif()->isDeferred())) {
-					it = this->threads.erase(it);
+					it = threads.erase(it);
 				} else {
 					++it;
 				}
 			}
-			if (this->threads.size() > 3) this->threadCleanUpTimer->start(this->threadCleanUpInterval);
+			if (threads.size() > 3) threadCleanUpTimer->start(threadCleanUpInterval);
 		} catch (...) {
 			//Probably couldn't lock the mutex (thread already owns it?)
-			if (this->threads.size() > 3) this->threadCleanUpTimer->start(this->threadCleanUpInterval);
+			if (threads.size() > 3) threadCleanUpTimer->start(threadCleanUpInterval);
 		}
 	}
 
@@ -1280,8 +1280,8 @@ namespace sv {
 	}
 
 	void MainInterface::saveWindowSize() {
-		this->settings->setValue("windowSize", this->size());
-		this->settings->setValue("windowPosition", this->pos());
+		settings->setValue("windowSize", size());
+		settings->setValue("windowPosition", pos());
 		QMessageBox::information(this,
 								 tr("Successfull"),
 								 tr("The current size and position of the window have been saved as the new default."),
@@ -1298,35 +1298,35 @@ namespace sv {
 	}
 
 	void MainInterface::enableAutomaticMouseHide() {
-		if (this->isFullScreen() && !this->menuBar()->isVisible() && !this->slideshowDialog->isVisible() && !this->sharpeningDialog->isVisible() && !this->hotkeyDialog->isVisible()) {
-			this->mouseHideTimer->start(this->mouseHideDelay);
+		if (isFullScreen() && !menuBar()->isVisible() && !slideshowDialog->isVisible() && !sharpeningDialog->isVisible() && !hotkeyDialog->isVisible()) {
+			mouseHideTimer->start(mouseHideDelay);
 		}
 	}
 
 	void MainInterface::disableAutomaticMouseHide() {
-		this->mouseHideTimer->stop();
-		this->showMouse();
+		mouseHideTimer->stop();
+		showMouse();
 	}
 
 	void MainInterface::showMenuBar() {
-		if (this->isFullScreen()) this->disableAutomaticMouseHide();
-		this->menuBar()->setVisible(true);
+		if (isFullScreen()) disableAutomaticMouseHide();
+		menuBar()->setVisible(true);
 	}
 
 	void MainInterface::hideMenuBar(QAction* triggeringAction) {
-		if (!this->menuBarAutoHideAction->isChecked() || this->isFullScreen()) {
-			this->menuBar()->setVisible(false);
-			this->enableAutomaticMouseHide();
+		if (!menuBarAutoHideAction->isChecked() || isFullScreen()) {
+			menuBar()->setVisible(false);
+			enableAutomaticMouseHide();
 		}
 	}
 
 	void MainInterface::populateApplicationMenu() {
-		this->applicationMenu->removeAction(installAction);
-		this->applicationMenu->removeAction(uninstallAction);
+		applicationMenu->removeAction(installAction);
+		applicationMenu->removeAction(uninstallAction);
 		if (applicationIsInstalled()) {
-			this->applicationMenu->insertAction(this->aboutAction, this->uninstallAction);
+			applicationMenu->insertAction(aboutAction, uninstallAction);
 		} else {
-			this->applicationMenu->insertAction(this->aboutAction, this->installAction);
+			applicationMenu->insertAction(aboutAction, installAction);
 		}
 
 	}
@@ -1376,9 +1376,9 @@ namespace sv {
 													  tr("Reset Application Settings"),
 													  tr("Are you sure you want to reset all application settings to the default values?"),
 													  QMessageBox::Yes | QMessageBox::No)) {
-			this->settings->clear();
-			this->loadSettings();
-			this->imageView->update();
+			settings->clear();
+			loadSettings();
+			imageView->update();
 			QMessageBox::information(this,
 									 tr("Reset Successfull"),
 									 tr("The application settings have been reset to the default values."),
@@ -1387,274 +1387,274 @@ namespace sv {
 	}
 
 	void MainInterface::toggleSlideshow() {
-		if (this->slideshowTimer->isActive()) {
-			this->stopSlideshow();
+		if (slideshowTimer->isActive()) {
+			stopSlideshow();
 		} else {
-			this->slideshowDialog->show();
-			this->disableAutomaticMouseHide();
+			slideshowDialog->show();
+			disableAutomaticMouseHide();
 		}
 	}
 
 	void MainInterface::toggleSlideshowNoDialog() {
-		if (this->slideshowTimer->isActive()) {
-			this->stopSlideshow();
+		if (slideshowTimer->isActive()) {
+			stopSlideshow();
 		} else {
-			this->startSlideshow();
+			startSlideshow();
 		}
 	}
 
 	void MainInterface::startSlideshow() {
-		this->slideshowAction->setText(tr("&Stop Slideshow"));
-		this->slideshowTimer->start(std::abs(this->settings->value("slideDelay", 3).toDouble()) * 1000);
+		slideshowAction->setText(tr("&Stop Slideshow"));
+		slideshowTimer->start(std::abs(settings->value("slideDelay", 3).toDouble()) * 1000);
 	}
 
 	void MainInterface::stopSlideshow() {
-		this->slideshowAction->setText(tr("&Start Slideshow"));
-		this->slideshowTimer->stop();
+		slideshowAction->setText(tr("&Start Slideshow"));
+		slideshowTimer->stop();
 	}
 
 	void MainInterface::toggleFullscreen() {
-		if (this->isFullScreen()) {
-			this->exitFullscreen();
+		if (isFullScreen()) {
+			exitFullscreen();
 		} else {
-			this->enterFullscreen();
+			enterFullscreen();
 		}
 	}
 
 	void MainInterface::rotateLeft() {
-		this->userRotation -= 90;
-		this->imageView->rotateLeft();
+		userRotation -= 90;
+		imageView->rotateLeft();
 	}
 
 	void MainInterface::rotateRight() {
-		this->userRotation += 90;
-		this->imageView->rotateRight();
+		userRotation += 90;
+		imageView->rotateRight();
 	}
 
 	void MainInterface::resetRotation() {
-		this->userRotation = 0;
-		this->imageView->setRotation(0);
-		if (this->autoRotationAction->isChecked()) this->autoRotateImage();
+		userRotation = 0;
+		imageView->setRotation(0);
+		if (autoRotationAction->isChecked()) autoRotateImage();
 	}
 
 	void MainInterface::zoomTo100() {
-		this->skipNextAltRelease = true;
-		this->imageView->zoomToHundredPercent();
+		skipNextAltRelease = true;
+		imageView->zoomToHundredPercent();
 	}
 
 	void MainInterface::toggleGpu(bool value) {
-		this->imageView->setUseGpu(value);
-		this->settings->setValue("useGpu", value);
+		imageView->setUseGpu(value);
+		settings->setValue("useGpu", value);
 	}
 
 	void MainInterface::toggleInfoOverlay(bool value) {
 		//if the thread of the currently displayed image is ready, start loading exif
-		if (!this->currentThreadName.isEmpty()
-			&& this->currentThread().valid()
-			&& this->currentThread().wait_for(std::chrono::milliseconds(0)) == std::future_status::ready
-			&& this->currentThread().get().isValid()) {
-			this->currentThread().get().exif()->startLoading();
+		if (!currentThreadName.isEmpty()
+			&& currentThread().valid()
+			&& currentThread().wait_for(std::chrono::milliseconds(0)) == std::future_status::ready
+			&& currentThread().get().isValid()) {
+			currentThread().get().exif()->startLoading();
 		}
-		if (this->image.isValid()) this->image.exif()->startLoading();
-		this->imageView->update();
-		this->settings->setValue("showImageInfo", value);
+		if (image.isValid()) image.exif()->startLoading();
+		imageView->update();
+		settings->setValue("showImageInfo", value);
 	}
 
 	void MainInterface::toggleZoomLevelOverlay(bool value) {
-		this->imageView->update();
-		this->settings->setValue("showZoomLevel", value);
+		imageView->update();
+		settings->setValue("showZoomLevel", value);
 	}
 
 	void MainInterface::reactToReadImageCompletion(Image image) {
 		this->image = image;
 		//calling this function although the exif might not be set to deferred loading is no problem (it checks internally)
-		if (this->exifIsRequired() && this->currentThread().get().isValid()) this->currentThread().get().exif()->startLoading();
-		this->statusHint = QString();
-		this->displayImageIfOk();
-		if (this->filesInDirectory.size() != 0) {
+		if (exifIsRequired() && currentThread().get().isValid()) currentThread().get().exif()->startLoading();
+		statusHint = QString();
+		displayImageIfOk();
+		if (filesInDirectory.size() != 0) {
 			//preload next and previous image in background
-			std::lock_guard<std::mutex> lock(this->threadDeletionMutex);
-			if (this->threads.find(this->filesInDirectory[this->previousFileIndex()]) == this->threads.end()) {
-				this->threads[this->filesInDirectory[this->previousFileIndex()]] = std::async(std::launch::async,
+			std::lock_guard<std::mutex> lock(threadDeletionMutex);
+			if (threads.find(filesInDirectory[previousFileIndex()]) == threads.end()) {
+				threads[filesInDirectory[previousFileIndex()]] = std::async(std::launch::async,
 																							  &MainInterface::readImage,
 																							  this,
-																							  this->getFullImagePath(this->previousFileIndex()),
+																							  getFullImagePath(previousFileIndex()),
 																							  false);
 			}
-			if (this->threads.find(this->filesInDirectory[this->nextFileIndex()]) == this->threads.end()) {
-				this->threads[this->filesInDirectory[this->nextFileIndex()]] = std::async(std::launch::async,
+			if (threads.find(filesInDirectory[nextFileIndex()]) == threads.end()) {
+				threads[filesInDirectory[nextFileIndex()]] = std::async(std::launch::async,
 																						  &MainInterface::readImage,
-																						  this, this->getFullImagePath(this->nextFileIndex()),
+																						  this, getFullImagePath(nextFileIndex()),
 																						  false);
 			}
 		}
-		this->slideshowAction->setEnabled(true);
-		this->slideshowNoDialogAction->setEnabled(true);
-		this->refreshAction->setEnabled(true);
-		this->loading = false;
+		slideshowAction->setEnabled(true);
+		slideshowNoDialogAction->setEnabled(true);
+		refreshAction->setEnabled(true);
+		loading = false;
 	}
 
 	void MainInterface::reactToExifLoadingCompletion(ExifData* sender) {
-		if (this->showInfoAction->isChecked()) {
+		if (showInfoAction->isChecked()) {
 		//if the sender is the currently displayed image
-			if (this->image.exif().get() == sender) {
-				this->update();
+			if (image.exif().get() == sender) {
+				update();
 			}
 		}
 	}
 
 	void MainInterface::openDialog() {
-		QString supportedFiles = QString("Fully Supported Images (") + this->supportedExtensions.join(" ") + QString(")");
+		QString supportedFiles = QString("Fully Supported Images (") + supportedExtensions.join(" ") + QString(")");
 		QStringList allTypes;
-		allTypes << this->supportedExtensions << this->partiallySupportedExtensions;
+		allTypes << supportedExtensions << partiallySupportedExtensions;
 		allTypes.sort();
 		QString partiallySupportedFiles = QString("All Supported Images (") + allTypes.join(" ") + QString(")");
 		QString filters = QString("All Files (*.*);; %1;; %2;;").arg(partiallySupportedFiles).arg(supportedFiles);
 		QStringList paths = QFileDialog::getOpenFileNames(this,
 														  tr("Open Config File"),
-														  this->settings->value("lastOpenPath", QDir::rootPath()).toString(),
+														  settings->value("lastOpenPath", QDir::rootPath()).toString(),
 														  filters);
 
 		if (!(paths.size() < 1)) {
-			this->settings->setValue("lastOpenPath", QFileInfo(paths.at(0)).path());
+			settings->setValue("lastOpenPath", QFileInfo(paths.at(0)).path());
 			if (paths.size() == 1) {
-				this->loadImage(paths.at(0));
+				loadImage(paths.at(0));
 			} else {
-				this->loadImages(paths);
+				loadImages(paths);
 			}
 		}
 	}
 
 	void MainInterface::toggleEnglargmentInterpolationMethod(bool value) {
-		this->imageView->setUseSmoothTransform(value);
-		this->settings->setValue("useSmoothEnlargmentInterpolation", value);
+		imageView->setUseSmoothTransform(value);
+		settings->setValue("useSmoothEnlargmentInterpolation", value);
 	}
 
 	void MainInterface::toggleSmallImageUpscaling(bool value) {
-		this->imageView->setPreventMagnificationInDefaultZoom(!value);
-		this->settings->setValue("enlargeSmallImages", value);
+		imageView->setPreventMagnificationInDefaultZoom(!value);
+		settings->setValue("enlargeSmallImages", value);
 	}
 
 	void MainInterface::toggleSharpening(bool value) {
-		this->imageView->setEnablePostResizeSharpening(value);
-		this->settings->setValue("sharpenImagesAfterDownscale", value);
+		imageView->setEnablePostResizeSharpening(value);
+		settings->setValue("sharpenImagesAfterDownscale", value);
 	}
 
 	void MainInterface::toggleMenuBarAutoHide(bool value) {
-		this->settings->setValue("autoHideMenuBar", !value);
+		settings->setValue("autoHideMenuBar", !value);
 		if (value) {
-			this->showMenuBar();
+			showMenuBar();
 		} else {
-			this->hideMenuBar();
+			hideMenuBar();
 		}
 	}
 
 	void MainInterface::togglePreviewOnlyFiles(bool value) {
-		this->settings->setValue("includePreviewOnlyFiles", value);
-		this->refresh();
+		settings->setValue("includePreviewOnlyFiles", value);
+		refresh();
 	}
 
 	void MainInterface::showSharpeningOptions() {
-		this->disableAutomaticMouseHide();
-		this->sharpeningDialog->show();
-		this->sharpeningDialog->raise();
-		this->sharpeningDialog->activateWindow();
+		disableAutomaticMouseHide();
+		sharpeningDialog->show();
+		sharpeningDialog->raise();
+		sharpeningDialog->activateWindow();
 	}
 
 	void MainInterface::updateSharpening() {
-		this->sharpeningAction->setChecked(this->settings->value("sharpenImagesAfterDownscale", false).toBool());
-		this->imageView->setPostResizeSharpening(this->sharpeningAction->isChecked(),
-												 this->settings->value("sharpeningStrength", 0.5).toDouble(),
-												 this->settings->value("sharpeningRadius", 1).toDouble());
+		sharpeningAction->setChecked(settings->value("sharpenImagesAfterDownscale", false).toBool());
+		imageView->setPostResizeSharpening(sharpeningAction->isChecked(),
+												 settings->value("sharpeningStrength", 0.5).toDouble(),
+												 settings->value("sharpeningRadius", 1).toDouble());
 	}
 
 	void MainInterface::changeBackgroundColor(QAction* action) {
-		if (action == this->backgroundColorBlackAction) {
-			this->imageView->setInterfaceBackgroundColor(Qt::black);
-			this->settings->setValue("backgroundColor", QColor(Qt::black));
-		} else if (action == this->backgroundColorGrayAction) {
-			this->imageView->setInterfaceBackgroundColor(this->darkGray);
-			this->settings->setValue("backgroundColor", this->darkGray);
-		} else if (action == this->backgroundColorWhiteAction) {
-			this->imageView->setInterfaceBackgroundColor(Qt::white);
-			this->settings->setValue("backgroundColor", QColor(Qt::white));
-		} else if (action == this->backgroundColorCustomAction) {
-			QColor color = QColorDialog::getColor(this->settings->value("lastCustomColor", QColor(Qt::black)).value<QColor>(), this, tr("Choose Background Colour"));
+		if (action == backgroundColorBlackAction) {
+			imageView->setInterfaceBackgroundColor(Qt::black);
+			settings->setValue("backgroundColor", QColor(Qt::black));
+		} else if (action == backgroundColorGrayAction) {
+			imageView->setInterfaceBackgroundColor(darkGray);
+			settings->setValue("backgroundColor", darkGray);
+		} else if (action == backgroundColorWhiteAction) {
+			imageView->setInterfaceBackgroundColor(Qt::white);
+			settings->setValue("backgroundColor", QColor(Qt::white));
+		} else if (action == backgroundColorCustomAction) {
+			QColor color = QColorDialog::getColor(settings->value("lastCustomColor", QColor(Qt::black)).value<QColor>(), this, tr("Choose Background Colour"));
 			if (color.isValid()) {
-				this->settings->setValue("lastCustomColor", color);
-				this->settings->setValue("backgroundColor", color);
-				this->imageView->setInterfaceBackgroundColor(color);
+				settings->setValue("lastCustomColor", color);
+				settings->setValue("backgroundColor", color);
+				imageView->setInterfaceBackgroundColor(color);
 			} else {
-				if (this->imageView->getInterfaceBackgroundColor() == Qt::black) {
-					this->backgroundColorBlackAction->setChecked(true);
-				} else if (this->imageView->getInterfaceBackgroundColor() == this->darkGray) {
-					this->backgroundColorGrayAction->setChecked(true);
-				} else if (this->imageView->getInterfaceBackgroundColor() == Qt::white) {
-					this->backgroundColorWhiteAction->setChecked(true);
+				if (imageView->getInterfaceBackgroundColor() == Qt::black) {
+					backgroundColorBlackAction->setChecked(true);
+				} else if (imageView->getInterfaceBackgroundColor() == darkGray) {
+					backgroundColorGrayAction->setChecked(true);
+				} else if (imageView->getInterfaceBackgroundColor() == Qt::white) {
+					backgroundColorWhiteAction->setChecked(true);
 				}
 			}
 		}
 	}
 
 	void MainInterface::toggleAutoRotation(bool value) {
-		this->settings->setValue("autoRotateImages", value);
+		settings->setValue("autoRotateImages", value);
 		if (value) {
-			this->autoRotateImage();
+			autoRotateImage();
 		} else {
-			this->imageView->setRotation(userRotation);
+			imageView->setRotation(userRotation);
 		}
 	}
 
 	void MainInterface::triggerCustomAction1() {
-		if (this->filesInDirectory.size() > 0 && !this->loading) {
-			this->loading = true;
-			if (this->hotkeyDialog->getAction1() == 0) {
-				this->statusHint = tr("Deleting...");
-				this->update();
-				this->deleteCurrentImage(this->hotkeyDialog->getShowConfirmation(), this->hotkeyDialog->getIncludeSidecarFiles());
-			} else if (this->hotkeyDialog->getAction1() == 1) {
-				this->statusHint = tr("Moving...");
-				this->update();
-				this->moveCurrentImage(this->hotkeyDialog->getFolder1(), this->hotkeyDialog->getShowConfirmation(), this->hotkeyDialog->getIncludeSidecarFiles());
-			} else if (this->hotkeyDialog->getAction1() == 2) {
-				this->statusHint = tr("Copying...");
-				this->update();
-				this->copyCurrentImage(this->hotkeyDialog->getFolder1(), this->hotkeyDialog->getShowConfirmation(), this->hotkeyDialog->getIncludeSidecarFiles());
+		if (filesInDirectory.size() > 0 && !loading) {
+			loading = true;
+			if (hotkeyDialog->getAction1() == 0) {
+				statusHint = tr("Deleting...");
+				update();
+				deleteCurrentImage(hotkeyDialog->getShowConfirmation(), hotkeyDialog->getIncludeSidecarFiles());
+			} else if (hotkeyDialog->getAction1() == 1) {
+				statusHint = tr("Moving...");
+				update();
+				moveCurrentImage(hotkeyDialog->getFolder1(), hotkeyDialog->getShowConfirmation(), hotkeyDialog->getIncludeSidecarFiles());
+			} else if (hotkeyDialog->getAction1() == 2) {
+				statusHint = tr("Copying...");
+				update();
+				copyCurrentImage(hotkeyDialog->getFolder1(), hotkeyDialog->getShowConfirmation(), hotkeyDialog->getIncludeSidecarFiles());
 			}
-			this->statusHint = QString();
-			this->loading = false;
-			this->update();
+			statusHint = QString();
+			loading = false;
+			update();
 		}
 	}
 
 	void MainInterface::triggerCustomAction2() { 
-		if (this->filesInDirectory.size() > 0 && !this->loading) {
-			this->loading = true;
-			if (this->hotkeyDialog->getAction2() == 0) {
-				this->statusHint = tr("Deleting...");
-				this->update();
-				this->deleteCurrentImage(this->hotkeyDialog->getShowConfirmation(), this->hotkeyDialog->getIncludeSidecarFiles(), this->hotkeyDialog->getSidecarType());
-			} else if (this->hotkeyDialog->getAction2() == 1) {
-				this->statusHint = tr("Moving...");
-				this->update();
-				this->moveCurrentImage(this->hotkeyDialog->getFolder2(), this->hotkeyDialog->getShowConfirmation(), this->hotkeyDialog->getIncludeSidecarFiles(), this->hotkeyDialog->getSidecarType());
-			} else if (this->hotkeyDialog->getAction2() == 2) {
-				this->statusHint = tr("Copying...");
-				this->update();
-				this->copyCurrentImage(this->hotkeyDialog->getFolder2(), this->hotkeyDialog->getShowConfirmation(), this->hotkeyDialog->getIncludeSidecarFiles(), this->hotkeyDialog->getSidecarType());
+		if (filesInDirectory.size() > 0 && !loading) {
+			loading = true;
+			if (hotkeyDialog->getAction2() == 0) {
+				statusHint = tr("Deleting...");
+				update();
+				deleteCurrentImage(hotkeyDialog->getShowConfirmation(), hotkeyDialog->getIncludeSidecarFiles(), hotkeyDialog->getSidecarType());
+			} else if (hotkeyDialog->getAction2() == 1) {
+				statusHint = tr("Moving...");
+				update();
+				moveCurrentImage(hotkeyDialog->getFolder2(), hotkeyDialog->getShowConfirmation(), hotkeyDialog->getIncludeSidecarFiles(), hotkeyDialog->getSidecarType());
+			} else if (hotkeyDialog->getAction2() == 2) {
+				statusHint = tr("Copying...");
+				update();
+				copyCurrentImage(hotkeyDialog->getFolder2(), hotkeyDialog->getShowConfirmation(), hotkeyDialog->getIncludeSidecarFiles(), hotkeyDialog->getSidecarType());
 			}
-			this->statusHint = QString();
-			this->loading = false;
-			this->update();
+			statusHint = QString();
+			loading = false;
+			update();
 		}
 	}
 
 	void MainInterface::updateCustomHotkeys() {
-		this->fileActionAction->setChecked(this->hotkeyDialog->getHotkeysEnabled());
-		this->customAction1->setEnabled(this->hotkeyDialog->getHotkeysEnabled() && this->hotkeyDialog->getHotkey1Enabled());
-		this->customAction2->setEnabled(this->hotkeyDialog->getHotkeysEnabled() && this->hotkeyDialog->getHotkey2Enabled());
-		this->customAction1->setShortcut(this->hotkeyDialog->getKeySequence1());
-		this->customAction2->setShortcut(this->hotkeyDialog->getKeySequence2());
+		fileActionAction->setChecked(hotkeyDialog->getHotkeysEnabled());
+		customAction1->setEnabled(hotkeyDialog->getHotkeysEnabled() && hotkeyDialog->getHotkey1Enabled());
+		customAction2->setEnabled(hotkeyDialog->getHotkeysEnabled() && hotkeyDialog->getHotkey2Enabled());
+		customAction1->setShortcut(hotkeyDialog->getKeySequence1());
+		customAction2->setShortcut(hotkeyDialog->getKeySequence2());
 	}
 
 }
