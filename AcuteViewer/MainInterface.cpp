@@ -581,18 +581,8 @@ namespace sv {
 			std::shared_ptr<ExifData> exifData;
 			//for the images we know are not supported by opencv do not attempt to read them with opencv
 			bool forcePreview = partiallySupportedExtensions.contains(QString("*.") + QFileInfo(path).suffix().toLower());
-			if (!utility::isCharCompatible(path)) {
-				std::shared_ptr<std::vector<char>> buffer = utility::readFileIntoBuffer(path);
-				if (buffer->empty()) {
-					if (emitSignals) emit(readImageFinished(Image()));
-					return Image();
-				}
-				if(!forcePreview) image = cv::imdecode(*buffer, cv::IMREAD_UNCHANGED);
-				exifData = std::shared_ptr<ExifData>(new ExifData(buffer));
-			} else {
-				if (!forcePreview) image = cv::imread(path.toStdString(), cv::IMREAD_UNCHANGED);
+			if (!forcePreview) image = cv::imread(path.toLocal8Bit().constData(), cv::IMREAD_UNCHANGED);
 				exifData = std::shared_ptr<ExifData>(new ExifData(path, !exifIsRequired() && image.data));
-			}
 			if (!image.data) {  
 				exifData->join();
 				if (exifData->hasPreviewImage()) {
