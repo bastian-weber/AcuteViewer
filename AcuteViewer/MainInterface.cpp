@@ -295,7 +295,7 @@ namespace sv {
 		fileActionAction = new QAction(tr("&Enable File Action Hotkeys"), this);
 		fileActionAction->setCheckable(true);
 		fileActionAction->setChecked(false);
-		fileActionAction->setShortcut(Qt::CTRL | Qt::Key_H);
+		fileActionAction->setShortcut(QKeyCombination(Qt::CTRL, Qt::Key_H));
 		fileActionAction->setShortcutContext(Qt::ApplicationShortcut);
 		QObject::connect(fileActionAction, SIGNAL(triggered(bool)), hotkeyDialog, SLOT(setHotkeysEnabled(bool)));
 		fileMenu->addAction(fileActionAction);
@@ -313,7 +313,7 @@ namespace sv {
 		includePartiallySupportedFilesAction = new QAction(tr("&Include Preview-Only Files in Directory List"), this);
 		includePartiallySupportedFilesAction->setCheckable(true);
 		includePartiallySupportedFilesAction->setChecked(true);
-		includePartiallySupportedFilesAction->setShortcut(Qt::CTRL | Qt::Key_P);
+		includePartiallySupportedFilesAction->setShortcut(QKeyCombination(Qt::CTRL, Qt::Key_P));
 		includePartiallySupportedFilesAction->setShortcutContext(Qt::ApplicationShortcut);
 		QObject::connect(includePartiallySupportedFilesAction, SIGNAL(triggered(bool)), this, SLOT(togglePreviewOnlyFiles(bool)));
 		fileMenu->addAction(includePartiallySupportedFilesAction);
@@ -328,7 +328,7 @@ namespace sv {
 		fileMenu->addSeparator();
 
 		quitAction = new QAction(tr("&Quit"), this);
-		quitAction->setShortcut(Qt::CTRL | Qt::Key_Q);
+		quitAction->setShortcut(QKeyCombination(Qt::CTRL, Qt::Key_Q));
 		quitAction->setShortcutContext(Qt::ApplicationShortcut);
 		QObject::connect(quitAction, SIGNAL(triggered()), this, SLOT(quit()));
 		fileMenu->addAction(quitAction);
@@ -358,7 +358,7 @@ namespace sv {
 		backgroundColorBlackAction = new QAction(tr("&Black"), this);
 		backgroundColorBlackAction->setCheckable(true);
 		backgroundColorBlackAction->setChecked(false);
-		backgroundColorBlackAction->setShortcut(Qt::CTRL | Qt::Key_B);
+		backgroundColorBlackAction->setShortcut(QKeyCombination(Qt::CTRL, Qt::Key_B));
 		backgroundColorBlackAction->setShortcutContext(Qt::ApplicationShortcut);
 		backgroundColorMenu->addAction(backgroundColorBlackAction);
 		addAction(backgroundColorBlackAction);
@@ -366,7 +366,7 @@ namespace sv {
 		backgroundColorGrayAction = new QAction(tr("Dark &Grey"), this);
 		backgroundColorGrayAction->setCheckable(true);
 		backgroundColorGrayAction->setChecked(false);
-		backgroundColorGrayAction->setShortcut(Qt::CTRL | Qt::Key_G);
+		backgroundColorGrayAction->setShortcut(QKeyCombination(Qt::CTRL, Qt::Key_G));
 		backgroundColorGrayAction->setShortcutContext(Qt::ApplicationShortcut);
 		backgroundColorMenu->addAction(backgroundColorGrayAction);
 		addAction(backgroundColorGrayAction);
@@ -374,7 +374,7 @@ namespace sv {
 		backgroundColorWhiteAction = new QAction(tr("&White"), this);
 		backgroundColorWhiteAction->setCheckable(true);
 		backgroundColorWhiteAction->setChecked(false);
-		backgroundColorWhiteAction->setShortcut(Qt::CTRL | Qt::Key_W);
+		backgroundColorWhiteAction->setShortcut(QKeyCombination(Qt::CTRL, Qt::Key_W));
 		backgroundColorWhiteAction->setShortcutContext(Qt::ApplicationShortcut);
 		backgroundColorMenu->addAction(backgroundColorWhiteAction);
 		addAction(backgroundColorWhiteAction);
@@ -382,7 +382,7 @@ namespace sv {
 		backgroundColorCustomAction = new QAction(tr("&Custom"), this);
 		backgroundColorCustomAction->setCheckable(true);
 		backgroundColorCustomAction->setChecked(false);
-		backgroundColorCustomAction->setShortcut(Qt::CTRL | Qt::Key_C);
+		backgroundColorCustomAction->setShortcut(QKeyCombination(Qt::CTRL, Qt::Key_C));
 		backgroundColorCustomAction->setShortcutContext(Qt::ApplicationShortcut);
 		backgroundColorMenu->addAction(backgroundColorCustomAction);
 		addAction(backgroundColorCustomAction);
@@ -434,7 +434,7 @@ namespace sv {
 		enlargementAction = new QAction(tr("&Enlarge Smaller Images to Fit Window"), this);
 		enlargementAction->setCheckable(true);
 		enlargementAction->setChecked(false);
-		enlargementAction->setShortcut(Qt::CTRL | Qt::Key_U);
+		enlargementAction->setShortcut(QKeyCombination(Qt::CTRL, Qt::Key_U));
 		enlargementAction->setShortcutContext(Qt::ApplicationShortcut);
 		QObject::connect(enlargementAction, SIGNAL(triggered(bool)), this, SLOT(toggleSmallImageUpscaling(bool)));
 		zoomMenu->addAction(enlargementAction);
@@ -443,7 +443,7 @@ namespace sv {
 		smoothingAction = new QAction(tr("Use &Smooth Interpolation when Enlarging"), this);
 		smoothingAction->setCheckable(true);
 		smoothingAction->setChecked(false);
-		smoothingAction->setShortcut(Qt::CTRL | Qt::Key_S);
+		smoothingAction->setShortcut(QKeyCombination(Qt::CTRL, Qt::Key_S));
 		smoothingAction->setShortcutContext(Qt::ApplicationShortcut);
 		QObject::connect(smoothingAction, SIGNAL(triggered(bool)), this, SLOT(toggleEnglargmentInterpolationMethod(bool)));
 		zoomMenu->addAction(smoothingAction);
@@ -452,7 +452,7 @@ namespace sv {
 		zoomMenu->addSeparator();
 
 		zoomToFitAction = new QAction(tr("Zoom to &Fit"), this);
-		zoomToFitAction->setShortcut(Qt::CTRL | Qt::Key_0);
+		zoomToFitAction->setShortcut(QKeyCombination(Qt::CTRL, Qt::Key_0));
 		zoomToFitAction->setShortcutContext(Qt::ApplicationShortcut);
 		QObject::connect(zoomToFitAction, SIGNAL(triggered(bool)), imageView, SLOT(resetZoom()));
 		zoomMenu->addAction(zoomToFitAction);
@@ -466,21 +466,21 @@ namespace sv {
 		addAction(zoomTo100Action);
 
 		rotateLeftAction = new QAction(tr("Rotate View &Left"), this);
-		rotateLeftAction->setShortcut(Qt::CTRL | Qt::Key_Left);
+		rotateLeftAction->setShortcut(QKeyCombination(Qt::CTRL, Qt::Key_Left));
 		rotateLeftAction->setShortcutContext(Qt::ApplicationShortcut);
 		QObject::connect(rotateLeftAction, SIGNAL(triggered(bool)), this, SLOT(rotateLeft()));
 		rotationMenu->addAction(rotateLeftAction);
 		addAction(rotateLeftAction);
 
 		rotateRightAction = new QAction(tr("Rotate &View Right"), this);
-		rotateRightAction->setShortcut(Qt::CTRL | Qt::Key_Right);
+		rotateRightAction->setShortcut(QKeyCombination(Qt::CTRL, Qt::Key_Right));
 		rotateRightAction->setShortcutContext(Qt::ApplicationShortcut);
 		QObject::connect(rotateRightAction, SIGNAL(triggered(bool)), this, SLOT(rotateRight()));
 		rotationMenu->addAction(rotateRightAction);
 		addAction(rotateRightAction);
 
 		resetRotationAction = new QAction(tr("&Reset Rotation"), this);
-		resetRotationAction->setShortcut(Qt::SHIFT | Qt::Key_Escape);
+		resetRotationAction->setShortcut(QKeyCombination(Qt::SHIFT, Qt::Key_Escape));
 		resetRotationAction->setShortcutContext(Qt::ApplicationShortcut);
 		QObject::connect(resetRotationAction, SIGNAL(triggered(bool)), this, SLOT(resetRotation()));
 		rotationMenu->addAction(resetRotationAction);
@@ -491,7 +491,7 @@ namespace sv {
 		autoRotationAction = new QAction(tr("&Automatic EXIF-based rotation"), this);
 		autoRotationAction->setCheckable(true);
 		autoRotationAction->setChecked(true);
-		autoRotationAction->setShortcut(Qt::CTRL | Qt::Key_R);
+		autoRotationAction->setShortcut(QKeyCombination(Qt::CTRL, Qt::Key_R));
 		autoRotationAction->setShortcutContext(Qt::ApplicationShortcut);
 		QObject::connect(autoRotationAction, SIGNAL(triggered(bool)), this, SLOT(toggleAutoRotation(bool)));
 		rotationMenu->addAction(autoRotationAction);
@@ -500,7 +500,7 @@ namespace sv {
 		sharpeningAction = new QAction(tr("&Sharpen Images After Downsampling"), this);
 		sharpeningAction->setCheckable(true);
 		sharpeningAction->setChecked(false);
-		sharpeningAction->setShortcut(Qt::CTRL | Qt::Key_E);
+		sharpeningAction->setShortcut(QKeyCombination(Qt::CTRL, Qt::Key_E));
 		sharpeningAction->setShortcutContext(Qt::ApplicationShortcut);
 		QObject::connect(sharpeningAction, SIGNAL(triggered(bool)), this, SLOT(toggleSharpening(bool)));
 		sharpeningMenu->addAction(sharpeningAction);
@@ -515,7 +515,7 @@ namespace sv {
 
 		slideshowAction = new QAction(tr("&Start Slideshow"), this);
 		slideshowAction->setEnabled(false);
-		slideshowAction->setShortcut(Qt::CTRL | Qt::Key_Space);
+		slideshowAction->setShortcut(QKeyCombination(Qt::CTRL, Qt::Key_Space));
 		slideshowAction->setShortcutContext(Qt::ApplicationShortcut);
 		QObject::connect(slideshowAction, SIGNAL(triggered()), this, SLOT(toggleSlideshow()));
 		slideshowMenu->addAction(slideshowAction);
