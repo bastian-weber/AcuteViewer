@@ -170,3 +170,62 @@ if(WIN32)
         endif()
     endforeach()
 endif()
+
+#=======================================================================#
+# Install
+#=======================================================================#
+
+# Install executables and collect their runtime dependencies into a set
+install(TARGETS AcuteViewer
+    RUNTIME_DEPENDENCY_SET app_deps
+    DESTINATION .
+)
+if(WIN32)
+    install(TARGETS WinInstaller
+        RUNTIME_DEPENDENCY_SET app_deps
+        DESTINATION .
+    )
+endif()
+
+# Install all third-party DLLs collected in the dependency set,
+# excluding Windows system DLLs
+install(RUNTIME_DEPENDENCY_SET app_deps
+    PRE_EXCLUDE_REGEXES
+        "api-ms-.*"
+        "ext-ms-.*"
+        "hvsifiletrust\\.dll"
+        "pdmutilities\\.dll"
+    POST_EXCLUDE_REGEXES
+        ".*[Ss]ystem32[/\\\\].*\\.dll"
+        ".*[Ww]in[Ss][Xx][Ss][/\\\\].*\\.dll"
+    DESTINATION .
+)
+
+# Install deploy resources
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/deploy_ressources/general/"
+    DESTINATION .
+)
+if(WIN32)
+    install(DIRECTORY "${CMAKE_SOURCE_DIR}/deploy_ressources/general/data"
+        DESTINATION .
+    )
+elseif(UNIX)
+    install(DIRECTORY "${CMAKE_SOURCE_DIR}/deploy_ressources/linux/"
+        DESTINATION .
+    )
+endif()
+
+# On Windows, run windeployqt at install time to pull in Qt plugins
+if(WIN32 AND WINDEPLOYQT)
+    foreach(TARGET_NAME ${ALL_TARGETS})
+        install(CODE "
+            message(STATUS \"Running windeployqt for ${TARGET_NAME}...\")
+            execute_process(
+                COMMAND \"${WINDEPLOYQT}\"
+                    --no-translations
+                    --dir \"\${CMAKE_INSTALL_PREFIX}\"
+                    \"\${CMAKE_INSTALL_PREFIX}/${TARGET_NAME}.exe\"
+            )
+        ")
+    endforeach()
+endif()
