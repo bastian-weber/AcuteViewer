@@ -1,4 +1,7 @@
 #include "MainInterface.h"
+#ifdef Q_OS_WIN
+#include <shellapi.h>
+#endif
 
 namespace sv {
 
@@ -594,7 +597,7 @@ namespace sv {
 				QObject::connect(exifData.get(), SIGNAL(loadingFinished(ExifData*)), this, SLOT(reactToExifLoadingCompletion(ExifData*)));
 				//convert format
 				if (image.channels() == 3) {
-					cv::cvtColor(image, image, CV_BGR2RGB);
+					cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
 				}
 				if (image.depth() == CV_16U) {
 					image.convertTo(image, CV_8U, 1.0 / 256.0);

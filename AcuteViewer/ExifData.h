@@ -14,7 +14,7 @@
 #include <opencv2/imgcodecs.hpp>
 
 //Exiv2
-#include <exiv2.hpp>
+#include <exiv2/exiv2.hpp>
 
 #include "utility.h"
 
@@ -30,7 +30,7 @@ namespace sv {
 		~ExifData();
 		void startLoading();
 		bool hasValue(QString const& key) const;
-		Exiv2::Value::AutoPtr value(QString const& key) const;
+		Exiv2::Value::UniquePtr value(QString const& key) const;
 		QString cameraModel() const;
 		QString lensModel() const;
 		QString exposureTime() const;
@@ -53,7 +53,7 @@ namespace sv {
 		void launchThreadFromPath(QString const& filepath);
 		void load(QString filepath);
 		void loadFromBuffer(std::shared_ptr<std::vector<char>> buffer);
-		void readExifFromImage(Exiv2::Image::AutoPtr const image);
+		void readExifFromImage(Exiv2::Image::UniquePtr const image);
 
 		//variables
 		Exiv2::ExifData exifData;

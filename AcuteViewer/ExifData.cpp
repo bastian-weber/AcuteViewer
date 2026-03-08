@@ -39,16 +39,16 @@ namespace sv {
 		}
 	}
 
-	Exiv2::Value::AutoPtr ExifData::value(QString const& key) const {
+	Exiv2::Value::UniquePtr ExifData::value(QString const& key) const {
 		if (!exifData.empty()) {
 			Exiv2::ExifData::const_iterator it = exifData.findKey(Exiv2::ExifKey(key.toStdString()));
 			if (it != exifData.end()) {
 				return it->getValue();
 			} else {
-				return Exiv2::Value::AutoPtr(Exiv2::Value::create(Exiv2::asciiString));
+				return Exiv2::Value::UniquePtr(Exiv2::Value::create(Exiv2::asciiString));
 			}
 		} else {
-			return Exiv2::Value::AutoPtr(Exiv2::Value::create(Exiv2::asciiString));
+			return Exiv2::Value::UniquePtr(Exiv2::Value::create(Exiv2::asciiString));
 		}
 	}
 
@@ -93,7 +93,7 @@ namespace sv {
 	QString ExifData::iso() const {
 		QString iso = "";
 		if (hasValue("Exif.Photo.ISOSpeedRatings")) {
-			long isoValue = value("Exif.Photo.ISOSpeedRatings")->toLong();
+			auto const isoValue = value("Exif.Photo.ISOSpeedRatings")->toInt64();
 			iso = QString::number(isoValue);
 		}
 		return iso;
@@ -149,20 +149,24 @@ namespace sv {
 	QString ExifData::resolution() const {
 		QString resolution = "";
 		if (hasValue("Exif.Photo.PixelXDimension") && hasValue("Exif.Photo.PixelYDimension")) {
-			long xRes = value("Exif.Photo.PixelXDimension")->toLong();
-			long yRes = value("Exif.Photo.PixelYDimension")->toLong();
+			auto const xRes = value("Exif.Photo.PixelXDimension")->toInt64();
+			auto const yRes = value("Exif.Photo.PixelYDimension")->toInt64();
 			resolution = QString::fromWCharArray(L"%1\u2006x\u2006%2").arg(xRes).arg(yRes);
-		}else if (hasValue("Exif.Image.ImageWidth") && hasValue("Exif.Image.ImageLength")) {
-			long xRes = value("Exif.Image.ImageWidth")->toLong();
-			long yRes = value("Exif.Image.ImageLength")->toLong();
+		}
+		else if (hasValue("Exif.Image.ImageWidth") && hasValue("Exif.Image.ImageLength"))
+		{
+			auto const xRes = value("Exif.Image.ImageWidth")->toInt64();
+			auto const yRes = value("Exif.Image.ImageLength")->toInt64();
 			resolution = QString::fromWCharArray(L"%1\u2006x\u2006%2").arg(xRes).arg(yRes);
 		}
 		return resolution;
 	}
 
-	int ExifData::orientation() const {
-		if (hasValue("Exif.Image.Orientation")) {
-			return value("Exif.Image.Orientation")->toLong();
+	int ExifData::orientation() const
+	{
+		if (hasValue("Exif.Image.Orientation"))
+		{
+			return value("Exif.Image.Orientation")->toInt64();
 		}
 		return -1;
 	}
@@ -209,8 +213,8 @@ namespace sv {
 	void ExifData::load(QString filepath) {
 		try {
 			if (utility::isCharCompatible(filepath)) {
-				Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(filepath.toStdString());
-				readExifFromImage(image);
+				Exiv2::Image::UniquePtr image = Exiv2::ImageFactory::open(filepath.toStdString());
+				readExifFromImage(std::move(image));
 			} else {
 				std::shared_ptr<std::vector<char>> buffer = utility::readFileIntoBuffer(filepath);
 				loadFromBuffer(buffer);
@@ -223,15 +227,15 @@ namespace sv {
 
 	void ExifData::loadFromBuffer(std::shared_ptr<std::vector<char>> buffer) {
 		try {
-			Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(reinterpret_cast<Exiv2::byte const*>(buffer->data()), buffer->size());
-			readExifFromImage(image);
+			Exiv2::Image::UniquePtr image = Exiv2::ImageFactory::open(reinterpret_cast<Exiv2::byte const*>(buffer->data()), buffer->size());
+			readExifFromImage(std::move(image));
 		} catch (...) {
 			ready = true;
 			emit(loadingFinished(this));
 		}
 	}
 
-	void ExifData::readExifFromImage(Exiv2::Image::AutoPtr const image) {
+	void ExifData::readExifFromImage(Exiv2::Image::UniquePtr const image) {
 		try {
 			if (image.get() != 0) {
 				image->readMetadata();

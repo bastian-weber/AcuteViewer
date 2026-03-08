@@ -1,5 +1,9 @@
 #include "utility.h"
 
+#ifdef Q_OS_WIN
+#include <shellapi.h>
+#endif
+
 namespace utility {
 
 	std::shared_ptr<std::vector<char>> readFileIntoBuffer(QString const & path) {
