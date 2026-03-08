@@ -84,7 +84,7 @@ namespace sv {
 
 	void AboutDialog::checkForUpdates(bool isAutoUpdate) {
 		QNetworkRequest request;
-		request.setUrl(QUrl("http://true-contrast.de/avv"));
+		request.setUrl(QUrl("https://true-contrast.de/avv"));
 		infoDocumentReply = std::shared_ptr<QNetworkReply>(network->get(request), [](QNetworkReply* reply) { reply->deleteLater(); });
 		connect(infoDocumentReply.get(), SIGNAL(finished()), this, SLOT(processInfoFile()));
 		QDateTime local(QDateTime::currentDateTime());
@@ -114,7 +114,7 @@ namespace sv {
 					downloadButton->setVisible(true);
 				}
 			} else {
-				infoLabel->setText(infoString.arg(getInstalledVersion(), tr("<b>Latest Version: (error)</b>")));
+				infoLabel->setText(infoString.arg(getInstalledVersion(), tr("<b>Latest Version: (error) %1</b>").arg(infoDocumentReply->errorString())));
 			}
 		} else {
 			infoLabel->setText(infoString.arg(getInstalledVersion(), tr("<b>Latest Version: (network request failed)</b>")));
