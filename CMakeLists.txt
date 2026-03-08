@@ -1,4 +1,5 @@
 cmake_minimum_required (VERSION 3.5)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
 #=======================================================================#
 
@@ -20,14 +21,11 @@ set(EXECUTABLE_NAME_2 WinInstaller)
 
 if(WIN32)
 	set(TARGETS "${EXECUTABLE_NAME_1}" "${EXECUTABLE_NAME_2}")
-	set(COPY_DIRECTORY_RELEASE "${CMAKE_CURRENT_BINARY_DIR}/Release")
-	set(COPY_DIRECTORY_DEBUG "${CMAKE_CURRENT_BINARY_DIR}/Debug")
+	set(COPY_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 else()
 	set(TARGETS "${EXECUTABLE_NAME_1}")
 	#set exe output path
-	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/build")
-	set(COPY_DIRECTORY_RELEASE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
-	set(COPY_DIRECTORY_DEBUG "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+	set(COPY_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 endif()
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
@@ -141,13 +139,13 @@ if(WIN32)
 	foreach(EXECUTABLE ${TARGETS})
 		add_custom_command(TARGET ${EXECUTABLE} POST_BUILD 
 			COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/deploy_ressources/general/data "${PROJECT_BINARY_DIR}/data"
-			COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/deploy_ressources/general "${COPY_DIRECTORY_RELEASE}")
+			COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/deploy_ressources/general "${COPY_DIRECTORY}")
 	endforeach()
 elseif (UNIX)
 	foreach(EXECUTABLE ${TARGETS})
 		add_custom_command(TARGET ${EXECUTABLE} POST_BUILD 
-			COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/deploy_ressources/general "${COPY_DIRECTORY_RELEASE}"
-			COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/deploy_ressources/linux "${COPY_DIRECTORY_RELEASE}")
+			COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/deploy_ressources/general "${COPY_DIRECTORY}"
+			COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/deploy_ressources/linux "${COPY_DIRECTORY}")
 	endforeach()
 endif()
 
@@ -203,8 +201,7 @@ IF(DEFINED QT_ROOT_FOUND)
 
 	foreach(EXECUTABLE ${TARGETS})
 		add_custom_command(TARGET ${EXECUTABLE} POST_BUILD 
-			COMMAND ${CMAKE_COMMAND} -E copy_directory ${PATH_QT_ROOT}/plugins/platforms "${COPY_DIRECTORY_DEBUG}${PLATFORMS_SUBFOLDER}/platforms"
-			COMMAND ${CMAKE_COMMAND} -E copy_directory ${PATH_QT_ROOT}/plugins/platforms "${COPY_DIRECTORY_RELEASE}${PLATFORMS_SUBFOLDER}/platforms")
+			COMMAND ${CMAKE_COMMAND} -E copy_directory ${PATH_QT_ROOT}/plugins/platforms "${COPY_DIRECTORY}${PLATFORMS_SUBFOLDER}/platforms")
 	endforeach()
 
 ENDIF(DEFINED QT_ROOT_FOUND)
@@ -221,31 +218,32 @@ endif()
 #copy libs
 if(DEFINED RELEASE_DLLS AND DEFINED DEBUG_DLLS)
 
-	set(CREATE_LIB_DIR_COMMAND "-E" "make_directory" "${COPY_DIRECTORY_RELEASE}/lib")
+	set(CREATE_LIB_DIR_COMMAND "-E" "make_directory" "${COPY_DIRECTORY}/lib")
 
-	set(COPY_COMMAND_RELEASE "-E" "copy_if_different")
-	set(COPY_COMMAND_DEBUG "-E" "copy_if_different")
+	set(COPY_COMMAND "-E" "copy_if_different")
 
 	list(REMOVE_DUPLICATES RELEASE_DLLS)
 	list(REMOVE_DUPLICATES DEBUG_DLLS)
 
-	foreach(DLL ${RELEASE_DLLS})
-		list(APPEND COPY_COMMAND_RELEASE "\"${DLL}\"")
-	endforeach()
-	foreach(DLL ${DEBUG_DLLS})
-		list(APPEND COPY_COMMAND_DEBUG "\"${DLL}\"")
-	endforeach()
+	if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+		foreach(DLL ${DEBUG_DLLS})
+			list(APPEND COPY_COMMAND "\"${DLL}\"")
+		endforeach()
+	else()
+		foreach(DLL ${RELEASE_DLLS})
+			list(APPEND COPY_COMMAND "\"${DLL}\"")
+		endforeach()
+	endif()
 
-	list(APPEND COPY_COMMAND_RELEASE "\"${COPY_DIRECTORY_RELEASE}${LIB_SUBFOLDER}\"")
-	list(APPEND COPY_COMMAND_DEBUG "\"${COPY_DIRECTORY_DEBUG}${LIB_SUBFOLDER}\"")
+	list(APPEND COPY_COMMAND "\"${COPY_DIRECTORY}${LIB_SUBFOLDER}\"")
 
 	foreach(EXECUTABLE ${TARGETS})
 		if(UNIX)
 			add_custom_command(TARGET ${EXECUTABLE} POST_BUILD COMMAND ${CMAKE_COMMAND} ${CREATE_LIB_DIR_COMMAND})	
 		endif()		
-		add_custom_command(TARGET ${EXECUTABLE} POST_BUILD COMMAND ${CMAKE_COMMAND} ${COPY_COMMAND_RELEASE})
+		add_custom_command(TARGET ${EXECUTABLE} POST_BUILD COMMAND ${CMAKE_COMMAND} ${COPY_COMMAND})
 		if(MSVC)
-			add_custom_command(TARGET ${EXECUTABLE} POST_BUILD COMMAND ${CMAKE_COMMAND} ${COPY_COMMAND_DEBUG})
+			add_custom_command(TARGET ${EXECUTABLE} POST_BUILD COMMAND ${CMAKE_COMMAND} ${COPY_COMMAND})
 		endif()
 	endforeach()
 
