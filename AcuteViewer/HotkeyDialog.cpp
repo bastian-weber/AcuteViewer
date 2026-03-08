@@ -29,8 +29,9 @@ namespace sv {
 		folderLineEdit1->setMinimumWidth(250);
 		QObject::connect(folderLineEdit1, SIGNAL(textChanged(QString)), this, SLOT(verifyChanges()));
 		completer1 = new QCompleter(this);
-		QDirModel* dirModel1 = new QDirModel(completer1);
+		QFileSystemModel* dirModel1 = new QFileSystemModel(completer1);
 		dirModel1->setFilter(QDir::Dirs | QDir::NoDotAndDotDot);
+		dirModel1->setRootPath("");
 		completer1->setModel(dirModel1);
 		folderLineEdit1->setCompleter(completer1);
 		chooseButton1 = new QPushButton(tr("Choose"), this);
@@ -68,8 +69,9 @@ namespace sv {
 		folderLineEdit2->setMinimumWidth(250);
 		QObject::connect(folderLineEdit2, SIGNAL(textChanged(QString)), this, SLOT(verifyChanges()));
 		completer2 = new QCompleter(this);
-		QDirModel* dirModel2 = new QDirModel(completer2);
+		QFileSystemModel* dirModel2 = new QFileSystemModel(completer2);
 		dirModel2->setFilter(QDir::Dirs | QDir::NoDotAndDotDot);
+		dirModel2->setRootPath("");
 		completer2->setModel(dirModel2);
 		folderLineEdit2->setCompleter(completer2);
 		chooseButton2 = new QPushButton(tr("Choose"), this);

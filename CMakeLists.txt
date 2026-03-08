@@ -24,7 +24,7 @@ add_definitions(-DAV_MINOR_VERSION=${PROJECT_VERSION_MINOR})
 #=======================================================================#
 
 find_package(OpenCV 4 REQUIRED COMPONENTS core highgui imgproc imgcodecs)
-find_package(Qt5 REQUIRED COMPONENTS Core Gui Widgets Network)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Network)
 find_package(Exiv2 REQUIRED)
 find_package(OpenMP)
 
@@ -57,10 +57,10 @@ add_executable(AcuteViewer ${SOURCEFILES_ACUTE_VIEWER})
 
 target_link_libraries(AcuteViewer PRIVATE
     ${OpenCV_LIBS}
-    Qt5::Core
-    Qt5::Gui
-    Qt5::Widgets
-    Qt5::Network
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets
+    Qt6::Network
     Exiv2::exiv2lib
 )
 
@@ -72,9 +72,9 @@ if(WIN32)
     add_executable(WinInstaller ${SOURCEFILES_WININSTALLER})
 
     target_link_libraries(WinInstaller PRIVATE
-        Qt5::Core
-        Qt5::Gui
-        Qt5::Widgets
+        Qt6::Core
+        Qt6::Gui
+        Qt6::Widgets
     )
 endif()
 
@@ -90,6 +90,7 @@ if(MSVC)
     target_compile_options(AcuteViewer PRIVATE
         $<$<CONFIG:Release>:/GL>
     )
+    target_compile_definitions(AcuteViewer PRIVATE NOMINMAX)
 
     if(WIN32)
         target_link_options(WinInstaller PRIVATE
@@ -99,6 +100,7 @@ if(MSVC)
         target_compile_options(WinInstaller PRIVATE
             $<$<CONFIG:Release>:/GL>
         )
+        target_compile_definitions(WinInstaller PRIVATE NOMINMAX)
     endif()
 endif()
 
@@ -157,7 +159,7 @@ if(WIN32)
 
     foreach(TARGET_NAME ${ALL_TARGETS})
         # Let windeployqt handle Qt DLLs and plugins (platform drivers etc.)
-        find_program(WINDEPLOYQT windeployqt HINTS "${Qt5_DIR}/../../../bin")
+        find_program(WINDEPLOYQT windeployqt HINTS "${Qt6_DIR}/../../../bin")
         if(WINDEPLOYQT)
             add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
                 COMMAND ${WINDEPLOYQT}

@@ -205,10 +205,10 @@ namespace sv {
 
 	void MainInterface::wheelEvent(QWheelEvent * e) {
 		if (e->modifiers() == Qt::ShiftModifier) {
-			if (e->delta() > 0) {
+			if (e->angleDelta().y() > 0) {
 				userRotation -= 10;
 				imageView->rotateBy(-10);
-			} else if (e->delta() < 0) {
+			} else if (e->angleDelta().y() < 0) {
 				userRotation += 10;
 				imageView->rotateBy(10);
 			}
@@ -295,14 +295,14 @@ namespace sv {
 		fileActionAction = new QAction(tr("&Enable File Action Hotkeys"), this);
 		fileActionAction->setCheckable(true);
 		fileActionAction->setChecked(false);
-		fileActionAction->setShortcut(Qt::CTRL + Qt::Key_H);
+		fileActionAction->setShortcut(Qt::CTRL | Qt::Key_H);
 		fileActionAction->setShortcutContext(Qt::ApplicationShortcut);
 		QObject::connect(fileActionAction, SIGNAL(triggered(bool)), hotkeyDialog, SLOT(setHotkeysEnabled(bool)));
 		fileMenu->addAction(fileActionAction);
 		addAction(fileActionAction);
 
 		hotkeyOptionsAction = new QAction(tr("&Hotkey Options..."), this);
-		hotkeyOptionsAction->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_O);
+		hotkeyOptionsAction->setShortcut(QKeyCombination(Qt::CTRL | Qt::SHIFT, Qt::Key_O));
 		hotkeyOptionsAction->setShortcutContext(Qt::ApplicationShortcut);
 		QObject::connect(hotkeyOptionsAction, SIGNAL(triggered()), this, SLOT(showHotkeyDialog()));
 		fileMenu->addAction(hotkeyOptionsAction);
@@ -313,7 +313,7 @@ namespace sv {
 		includePartiallySupportedFilesAction = new QAction(tr("&Include Preview-Only Files in Directory List"), this);
 		includePartiallySupportedFilesAction->setCheckable(true);
 		includePartiallySupportedFilesAction->setChecked(true);
-		includePartiallySupportedFilesAction->setShortcut(Qt::CTRL + Qt::Key_P);
+		includePartiallySupportedFilesAction->setShortcut(Qt::CTRL | Qt::Key_P);
 		includePartiallySupportedFilesAction->setShortcutContext(Qt::ApplicationShortcut);
 		QObject::connect(includePartiallySupportedFilesAction, SIGNAL(triggered(bool)), this, SLOT(togglePreviewOnlyFiles(bool)));
 		fileMenu->addAction(includePartiallySupportedFilesAction);
@@ -328,7 +328,7 @@ namespace sv {
 		fileMenu->addSeparator();
 
 		quitAction = new QAction(tr("&Quit"), this);
-		quitAction->setShortcut(Qt::CTRL + Qt::Key_Q);
+		quitAction->setShortcut(Qt::CTRL | Qt::Key_Q);
 		quitAction->setShortcutContext(Qt::ApplicationShortcut);
 		QObject::connect(quitAction, SIGNAL(triggered()), this, SLOT(quit()));
 		fileMenu->addAction(quitAction);
@@ -358,7 +358,7 @@ namespace sv {
 		backgroundColorBlackAction = new QAction(tr("&Black"), this);
 		backgroundColorBlackAction->setCheckable(true);
 		backgroundColorBlackAction->setChecked(false);
-		backgroundColorBlackAction->setShortcut(Qt::CTRL + Qt::Key_B);
+		backgroundColorBlackAction->setShortcut(Qt::CTRL | Qt::Key_B);
 		backgroundColorBlackAction->setShortcutContext(Qt::ApplicationShortcut);
 		backgroundColorMenu->addAction(backgroundColorBlackAction);
 		addAction(backgroundColorBlackAction);
@@ -366,7 +366,7 @@ namespace sv {
 		backgroundColorGrayAction = new QAction(tr("Dark &Grey"), this);
 		backgroundColorGrayAction->setCheckable(true);
 		backgroundColorGrayAction->setChecked(false);
-		backgroundColorGrayAction->setShortcut(Qt::CTRL + Qt::Key_G);
+		backgroundColorGrayAction->setShortcut(Qt::CTRL | Qt::Key_G);
 		backgroundColorGrayAction->setShortcutContext(Qt::ApplicationShortcut);
 		backgroundColorMenu->addAction(backgroundColorGrayAction);
 		addAction(backgroundColorGrayAction);
@@ -374,7 +374,7 @@ namespace sv {
 		backgroundColorWhiteAction = new QAction(tr("&White"), this);
 		backgroundColorWhiteAction->setCheckable(true);
 		backgroundColorWhiteAction->setChecked(false);
-		backgroundColorWhiteAction->setShortcut(Qt::CTRL + Qt::Key_W);
+		backgroundColorWhiteAction->setShortcut(Qt::CTRL | Qt::Key_W);
 		backgroundColorWhiteAction->setShortcutContext(Qt::ApplicationShortcut);
 		backgroundColorMenu->addAction(backgroundColorWhiteAction);
 		addAction(backgroundColorWhiteAction);
@@ -382,7 +382,7 @@ namespace sv {
 		backgroundColorCustomAction = new QAction(tr("&Custom"), this);
 		backgroundColorCustomAction->setCheckable(true);
 		backgroundColorCustomAction->setChecked(false);
-		backgroundColorCustomAction->setShortcut(Qt::CTRL + Qt::Key_C);
+		backgroundColorCustomAction->setShortcut(Qt::CTRL | Qt::Key_C);
 		backgroundColorCustomAction->setShortcutContext(Qt::ApplicationShortcut);
 		backgroundColorMenu->addAction(backgroundColorCustomAction);
 		addAction(backgroundColorCustomAction);
@@ -434,7 +434,7 @@ namespace sv {
 		enlargementAction = new QAction(tr("&Enlarge Smaller Images to Fit Window"), this);
 		enlargementAction->setCheckable(true);
 		enlargementAction->setChecked(false);
-		enlargementAction->setShortcut(Qt::CTRL + Qt::Key_U);
+		enlargementAction->setShortcut(Qt::CTRL | Qt::Key_U);
 		enlargementAction->setShortcutContext(Qt::ApplicationShortcut);
 		QObject::connect(enlargementAction, SIGNAL(triggered(bool)), this, SLOT(toggleSmallImageUpscaling(bool)));
 		zoomMenu->addAction(enlargementAction);
@@ -443,7 +443,7 @@ namespace sv {
 		smoothingAction = new QAction(tr("Use &Smooth Interpolation when Enlarging"), this);
 		smoothingAction->setCheckable(true);
 		smoothingAction->setChecked(false);
-		smoothingAction->setShortcut(Qt::CTRL + Qt::Key_S);
+		smoothingAction->setShortcut(Qt::CTRL | Qt::Key_S);
 		smoothingAction->setShortcutContext(Qt::ApplicationShortcut);
 		QObject::connect(smoothingAction, SIGNAL(triggered(bool)), this, SLOT(toggleEnglargmentInterpolationMethod(bool)));
 		zoomMenu->addAction(smoothingAction);
@@ -452,35 +452,35 @@ namespace sv {
 		zoomMenu->addSeparator();
 
 		zoomToFitAction = new QAction(tr("Zoom to &Fit"), this);
-		zoomToFitAction->setShortcut(Qt::CTRL + Qt::Key_0);
+		zoomToFitAction->setShortcut(Qt::CTRL | Qt::Key_0);
 		zoomToFitAction->setShortcutContext(Qt::ApplicationShortcut);
 		QObject::connect(zoomToFitAction, SIGNAL(triggered(bool)), imageView, SLOT(resetZoom()));
 		zoomMenu->addAction(zoomToFitAction);
 		addAction(zoomToFitAction);
 
 		zoomTo100Action = new QAction(tr("Zoom to &100%"), this);
-		zoomTo100Action->setShortcut(Qt::CTRL + Qt::ALT + Qt::Key_0);
+		zoomTo100Action->setShortcut(QKeyCombination(Qt::CTRL | Qt::ALT, Qt::Key_0));
 		zoomTo100Action->setShortcutContext(Qt::ApplicationShortcut);
 		QObject::connect(zoomTo100Action, SIGNAL(triggered(bool)), this, SLOT(zoomTo100()));
 		zoomMenu->addAction(zoomTo100Action);
 		addAction(zoomTo100Action);
 
 		rotateLeftAction = new QAction(tr("Rotate View &Left"), this);
-		rotateLeftAction->setShortcut(Qt::CTRL + Qt::Key_Left);
+		rotateLeftAction->setShortcut(Qt::CTRL | Qt::Key_Left);
 		rotateLeftAction->setShortcutContext(Qt::ApplicationShortcut);
 		QObject::connect(rotateLeftAction, SIGNAL(triggered(bool)), this, SLOT(rotateLeft()));
 		rotationMenu->addAction(rotateLeftAction);
 		addAction(rotateLeftAction);
 
 		rotateRightAction = new QAction(tr("Rotate &View Right"), this);
-		rotateRightAction->setShortcut(Qt::CTRL + Qt::Key_Right);
+		rotateRightAction->setShortcut(Qt::CTRL | Qt::Key_Right);
 		rotateRightAction->setShortcutContext(Qt::ApplicationShortcut);
 		QObject::connect(rotateRightAction, SIGNAL(triggered(bool)), this, SLOT(rotateRight()));
 		rotationMenu->addAction(rotateRightAction);
 		addAction(rotateRightAction);
 
 		resetRotationAction = new QAction(tr("&Reset Rotation"), this);
-		resetRotationAction->setShortcut(Qt::SHIFT + Qt::Key_Escape);
+		resetRotationAction->setShortcut(Qt::SHIFT | Qt::Key_Escape);
 		resetRotationAction->setShortcutContext(Qt::ApplicationShortcut);
 		QObject::connect(resetRotationAction, SIGNAL(triggered(bool)), this, SLOT(resetRotation()));
 		rotationMenu->addAction(resetRotationAction);
@@ -491,7 +491,7 @@ namespace sv {
 		autoRotationAction = new QAction(tr("&Automatic EXIF-based rotation"), this);
 		autoRotationAction->setCheckable(true);
 		autoRotationAction->setChecked(true);
-		autoRotationAction->setShortcut(Qt::CTRL + Qt::Key_R);
+		autoRotationAction->setShortcut(Qt::CTRL | Qt::Key_R);
 		autoRotationAction->setShortcutContext(Qt::ApplicationShortcut);
 		QObject::connect(autoRotationAction, SIGNAL(triggered(bool)), this, SLOT(toggleAutoRotation(bool)));
 		rotationMenu->addAction(autoRotationAction);
@@ -500,7 +500,7 @@ namespace sv {
 		sharpeningAction = new QAction(tr("&Sharpen Images After Downsampling"), this);
 		sharpeningAction->setCheckable(true);
 		sharpeningAction->setChecked(false);
-		sharpeningAction->setShortcut(Qt::CTRL + Qt::Key_E);
+		sharpeningAction->setShortcut(Qt::CTRL | Qt::Key_E);
 		sharpeningAction->setShortcutContext(Qt::ApplicationShortcut);
 		QObject::connect(sharpeningAction, SIGNAL(triggered(bool)), this, SLOT(toggleSharpening(bool)));
 		sharpeningMenu->addAction(sharpeningAction);
@@ -515,7 +515,7 @@ namespace sv {
 
 		slideshowAction = new QAction(tr("&Start Slideshow"), this);
 		slideshowAction->setEnabled(false);
-		slideshowAction->setShortcut(Qt::CTRL + Qt::Key_Space);
+		slideshowAction->setShortcut(Qt::CTRL | Qt::Key_Space);
 		slideshowAction->setShortcutContext(Qt::ApplicationShortcut);
 		QObject::connect(slideshowAction, SIGNAL(triggered()), this, SLOT(toggleSlideshow()));
 		slideshowMenu->addAction(slideshowAction);
@@ -717,7 +717,7 @@ namespace sv {
 						filesInDirectory.remove(i);
 						//correct the index shift
 						if (i < currentFileIndex) --currentFileIndex;
-						--i;
+				    --i;
 					}
 				}
 			}
@@ -922,14 +922,14 @@ namespace sv {
 		QFontMetrics metrics(font);
 		if (currentImageUnreadable && statusHint.isEmpty()) {
 			QString message = tr("This file could not be read:");
-			canvas.drawText(QPoint((canvas.device()->width() - metrics.width(message)) / 2.0, canvas.device()->height() / 2.0 - 0.5*lineSpacing),
+			canvas.drawText(QPoint((canvas.device()->width() - metrics.horizontalAdvance(message)) / 2.0, canvas.device()->height() / 2.0 - 0.5*lineSpacing),
 							message);
-			canvas.drawText(QPoint((canvas.device()->width() - metrics.width(currentFileInfo.fileName())) / 2.0,
+			canvas.drawText(QPoint((canvas.device()->width() - metrics.horizontalAdvance(currentFileInfo.fileName())) / 2.0,
 								   canvas.device()->height() / 2.0 + 0.5*lineSpacing + metrics.height()),
 							currentFileInfo.fileName());
 		}
 		if (!statusHint.isEmpty()) {
-			canvas.drawText(QPoint((canvas.device()->width() - metrics.width(statusHint)) / 2.0, canvas.device()->height() / 2.0 + 0.5*metrics.height()),
+			canvas.drawText(QPoint((canvas.device()->width() - metrics.horizontalAdvance(statusHint)) / 2.0, canvas.device()->height() / 2.0 + 0.5*metrics.height()),
 							statusHint);
 		}
 		if (showInfoAction->isChecked() && imageView->getImageAssigned()) {
@@ -997,7 +997,7 @@ namespace sv {
 						if (!iso.isEmpty() && !exposureBias.isEmpty()) {
 							canvas.drawText(QPoint(30, topOffset),
 											QString::fromWCharArray(L"ISO\u2006%1, %2\u2006EV").arg(iso).arg(exposureBias));
-							topOffset += heightOfOneLine;
+						  topOffset += heightOfOneLine;
 						} else if (!iso.isEmpty()) {
 							canvas.drawText(QPoint(30, topOffset),
 											QString::fromWCharArray(L"ISO\u2006%1").arg(iso));

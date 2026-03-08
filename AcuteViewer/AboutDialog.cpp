@@ -90,7 +90,7 @@ namespace sv {
 		QDateTime local(QDateTime::currentDateTime());
 		QDateTime Utc(local.toUTC());
 		//auto update is only conducted every 6 hours
-		if (isAutoUpdate && (Utc.toTime_t() - settings->value("lastUpdateCheck", 0).toUInt() > 21600)) {
+		if (isAutoUpdate && (Utc.toSecsSinceEpoch() - settings->value("lastUpdateCheck", 0).toUInt() > 21600)) {
 			connect(infoDocumentReply.get(), SIGNAL(finished()), this, SLOT(processAutoUpdate()));
 		}
 	}
@@ -151,7 +151,7 @@ namespace sv {
 	void AboutDialog::processAutoUpdate() {
 		QDateTime local(QDateTime::currentDateTime());
 		QDateTime Utc(local.toUTC());
-		settings->setValue("lastUpdateCheck", Utc.toTime_t());
+		settings->setValue("lastUpdateCheck", Utc.toSecsSinceEpoch());
 		if (latestMajorVersion > majorVersion || (latestMinorVersion > minorVersion && latestMajorVersion >= majorVersion)) {
 			int noRemindMajorVersion = settings->value("noRemindMajorVersion", 0).toInt();
 			int noRemindMinorVersion = settings->value("noRemindMinorVersion", 0).toInt();

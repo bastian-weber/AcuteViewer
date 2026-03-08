@@ -147,7 +147,7 @@ namespace uninstallation {
 		QString path2 = QDir::toNativeSeparators(installDir.absolutePath());
 		QString parameters = QString("/C choice /C Y /N /D Y /T 3 & del \"%1\" & del \"%2\" & del \"%3\" & del \"%4\" & del \"%5\" & del \"%6\" & rmdir \"%7\" & rmdir \"%8\" ").arg(file1).arg(file2).arg(file3).arg(file4).arg(file5).arg(file6).arg(path1).arg(path2);
 		QString cmdPath = getenv("ComSpec");
-		ShellExecute(0, 0, QString("\"%1\"").arg(cmdPath).toStdString().c_str(), parameters.toStdString().c_str(), QDir::rootPath().toStdString().c_str(), SW_HIDE);
+		ShellExecute(0, 0, QString("\"%1\"").arg(cmdPath).toStdWString().c_str(), parameters.toStdWString().c_str(), QDir::rootPath().toStdWString().c_str(), SW_HIDE);
 	}
 
 }

@@ -664,7 +664,7 @@ namespace hb {
 
 	void ImageView::mousePressEvent(QMouseEvent *e) {
 		lastMousePosition = e->pos();
-		screenId = qApp->desktop()->screenNumber(QCursor::pos());
+		screenId = QGuiApplication::screens().indexOf(QGuiApplication::screenAt(QCursor::pos()));
 		initialMousePosition = e->pos();
 		infinitePanLastInitialMousePosition = initialMousePosition;
 
@@ -765,7 +765,7 @@ namespace hb {
 				enforcePanConstraints();
 				//for infinite panning
 				QPoint globalPos = QCursor::pos();
-				QRect screen = QApplication::desktop()->screen(screenId)->geometry();
+				QRect screen = QGuiApplication::screens().value(screenId)->geometry();
 				QPoint newPos;
 				if (globalPos.y() >= screen.bottom()) {
 					newPos = QPoint(globalPos.x(), screen.top() + 1);
@@ -844,7 +844,7 @@ namespace hb {
 			zoomBy(delta, initialMousePosition);
 			//for infinite pan zooming
 			QPoint globalPos = QCursor::pos();
-			QRect screen = QApplication::desktop()->screen(screenId)->geometry();
+			QRect screen = QGuiApplication::screens().value(screenId)->geometry();
 			QPoint newPos;
 			if (globalPos.y() >= screen.bottom()) {
 				newPos = QPoint(globalPos.x(), screen.top() + 1);
@@ -980,7 +980,7 @@ namespace hb {
 				e->ignore();
 				return;
 			}
-			zoomBy(e->delta() / divisor, e->pos());
+			zoomBy(e->angleDelta().y() / divisor, e->position());
 		}
 		e->accept();
 	}
