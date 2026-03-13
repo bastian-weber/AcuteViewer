@@ -217,6 +217,12 @@ elseif(UNIX)
     )
 endif()
 
+install(FILES
+    "${CMAKE_SOURCE_DIR}/LICENSE.txt"
+    "${CMAKE_SOURCE_DIR}/THIRD-PARTY-NOTICES.txt"
+    DESTINATION .
+)
+
 # On Windows, run windeployqt at install time to pull in Qt plugins
 if(WIN32 AND WINDEPLOYQT)
     foreach(TARGET_NAME ${ALL_TARGETS})
